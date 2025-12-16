@@ -1,0 +1,47 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": ["ultracite/core"],
+  "files": {
+    "includes": [
+      "**/*.{ts,tsx,js,jsx,json,jsonc,md,toml}",
+      "!!**/node_modules",
+      "!!**/dist",
+      "!!**/tmp",
+      "!!**/evals/fixtures",
+      "!!**/evals/harbor",
+      "!!**/src/web/components/ui",
+      "!!**/src/web/components/ai-elements"
+    ]
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single"
+    },
+    "globals": ["Bun"]
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "formatWithErrors": true
+  },
+  "linter": {
+    "rules": {
+      "suspicious": {
+        "noExplicitAny": "warn"
+      },
+      "style": {
+        "noNonNullAssertion": "warn",
+        "noMagicNumbers": "off"
+      },
+      "performance": {
+        "noNamespaceImport": "warn"
+      },
+      "complexity": {
+        "noExcessiveCognitiveComplexity": {
+          "level": "warn",
+          "options": { "maxAllowedComplexity": 20 }
+        }
+      }
+    }
+  }
+}
