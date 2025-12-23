@@ -50,6 +50,19 @@ When adding new commands or modifying outputs:
 4. Implement the feature
 5. Verify tests pass
 
+### Avoiding Documentation Drift
+
+**CRITICAL**: After completing any task, verify documentation is current:
+
+- [ ] README.md - Does it reflect current capabilities?
+- [ ] CLAUDE.md / AGENTS.md - Are instructions still accurate?
+- [ ] spec/*.md - Do specs match implementation?
+- [ ] spec/output-schemas/*.json - Do schemas match actual outputs?
+- [ ] docs/prd.md - Mark completed items with ✓
+- [ ] Beads - Are descriptions and comments up to date?
+
+If you change behavior, update docs in the same commit. Never leave docs out of sync.
+
 ## Frontend
 
 Use HTML imports with `Bun.serve()`. Don't use `vite`. HTML imports fully support React, CSS, Tailwind.

@@ -165,6 +165,26 @@ From PRD §21:
 - Eval gates pass where applicable
 - CLI help updated
 
+### Documentation Drift Prevention
+
+**CRITICAL**: After completing ANY task, run this checklist:
+
+```
+[ ] README.md         - Current capabilities documented?
+[ ] CLAUDE.md         - Agent instructions accurate?
+[ ] AGENTS.md         - Workflow guidance current?
+[ ] spec/*.md         - Specs match implementation?
+[ ] spec/output-schemas/*.json - Schemas match outputs?
+[ ] docs/prd.md       - Completed items marked ✓?
+[ ] Beads             - Comments/descriptions current?
+```
+
+**Rules:**
+- Update docs in the SAME commit as code changes
+- Never merge code that makes docs stale
+- If behavior changes, docs MUST change too
+- Add bead comments when specs are relevant to a task
+
 ## Landing the Plane (Session Completion)
 
 **When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
