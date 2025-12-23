@@ -202,18 +202,22 @@ export async function init(options: InitOptions = {}): Promise<InitResult> {
     };
   }
 
-  // Create DB placeholder file (actual schema created on first use)
+  // Create DB placeholder file only if it doesn't exist (don't truncate existing DB)
   const dbPath = getIndexDbPath();
-  try {
-    await Bun.write(dbPath, '');
-  } catch (error) {
-    return {
-      success: false,
-      configPath: paths.configFile,
-      dataDir: paths.dataDir,
-      dbPath,
-      error: `Failed to create database file: ${error instanceof Error ? error.message : String(error)}`,
-    };
+  const dbFile = Bun.file(dbPath);
+  const dbExists = await dbFile.exists();
+  if (!dbExists) {
+    try {
+      await Bun.write(dbPath, '');
+    } catch (error) {
+      return {
+        success: false,
+        configPath: paths.configFile,
+        dataDir: paths.dataDir,
+        dbPath,
+        error: `Failed to create database file: ${error instanceof Error ? error.message : String(error)}`,
+      };
+    }
   }
 
   return {

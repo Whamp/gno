@@ -6,6 +6,7 @@
  */
 
 import { z } from 'zod';
+import { URI_PREFIX } from '../app/constants';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -134,7 +135,7 @@ export const ContextSchema = z
         case 'collection':
           return COLLECTION_SCOPE_REGEX.test(ctx.scopeKey);
         case 'prefix':
-          return ctx.scopeKey.startsWith('gno://');
+          return ctx.scopeKey.startsWith(URI_PREFIX);
         default:
           return false;
       }
@@ -183,7 +184,7 @@ export function parseScope(
   if (scope === '/') {
     return { type: 'global', key: '/' };
   }
-  if (scope.startsWith('gno://')) {
+  if (scope.startsWith(URI_PREFIX)) {
     return { type: 'prefix', key: scope };
   }
   if (COLLECTION_SCOPE_REGEX.test(scope)) {
@@ -205,8 +206,8 @@ export function getCollectionFromScope(scopeKey: string): string | null {
   if (scopeKey.endsWith(':')) {
     return scopeKey.slice(0, -1);
   }
-  if (scopeKey.startsWith('gno://')) {
-    const rest = scopeKey.slice(6); // Remove "gno://"
+  if (scopeKey.startsWith(URI_PREFIX)) {
+    const rest = scopeKey.slice(URI_PREFIX.length);
     const slashIndex = rest.indexOf('/');
     return slashIndex === -1 ? rest : rest.slice(0, slashIndex);
   }

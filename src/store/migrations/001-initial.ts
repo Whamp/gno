@@ -111,7 +111,7 @@ export const migration: Migration = {
         token_count INTEGER,
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         PRIMARY KEY (mirror_hash, seq),
-        FOREIGN KEY (mirror_hash) REFERENCES content(mirror_hash)
+        FOREIGN KEY (mirror_hash) REFERENCES content(mirror_hash) ON DELETE CASCADE
       )
     `);
 
@@ -136,7 +136,7 @@ export const migration: Migration = {
         embedding BLOB NOT NULL,
         embedded_at TEXT NOT NULL DEFAULT (datetime('now')),
         PRIMARY KEY (mirror_hash, seq, model),
-        FOREIGN KEY (mirror_hash, seq) REFERENCES content_chunks(mirror_hash, seq)
+        FOREIGN KEY (mirror_hash, seq) REFERENCES content_chunks(mirror_hash, seq) ON DELETE CASCADE
       )
     `);
 

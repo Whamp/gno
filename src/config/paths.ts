@@ -72,15 +72,16 @@ export function configExists(dirs?: ResolvedDirs): Promise<boolean> {
 
 /**
  * Check if a path exists (file or directory).
- * Uses Bun native shell command for cross-type support.
+ * Uses fs.stat for cross-platform support (Windows compatible).
  */
 export async function pathExists(path: string): Promise<boolean> {
-  // Try file first (fast path for most cases)
-  const file = Bun.file(path);
-  if (await file.exists()) {
+  // Bun.file().exists() only works for files, not directories
+  // Use fs.stat for reliable cross-platform check
+  const { stat } = await import('node:fs/promises');
+  try {
+    await stat(path);
     return true;
+  } catch {
+    return false;
   }
-  // Check for directory using Bun shell
-  const result = await Bun.$`test -d ${path}`.nothrow().quiet();
-  return result.exitCode === 0;
 }

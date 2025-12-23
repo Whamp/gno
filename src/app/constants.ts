@@ -237,7 +237,7 @@ export function buildUri(collection: string, relativePath: string): string {
 
 /**
  * Parse a gno:// URI into collection and path components.
- * Returns null if not a valid gno:// URI.
+ * Returns null if not a valid gno:// URI or if decoding fails.
  */
 export function parseUri(
   uri: string
@@ -255,9 +255,14 @@ export function parseUri(
   }
 
   const collection = rest.slice(0, slashIndex);
-  const path = decodeURIComponent(rest.slice(slashIndex + 1));
 
-  return { collection, path };
+  // decodeURIComponent throws on malformed percent-encoding
+  try {
+    const path = decodeURIComponent(rest.slice(slashIndex + 1));
+    return { collection, path };
+  } catch {
+    return null;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -129,7 +129,7 @@ CREATE TABLE IF NOT EXISTS content_chunks (
   token_count INTEGER,              -- Optional for debugging
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   PRIMARY KEY (mirror_hash, seq),
-  FOREIGN KEY (mirror_hash) REFERENCES content(mirror_hash)
+  FOREIGN KEY (mirror_hash) REFERENCES content(mirror_hash) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_chunks_mirror_hash ON content_chunks(mirror_hash);
@@ -166,7 +166,7 @@ CREATE TABLE IF NOT EXISTS content_vectors (
   embedding BLOB NOT NULL,          -- Float32Array serialized
   embedded_at TEXT NOT NULL DEFAULT (datetime('now')),
   PRIMARY KEY (mirror_hash, seq, model),
-  FOREIGN KEY (mirror_hash, seq) REFERENCES content_chunks(mirror_hash, seq)
+  FOREIGN KEY (mirror_hash, seq) REFERENCES content_chunks(mirror_hash, seq) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_vectors_model ON content_vectors(model);
