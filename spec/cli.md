@@ -694,9 +694,11 @@ gno models list [--json|--md]
 **Output (JSON):**
 ```json
 {
-  "embed": { "uri": "hf:BAAI/bge-m3", "cached": true, "path": "/path/to/model" },
+  "embed": { "uri": "hf:BAAI/bge-m3", "cached": true, "path": "/path/to/model", "size": 123456789 },
   "rerank": { "uri": "hf:BAAI/bge-reranker-v2-m3", "cached": false, "path": null },
-  "gen": { "uri": "hf:Qwen/Qwen2.5-0.5B-Instruct", "cached": true, "path": "/path/to/model" }
+  "gen": { "uri": "hf:Qwen/Qwen2.5-0.5B-Instruct", "cached": true, "path": "/path/to/model", "size": 987654321 },
+  "cacheDir": "/path/to/cache/models",
+  "totalSize": 1111111110
 }
 ```
 
@@ -708,7 +710,7 @@ Download models to local cache.
 
 **Synopsis:**
 ```
-gno models pull [--all|--embed|--rerank|--gen]
+gno models pull [--all|--embed|--rerank|--gen] [--force]
 ```
 
 **Options:**
@@ -718,6 +720,11 @@ gno models pull [--all|--embed|--rerank|--gen]
 | `--embed` | Pull embedding model only |
 | `--rerank` | Pull reranker model only |
 | `--gen` | Pull generation model only |
+| `--force` | Re-download even if already cached |
+
+**Behavior:**
+- Skips models that are already cached (checksum match) unless `--force` is used
+- Default (no flags): pulls all models
 
 **Exit Codes:**
 - 0: Success
@@ -781,11 +788,12 @@ gno doctor [--json|--md]
 {
   "healthy": true,
   "checks": [
-    { "name": "config", "status": "ok", "message": "Config file found" },
-    { "name": "database", "status": "ok", "message": "Index DB accessible" },
-    { "name": "sqlite-vec", "status": "ok", "message": "Vector extension loaded" },
-    { "name": "embed-model", "status": "warn", "message": "Model not cached, run gno models pull" },
-    { "name": "converters", "status": "ok", "message": "All converters available" }
+    { "name": "config", "status": "ok", "message": "Config loaded: ~/.config/gno/config.yaml" },
+    { "name": "database", "status": "ok", "message": "Database found: ~/.local/share/gno/index.db" },
+    { "name": "embed-model", "status": "ok", "message": "embed model cached" },
+    { "name": "rerank-model", "status": "warn", "message": "rerank model not cached. Run: gno models pull --rerank" },
+    { "name": "gen-model", "status": "ok", "message": "gen model cached" },
+    { "name": "node-llama-cpp", "status": "ok", "message": "node-llama-cpp loaded successfully" }
   ]
 }
 ```
