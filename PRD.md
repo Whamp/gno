@@ -303,6 +303,7 @@ On `gno update`, per collection:
 2. For each file:
 
    * stat (mtime, size)
+   * if size > `maxBytes` limit, record `TOO_LARGE` error and skip (do not read bytes)
    * read bytes
    * compute `source_hash = sha256(bytes)`
    * detect MIME/ext (layered detection)
@@ -344,7 +345,8 @@ Always supported:
 
 Converter-backed (MVP):
 
-* `.pdf`, `.docx`, `.pptx`, `.xlsx` via a Node MarkItDown port adapter (primary choice: `markitdown-js`)
+* `.pdf`, `.docx`, `.xlsx` via a Node MarkItDown port adapter (primary choice: `markitdown-ts`)
+* `.pptx` via `officeparser` (239 stars, 119K weekly downloads, in-memory extraction)
 
 Future (explicitly supported by architecture, not MVP):
 
@@ -376,7 +378,7 @@ This section is implementation-driving.
 export type ConverterId =
   | "native/markdown"
   | "native/plaintext"
-  | "adapter/markitdown-js"
+  | "adapter/markitdown-ts"
   | string;
 
 export type ConvertInput = {
@@ -527,14 +529,15 @@ Priority order (MVP):
 
 1. `native/markdown`
 2. `native/plaintext`
-3. `adapter/markitdown-js`
+3. `adapter/markitdown-ts` (PDF, DOCX, XLSX)
+4. `adapter/officeparser` (PPTX)
 
 Selection:
 
 * choose first converter where `canHandle(mime, ext)` is true
 * else return `UNSUPPORTED`
 
-### 8.7 MVP converter adapter: markitdown-js
+### 8.7 MVP converter adapter: markitdown-ts
 
 Responsibilities:
 
@@ -549,6 +552,23 @@ Responsibilities:
 Hard constraint:
 
 * No Python-based MarkItDown. Node adapter only.
+
+### 8.7b MVP converter adapter: officeparser (PPTX)
+
+Responsibilities:
+
+* handle `.pptx` files (markitdown-ts has incomplete PPTX support)
+* extract slide text and speaker notes
+* format extracted text as Markdown with filename-derived title
+* enforce `maxBytes` (defense in depth; EPIC 5 does pre-read stat check)
+* map library exceptions into `ConvertError`
+
+Library choice rationale:
+
+* 239 GitHub stars, 119K weekly npm downloads
+* In-memory extraction (no disk writes)
+* Full TypeScript support
+* Active maintenance (Nov 2024 updates)
 
 ### 8.8 Converter golden fixture plan
 
@@ -1012,7 +1032,7 @@ All search-like commands output:
     "sourceHash": "sha256-hex"
   },
   "conversion": {
-    "converterId": "adapter/markitdown-js",
+    "converterId": "adapter/markitdown-ts",
     "converterVersion": "x.y.z",
     "mirrorHash": "sha256-hex",
     "warnings": []
@@ -1161,7 +1181,7 @@ Adapters:
 * FTS5 adapter
 * sqlite-vec adapter
 * node-llama-cpp adapter
-* markitdown-js adapter
+* markitdown-ts adapter
 * CLI delivery
 * MCP delivery
 
@@ -1381,7 +1401,8 @@ Acceptance:
 * T4.2 Canonical Markdown normalizer + tests
 * T4.3 Converter interfaces, registry, error mapping + tests
 * T4.4 Native markdown/plaintext converters
-* T4.5 markitdown-js adapter + golden fixtures for pdf/docx/pptx/xlsx
+* T4.5 markitdown-ts adapter + golden fixtures for pdf/docx/xlsx
+* T4.5b officeparser adapter + golden fixtures for pptx
 
 Acceptance:
 
