@@ -7,14 +7,58 @@ import type { ConvertError, ConvertErrorCode, ConvertInput } from './types';
 
 type ConvertErrorOpts = Omit<ConvertError, 'code'>;
 
+/** Max length for error messages/causes to prevent bloat */
+const MAX_CAUSE_LENGTH = 1000;
+
+/**
+ * Normalize a cause to a safe, serializable format.
+ * Extracts essential info from Error objects, limits length.
+ */
+function normalizeCause(
+  cause: unknown
+): { name: string; message: string } | string | undefined {
+  if (cause === undefined || cause === null) {
+    return;
+  }
+
+  if (cause instanceof Error) {
+    const message =
+      cause.message.length > MAX_CAUSE_LENGTH
+        ? `${cause.message.slice(0, MAX_CAUSE_LENGTH)}...`
+        : cause.message;
+    return { name: cause.name, message };
+  }
+
+  if (typeof cause === 'string') {
+    return cause.length > MAX_CAUSE_LENGTH
+      ? `${cause.slice(0, MAX_CAUSE_LENGTH)}...`
+      : cause;
+  }
+
+  // For other types, try to stringify safely
+  try {
+    const str = String(cause);
+    return str.length > MAX_CAUSE_LENGTH
+      ? `${str.slice(0, MAX_CAUSE_LENGTH)}...`
+      : str;
+  } catch {
+    return '[unserializable cause]';
+  }
+}
+
 /**
  * Create a ConvertError with the given code and options.
+ * Normalizes cause to prevent bloat and serialization issues.
  */
 export function convertError(
   code: ConvertErrorCode,
   opts: ConvertErrorOpts
 ): ConvertError {
-  return { code, ...opts };
+  return {
+    code,
+    ...opts,
+    cause: normalizeCause(opts.cause),
+  };
 }
 
 /**
@@ -60,6 +104,31 @@ export function tooLargeError(
     details: {
       size: input.bytes.length,
       limit: input.limits.maxBytes,
+    },
+  });
+}
+
+/**
+ * Create an error for conversion output exceeding size limits.
+ * Distinct from tooLargeError (input) - this is for output (zip bomb protection).
+ */
+export function outputTooLargeError(
+  input: Pick<ConvertInput, 'sourcePath' | 'mime' | 'ext'>,
+  converterId: string,
+  opts: { outputChars: number; limitChars: number; stage: 'raw' | 'canonical' }
+): ConvertError {
+  return convertError('TOO_LARGE', {
+    message: `Conversion output (${opts.outputChars} chars at ${opts.stage}) exceeds limit ${opts.limitChars}`,
+    retryable: false,
+    fatal: false,
+    converterId,
+    sourcePath: input.sourcePath,
+    mime: input.mime,
+    ext: input.ext,
+    details: {
+      outputChars: opts.outputChars,
+      limitChars: opts.limitChars,
+      stage: opts.stage,
     },
   });
 }

@@ -16,9 +16,10 @@ import type {
   ConvertResult,
   ConvertWarning,
 } from '../../types';
+import { ADAPTER_VERSIONS } from '../../versions';
 
 const CONVERTER_ID = 'adapter/markitdown-ts' as const;
-const CONVERTER_VERSION = '0.0.8';
+const CONVERTER_VERSION = ADAPTER_VERSIONS['markitdown-ts'];
 
 /** Supported extensions for this adapter */
 const SUPPORTED_EXTENSIONS = ['.pdf', '.docx', '.xlsx'];
@@ -29,6 +30,14 @@ const SUPPORTED_MIMES = [
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 ];
+
+/**
+ * Create zero-copy Buffer view of Uint8Array.
+ * Assumes input.bytes is immutable (contract requirement).
+ */
+function toBuffer(bytes: Uint8Array): Buffer {
+  return Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+}
 
 export const markitdownAdapter: Converter = {
   id: CONVERTER_ID,
@@ -44,27 +53,30 @@ export const markitdownAdapter: Converter = {
       return { ok: false, error: tooLargeError(input, CONVERTER_ID) };
     }
 
-    // 2. Setup timeout promise
+    // 2. Setup timeout handling
     // Note: markitdown-ts doesn't support AbortSignal, so underlying
     // work may continue after timeout (known limitation; process isolation future work)
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    let timedOut = false;
+
     const timeoutPromise = new Promise<never>((_, reject) => {
       timeoutId = setTimeout(() => {
+        timedOut = true;
         reject(new Error('TIMEOUT'));
       }, input.limits.timeoutMs);
     });
 
-    try {
-      const converter = new MarkItDown();
+    const converter = new MarkItDown();
 
-      // IMPORTANT: Use convertBuffer with bytes for determinism
-      // Path-based convert() could re-read a modified file
-      const result = await Promise.race([
-        converter.convertBuffer(Buffer.from(input.bytes), {
-          file_extension: input.ext,
-        }),
-        timeoutPromise,
-      ]);
+    // IMPORTANT: Use convertBuffer with bytes for determinism
+    // Path-based convert() could re-read a modified file
+    // Zero-copy Buffer view (input.bytes is immutable by contract)
+    const workPromise = converter.convertBuffer(toBuffer(input.bytes), {
+      file_extension: input.ext,
+    });
+
+    try {
+      const result = await Promise.race([workPromise, timeoutPromise]);
 
       // Clear timeout on success
       if (timeoutId) {
@@ -104,8 +116,12 @@ export const markitdownAdapter: Converter = {
         clearTimeout(timeoutId);
       }
 
-      // Handle timeout
-      if (err instanceof Error && err.message === 'TIMEOUT') {
+      // If we timed out, suppress any later rejection from the work promise
+      // to prevent unhandled rejection crashes
+      if (timedOut) {
+        workPromise.catch(() => {
+          // Intentionally swallowed - work continued after timeout
+        });
         return { ok: false, error: timeoutError(input, CONVERTER_ID) };
       }
 

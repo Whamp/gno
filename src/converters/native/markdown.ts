@@ -4,23 +4,78 @@
  */
 
 import type { Converter, ConvertInput, ConvertResult } from '../types';
+import { NATIVE_VERSIONS } from '../versions';
 
 const CONVERTER_ID = 'native/markdown' as const;
-const CONVERTER_VERSION = '1.0.0';
+const CONVERTER_VERSION = NATIVE_VERSIONS.markdown;
 
 /** UTF-8 BOM character */
 const BOM = '\uFEFF';
 
-/** Regex to match first # heading in markdown */
-const FIRST_HEADING_PATTERN = /^\s*#\s+(.+)/m;
+/** Regex to match # heading at line start */
+const HEADING_PATTERN = /^\s*#\s+(.+)/;
+
+/** Regex to detect code fence start (captures the fence chars and optional info string) */
+const CODE_FENCE_START = /^(`{3,}|~{3,})/;
 
 /**
- * Extract title from first # heading in markdown.
+ * Check if a line closes a code fence.
+ * Closing fence must be same char type and at least as long as opening.
+ */
+function isClosingFence(
+  line: string,
+  fenceChar: string,
+  fenceLen: number
+): boolean {
+  const trimmed = line.trim();
+  // Must be only fence chars (no info string on close)
+  if (trimmed.length < fenceLen) {
+    return false;
+  }
+  // All chars must be the fence char
+  for (const char of trimmed) {
+    if (char !== fenceChar) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Extract title from first # heading in markdown, skipping code blocks.
  * Returns undefined if no heading found.
  */
 function extractFirstHeading(markdown: string): string | undefined {
-  const match = markdown.match(FIRST_HEADING_PATTERN);
-  return match?.[1]?.trim();
+  const lines = markdown.split('\n');
+  let fenceChar = '';
+  let fenceLen = 0;
+
+  for (const line of lines) {
+    // If inside a fence, check for closing
+    if (fenceLen > 0) {
+      if (isClosingFence(line, fenceChar, fenceLen)) {
+        fenceChar = '';
+        fenceLen = 0;
+      }
+      continue;
+    }
+
+    // Check for fence opening
+    const fenceMatch = line.match(CODE_FENCE_START);
+    if (fenceMatch?.[1]) {
+      fenceChar = fenceMatch[1].charAt(0);
+      fenceLen = fenceMatch[1].length;
+      continue;
+    }
+
+    // Check for heading (not inside fence)
+    const headingMatch = line.match(HEADING_PATTERN);
+    if (headingMatch?.[1]) {
+      return headingMatch[1].trim();
+    }
+  }
+
+  return;
 }
 
 export const markdownConverter: Converter = {

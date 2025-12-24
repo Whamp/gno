@@ -122,7 +122,8 @@ describe('corruptError', () => {
     expect(error.code).toBe('CORRUPT');
     expect(error.message).toBe('Invalid file');
     expect(error.retryable).toBe(false);
-    expect(error.cause).toBe(cause);
+    // Cause is normalized to { name, message } for safe serialization
+    expect(error.cause).toEqual({ name: 'Error', message: 'Parse failed' });
   });
 });
 
@@ -140,6 +141,7 @@ describe('adapterError', () => {
     expect(error.code).toBe('ADAPTER_FAILURE');
     expect(error.message).toBe('Conversion failed');
     expect(error.retryable).toBe(true);
-    expect(error.cause).toBe(cause);
+    // Cause is normalized to { name, message } for safe serialization
+    expect(error.cause).toEqual({ name: 'Error', message: 'Library error' });
   });
 });

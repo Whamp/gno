@@ -3,24 +3,15 @@
  * Converts .txt files to markdown (passthrough as paragraphs).
  */
 
-import { basename } from 'node:path'; // OK: no Bun path utils
+import { basenameWithoutExt } from '../path';
 import type { Converter, ConvertInput, ConvertResult } from '../types';
+import { NATIVE_VERSIONS } from '../versions';
 
 const CONVERTER_ID = 'native/plaintext' as const;
-const CONVERTER_VERSION = '1.0.0';
+const CONVERTER_VERSION = NATIVE_VERSIONS.plaintext;
 
 /** UTF-8 BOM character */
 const BOM = '\uFEFF';
-
-/**
- * Derive title from filename (without extension).
- */
-function extractTitleFromFilename(relativePath: string): string {
-  const filename = basename(relativePath);
-  // Remove extension
-  const lastDot = filename.lastIndexOf('.');
-  return lastDot > 0 ? filename.slice(0, lastDot) : filename;
-}
 
 export const plaintextConverter: Converter = {
   id: CONVERTER_ID,
@@ -44,8 +35,8 @@ export const plaintextConverter: Converter = {
       text = text.slice(1);
     }
 
-    // Derive title from filename
-    const title = extractTitleFromFilename(input.relativePath);
+    // Derive title from filename (cross-platform safe)
+    const title = basenameWithoutExt(input.relativePath);
 
     // Pass through as paragraphs (no code fence wrapping - better for search)
     // NOTE: Do NOT canonicalize here - pipeline.ts handles all normalization

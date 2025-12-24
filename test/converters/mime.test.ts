@@ -72,33 +72,36 @@ describe('DefaultMimeDetector', () => {
       expect(result.via).toBe('sniff');
     });
 
-    test('ZIP magic bytes with .docx ext -> OOXML wordprocessing', () => {
+    test('ZIP magic bytes with .docx ext -> OOXML wordprocessing (ext-assisted)', () => {
       // PK\x03\x04 = 0x50 0x4b 0x03 0x04
       const zipBytes = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0x00, 0x00]);
       const result = detector.detect('/path/to/file.docx', zipBytes);
       expect(result.mime).toBe(
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
       );
-      expect(result.confidence).toBe('high');
-      expect(result.via).toBe('sniff');
+      // OOXML is medium confidence because it requires ext to distinguish from generic ZIP
+      expect(result.confidence).toBe('medium');
+      expect(result.via).toBe('sniff+ext');
     });
 
-    test('ZIP magic bytes with .xlsx ext -> OOXML spreadsheet', () => {
+    test('ZIP magic bytes with .xlsx ext -> OOXML spreadsheet (ext-assisted)', () => {
       const zipBytes = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0x00, 0x00]);
       const result = detector.detect('/path/to/file.xlsx', zipBytes);
       expect(result.mime).toBe(
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       );
-      expect(result.confidence).toBe('high');
+      expect(result.confidence).toBe('medium');
+      expect(result.via).toBe('sniff+ext');
     });
 
-    test('ZIP magic bytes with .pptx ext -> OOXML presentation', () => {
+    test('ZIP magic bytes with .pptx ext -> OOXML presentation (ext-assisted)', () => {
       const zipBytes = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0x00, 0x00]);
       const result = detector.detect('/path/to/file.pptx', zipBytes);
       expect(result.mime).toBe(
         'application/vnd.openxmlformats-officedocument.presentationml.presentation'
       );
-      expect(result.confidence).toBe('high');
+      expect(result.confidence).toBe('medium');
+      expect(result.via).toBe('sniff+ext');
     });
 
     test('ZIP magic bytes with unknown ext -> application/zip', () => {

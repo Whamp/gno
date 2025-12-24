@@ -3,38 +3,58 @@
  * Uses parseOfficeAsync() with Buffer for in-memory extraction.
  */
 
-import { basename } from 'node:path'; // OK: no Bun path utils
 import { parseOfficeAsync } from 'officeparser';
 import { adapterError, corruptError, tooLargeError } from '../../errors';
+import { basenameWithoutExt } from '../../path';
 import type {
   Converter,
   ConvertInput,
   ConvertResult,
   ConvertWarning,
 } from '../../types';
+import { ADAPTER_VERSIONS } from '../../versions';
 
 const CONVERTER_ID = 'adapter/officeparser' as const;
-const CONVERTER_VERSION = '5.2.0';
+const CONVERTER_VERSION = ADAPTER_VERSIONS.officeparser;
 
 /** Supported MIME type */
 const PPTX_MIME =
   'application/vnd.openxmlformats-officedocument.presentationml.presentation';
 
 /**
- * Derive title from filename (without extension).
+ * Control character pattern built dynamically to avoid lint issues.
+ * Matches U+0000-U+001F and U+007F (all ASCII control chars).
  */
-function extractTitleFromFilename(relativePath: string): string {
-  const filename = basename(relativePath);
-  const lastDot = filename.lastIndexOf('.');
-  return lastDot > 0 ? filename.slice(0, lastDot) : filename;
+const CONTROL_CHAR_PATTERN = new RegExp(
+  `[${String.fromCharCode(0)}-${String.fromCharCode(31)}${String.fromCharCode(127)}]`,
+  'g'
+);
+
+/**
+ * Sanitize title for safe Markdown output.
+ * Removes control chars, collapses whitespace, ensures single line.
+ */
+function sanitizeTitle(title: string): string {
+  return title
+    .replace(/[\r\n]/g, ' ')
+    .replace(CONTROL_CHAR_PATTERN, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 /**
- * Format extracted PPTX text as Markdown.
+ * Get sanitized title from relative path.
  */
-function formatPptxAsMarkdown(text: string, relativePath: string): string {
-  const title = extractTitleFromFilename(relativePath);
-  return `# ${title}\n\n${text}`;
+function getTitleFromPath(relativePath: string): string {
+  return sanitizeTitle(basenameWithoutExt(relativePath));
+}
+
+/**
+ * Create zero-copy Buffer view of Uint8Array.
+ * Assumes input.bytes is immutable (contract requirement).
+ */
+function toBuffer(bytes: Uint8Array): Buffer {
+  return Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 }
 
 export const officeparserAdapter: Converter = {
@@ -52,8 +72,8 @@ export const officeparserAdapter: Converter = {
     }
 
     try {
-      // officeparser accepts Buffer
-      const buffer = Buffer.from(input.bytes);
+      // Zero-copy Buffer view (input.bytes is immutable by contract)
+      const buffer = toBuffer(input.bytes);
       const text = await parseOfficeAsync(buffer, {
         newlineDelimiter: '\n',
         ignoreNotes: false, // Include speaker notes
@@ -66,8 +86,11 @@ export const officeparserAdapter: Converter = {
         };
       }
 
+      // Get sanitized title
+      const title = getTitleFromPath(input.relativePath);
+
       // Convert plain text to Markdown structure
-      const markdown = formatPptxAsMarkdown(text, input.relativePath);
+      const markdown = `# ${title}\n\n${text}`;
 
       // NOTE: Do NOT canonicalize here - pipeline.ts handles all normalization
       const warnings: ConvertWarning[] = [];
@@ -79,7 +102,7 @@ export const officeparserAdapter: Converter = {
         ok: true,
         value: {
           markdown,
-          title: extractTitleFromFilename(input.relativePath),
+          title,
           meta: {
             converterId: CONVERTER_ID,
             converterVersion: CONVERTER_VERSION,

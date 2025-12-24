@@ -4,15 +4,17 @@
  *
  * The pipeline:
  * 1. Delegates to the registry to find and invoke the appropriate converter
- * 2. Canonicalizes the raw markdown output (centralized, not per-converter)
- * 3. Computes mirrorHash from canonical markdown
- * 4. Returns ConversionArtifact (not ConvertOutput)
+ * 2. Enforces pre-canonicalization output size limit (early bailout)
+ * 3. Canonicalizes the raw markdown output (centralized, not per-converter)
+ * 4. Enforces post-canonicalization output size limit (zip bomb protection)
+ * 5. Computes mirrorHash from canonical markdown
+ * 6. Returns ConversionArtifact (not ConvertOutput)
  *
  * CRITICAL: Canonicalization is ONLY done here, not in individual converters.
  */
 
 import { canonicalize, mirrorHash } from './canonicalize';
-import { internalError } from './errors';
+import { internalError, outputTooLargeError } from './errors';
 import { type ConverterRegistry, createDefaultRegistry } from './registry';
 import type { ConversionArtifact, ConvertInput, PipelineResult } from './types';
 
@@ -32,6 +34,7 @@ export class ConversionPipeline {
 
   /**
    * Ensure registry is initialized.
+   * Resets initPromise on failure to allow retry.
    */
   private async ensureRegistry(): Promise<ConverterRegistry> {
     if (this.registry) {
@@ -43,7 +46,15 @@ export class ConversionPipeline {
         this.registry = r;
       });
     }
-    await this.initPromise;
+
+    try {
+      await this.initPromise;
+    } catch (err) {
+      // Reset to allow retry on next call
+      this.initPromise = null;
+      throw err;
+    }
+
     // Safe: after await, this.registry is always set
     return this.registry as unknown as ConverterRegistry;
   }
@@ -51,46 +62,76 @@ export class ConversionPipeline {
   /**
    * Convert a file through the pipeline.
    * Returns ConversionArtifact with canonical markdown and mirrorHash.
+   *
+   * All exceptions are caught and mapped to INTERNAL errors.
    */
   async convert(input: ConvertInput): Promise<PipelineResult> {
-    let registry: ConverterRegistry;
     try {
-      registry = await this.ensureRegistry();
+      // 0. Initialize registry
+      const registry = await this.ensureRegistry();
+
+      // 1. Delegate to registry (finds converter + invokes)
+      const result = await registry.convert(input);
+
+      if (!result.ok) {
+        return result; // Pass through error
+      }
+
+      const maxChars = input.limits.maxOutputChars ?? 0;
+      const rawMarkdown = result.value.markdown;
+
+      // 2. Pre-canonicalization size check (early bailout to avoid expensive canonicalization)
+      if (maxChars > 0 && rawMarkdown.length > maxChars) {
+        return {
+          ok: false,
+          error: outputTooLargeError(input, 'pipeline', {
+            outputChars: rawMarkdown.length,
+            limitChars: maxChars,
+            stage: 'raw',
+          }),
+        };
+      }
+
+      // 3. Canonicalize the raw markdown output
+      const canonical = canonicalize(rawMarkdown);
+
+      // 4. Post-canonicalization size check (canonicalization may expand slightly)
+      if (maxChars > 0 && canonical.length > maxChars) {
+        return {
+          ok: false,
+          error: outputTooLargeError(input, 'pipeline', {
+            outputChars: canonical.length,
+            limitChars: maxChars,
+            stage: 'canonical',
+          }),
+        };
+      }
+
+      // 5. Compute content-addressed hash
+      const hash = mirrorHash(canonical);
+
+      // 6. Return artifact with all pipeline-computed fields
+      const artifact: ConversionArtifact = {
+        markdown: canonical,
+        mirrorHash: hash,
+        title: result.value.title,
+        languageHint: result.value.languageHint,
+        meta: result.value.meta,
+      };
+
+      return { ok: true, value: artifact };
     } catch (cause) {
+      // Catch any unhandled exceptions and map to INTERNAL error
       return {
         ok: false,
         error: internalError(
           input,
           'pipeline',
-          'Failed to initialize converter registry',
+          cause instanceof Error ? cause.message : 'Unknown pipeline error',
           cause
         ),
       };
     }
-
-    // 1. Delegate to registry (finds converter + invokes)
-    const result = await registry.convert(input);
-
-    if (!result.ok) {
-      return result; // Pass through error
-    }
-
-    // 2. Canonicalize the raw markdown output
-    const canonical = canonicalize(result.value.markdown);
-
-    // 3. Compute content-addressed hash
-    const hash = mirrorHash(canonical);
-
-    // 4. Return artifact with all pipeline-computed fields
-    const artifact: ConversionArtifact = {
-      markdown: canonical,
-      mirrorHash: hash,
-      title: result.value.title,
-      languageHint: result.value.languageHint,
-      meta: result.value.meta,
-    };
-
-    return { ok: true, value: artifact };
   }
 
   /**

@@ -29,6 +29,8 @@ export type ConvertInput = {
     maxBytes: number;
     /** Conversion timeout in ms (default: 60000) */
     timeoutMs: number;
+    /** Max output chars after conversion (zip bomb protection, default: 50M) */
+    maxOutputChars?: number;
   };
 };
 
@@ -122,4 +124,5 @@ export type PipelineResult =
 export const DEFAULT_LIMITS = {
   maxBytes: 100 * 1024 * 1024, // 100MB
   timeoutMs: 60_000, // 60 seconds
+  maxOutputChars: 50_000_000, // 50M chars (zip bomb protection)
 } as const;

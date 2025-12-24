@@ -19,6 +19,7 @@ const CONTROL_CHAR_PATTERN = new RegExp(
  * Canonicalize markdown to ensure deterministic output.
  *
  * Rules (PRD §8.4):
+ * 0. Strip BOM (U+FEFF) if present
  * 1. Normalize to \n newlines (no \r)
  * 2. Apply NFC Unicode normalization (cross-platform hash stability)
  * 3. Strip control chars U+0000-U+001F and U+007F except \n (U+000A) and \t (U+0009)
@@ -32,8 +33,11 @@ export function canonicalize(markdown: string): string {
     return '\n';
   }
 
+  // 0. Strip BOM if present (U+FEFF) - ensures deterministic hashing
+  let result = markdown.startsWith('\uFEFF') ? markdown.slice(1) : markdown;
+
   // 1. Normalize line endings: \r\n → \n, lone \r → \n
-  let result = markdown.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  result = result.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
   // 2. Apply NFC Unicode normalization
   result = result.normalize('NFC');

@@ -3,13 +3,13 @@
  * PRD §8.5 - MIME detection strategy
  */
 
-import { extname } from 'node:path'; // OK: no Bun path utils
+import { extname } from './path';
 
 export type MimeDetection = {
   mime: string;
   ext: string;
   confidence: 'high' | 'medium' | 'low';
-  via: 'sniff' | 'ext' | 'fallback';
+  via: 'sniff' | 'sniff+ext' | 'ext' | 'fallback';
 };
 
 export type MimeDetector = {
@@ -58,24 +58,36 @@ function startsWith(bytes: Uint8Array, prefix: Uint8Array): boolean {
   return true;
 }
 
+type SniffResult = {
+  mime: string;
+  /** True if sniff alone is sufficient (e.g., PDF); false if ext-assisted (OOXML) */
+  pureSniff: boolean;
+};
+
 /**
  * Sniff MIME type from magic bytes.
  * Returns detected MIME or undefined if no match.
  */
-function sniffMagicBytes(bytes: Uint8Array, ext: string): string | undefined {
-  // PDF detection
+function sniffMagicBytes(
+  bytes: Uint8Array,
+  ext: string
+): SniffResult | undefined {
+  // PDF detection - pure sniff, no extension needed
   if (startsWith(bytes, PDF_MAGIC)) {
-    return 'application/pdf';
+    return { mime: 'application/pdf', pureSniff: true };
   }
 
-  // ZIP/OOXML detection - use extension to distinguish
+  // ZIP/OOXML detection - requires extension to distinguish OOXML from generic ZIP
   if (startsWith(bytes, ZIP_MAGIC)) {
-    const ooxmlMime = OOXML_MAP[ext];
+    const ooxmlMime = Object.hasOwn(OOXML_MAP, ext)
+      ? OOXML_MAP[ext]
+      : undefined;
     if (ooxmlMime) {
-      return ooxmlMime;
+      // ZIP magic + OOXML extension = extension-assisted sniff
+      return { mime: ooxmlMime, pureSniff: false };
     }
     // Generic ZIP (not OOXML)
-    return 'application/zip';
+    return { mime: 'application/zip', pureSniff: true };
   }
 
   return;
@@ -84,28 +96,34 @@ function sniffMagicBytes(bytes: Uint8Array, ext: string): string | undefined {
 /**
  * Default MIME detector implementation.
  * Detection priority:
- * 1. Magic bytes (sniff) → high confidence
- * 2. Extension map → medium confidence
- * 3. Fallback application/octet-stream → low confidence
+ * 1. Magic bytes (sniff) → high confidence for pure sniff
+ * 2. Magic bytes + extension → medium confidence (OOXML via ZIP+ext)
+ * 3. Extension map → medium confidence
+ * 4. Fallback application/octet-stream → low confidence
  */
 export class DefaultMimeDetector implements MimeDetector {
   detect(path: string, bytes: Uint8Array): MimeDetection {
-    const ext = extname(path).toLowerCase();
+    const ext = extname(path);
 
     // 1. Try magic byte sniffing (first 512 bytes sufficient)
-    const sniffBytes = bytes.slice(0, 512);
+    // Use subarray for zero-copy view (no allocation)
+    const sniffBytes = bytes.subarray(0, 512);
     const sniffed = sniffMagicBytes(sniffBytes, ext);
     if (sniffed) {
       return {
-        mime: sniffed,
+        mime: sniffed.mime,
         ext,
-        confidence: 'high',
-        via: 'sniff',
+        // Pure sniff (e.g., PDF) is high confidence
+        // Extension-assisted sniff (OOXML) is medium confidence
+        confidence: sniffed.pureSniff ? 'high' : 'medium',
+        via: sniffed.pureSniff ? 'sniff' : 'sniff+ext',
       };
     }
 
     // 2. Try extension mapping
-    const extMime = EXTENSION_MAP[ext];
+    const extMime = Object.hasOwn(EXTENSION_MAP, ext)
+      ? EXTENSION_MAP[ext]
+      : undefined;
     if (extMime) {
       return {
         mime: extMime,
@@ -138,7 +156,8 @@ export function getDefaultMimeDetector(): MimeDetector {
 /** Supported extensions for conversion */
 export const SUPPORTED_EXTENSIONS = Object.keys(EXTENSION_MAP);
 
-/** Check if extension is supported for conversion */
+/** Check if extension is supported for conversion (prototype-safe) */
 export function isSupportedExtension(ext: string): boolean {
-  return ext.toLowerCase() in EXTENSION_MAP;
+  const normalized = ext.toLowerCase();
+  return Object.hasOwn(EXTENSION_MAP, normalized);
 }
