@@ -2,13 +2,28 @@
  * Integration tests for SQLite adapter.
  */
 
-import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
-import { mkdtemp, rm } from 'node:fs/promises';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  setDefaultTimeout,
+  test,
+} from 'bun:test';
+
+// Windows SQLite file handles may not release immediately after close()
+// Increase timeout to allow safeRm retries in afterEach hooks
+if (process.platform === 'win32') {
+  setDefaultTimeout(15_000);
+}
+
+import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Collection, Context } from '../../src/config/types';
 import { SqliteAdapter } from '../../src/store';
 import type { ChunkInput, DocumentInput } from '../../src/store/types';
+import { safeRm } from '../helpers/cleanup';
 
 describe('SqliteAdapter', () => {
   let adapter: SqliteAdapter;
@@ -23,7 +38,7 @@ describe('SqliteAdapter', () => {
 
   afterEach(async () => {
     await adapter.close();
-    await rm(testDir, { recursive: true, force: true });
+    await safeRm(testDir);
   });
 
   describe('lifecycle', () => {
