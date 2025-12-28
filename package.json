@@ -19,6 +19,7 @@
     "test:coverage": "bun test --coverage",
     "test:coverage:html": "bun test --coverage --html",
     "typecheck": "tsgo --noEmit",
+    "lint:typeaware": "bun x oxlint --type-aware",
     "reset": "bun run src/index.ts reset --confirm"
   },
   "devDependencies": {
@@ -29,7 +30,8 @@
     "ajv-formats": "^3.0.1",
     "evalite": "^1.0.0-beta.15",
     "lefthook": "^2.0.12",
-    "ultracite": "6.4.1"
+    "oxlint-tsgolint": "^0.10.0",
+    "ultracite": "^6.5.0"
   },
   "peerDependencies": {
     "typescript": "^5"
