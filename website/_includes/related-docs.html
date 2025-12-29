@@ -1,0 +1,124 @@
+{% comment %}
+Related documentation links for internal linking SEO
+Shows contextual "next steps" based on current page
+{% endcomment %}
+
+{% if page.url contains '/docs/' %}
+<aside class="related-docs" aria-label="Related documentation">
+  <h2 class="related-docs-title">Continue Reading</h2>
+
+  <div class="related-docs-grid">
+    {% if page.url contains 'QUICKSTART' %}
+      <a href="{{ '/docs/CLI/' | relative_url }}" class="related-docs-card">
+        <span class="related-docs-icon">📖</span>
+        <span class="related-docs-label">CLI Reference</span>
+        <span class="related-docs-desc">All commands and options</span>
+      </a>
+      <a href="{{ '/docs/CONFIGURATION/' | relative_url }}" class="related-docs-card">
+        <span class="related-docs-icon">⚙️</span>
+        <span class="related-docs-label">Configuration</span>
+        <span class="related-docs-desc">Customize collections and models</span>
+      </a>
+    {% elsif page.url contains 'INSTALLATION' %}
+      <a href="{{ '/docs/QUICKSTART/' | relative_url }}" class="related-docs-card">
+        <span class="related-docs-icon">🚀</span>
+        <span class="related-docs-label">Quick Start</span>
+        <span class="related-docs-desc">Get searching in 5 minutes</span>
+      </a>
+      <a href="{{ '/docs/TROUBLESHOOTING/' | relative_url }}" class="related-docs-card">
+        <span class="related-docs-icon">🔧</span>
+        <span class="related-docs-label">Troubleshooting</span>
+        <span class="related-docs-desc">Fix common issues</span>
+      </a>
+    {% elsif page.url contains 'CLI' %}
+      <a href="{{ '/docs/MCP/' | relative_url }}" class="related-docs-card">
+        <span class="related-docs-icon">🌐</span>
+        <span class="related-docs-label">MCP Integration</span>
+        <span class="related-docs-desc">Connect to AI assistants</span>
+      </a>
+      <a href="{{ '/docs/USE-CASES/' | relative_url }}" class="related-docs-card">
+        <span class="related-docs-icon">💡</span>
+        <span class="related-docs-label">Use Cases</span>
+        <span class="related-docs-desc">Real-world workflows</span>
+      </a>
+    {% elsif page.url contains 'MCP' %}
+      <a href="{{ '/docs/CLI/' | relative_url }}" class="related-docs-card">
+        <span class="related-docs-icon">📖</span>
+        <span class="related-docs-label">CLI Reference</span>
+        <span class="related-docs-desc">All commands and options</span>
+      </a>
+      <a href="{{ '/docs/ARCHITECTURE/' | relative_url }}" class="related-docs-card">
+        <span class="related-docs-icon">🏗️</span>
+        <span class="related-docs-label">Architecture</span>
+        <span class="related-docs-desc">How GNO works</span>
+      </a>
+    {% elsif page.url contains 'CONFIGURATION' %}
+      <a href="{{ '/docs/CLI/' | relative_url }}" class="related-docs-card">
+        <span class="related-docs-icon">📖</span>
+        <span class="related-docs-label">CLI Reference</span>
+        <span class="related-docs-desc">All commands and options</span>
+      </a>
+      <a href="{{ '/docs/USE-CASES/' | relative_url }}" class="related-docs-card">
+        <span class="related-docs-icon">💡</span>
+        <span class="related-docs-label">Use Cases</span>
+        <span class="related-docs-desc">Real-world workflows</span>
+      </a>
+    {% elsif page.url contains 'ARCHITECTURE' %}
+      <a href="{{ '/docs/GLOSSARY/' | relative_url }}" class="related-docs-card">
+        <span class="related-docs-icon">📚</span>
+        <span class="related-docs-label">Glossary</span>
+        <span class="related-docs-desc">Key terms explained</span>
+      </a>
+      <a href="{{ '/docs/MCP/' | relative_url }}" class="related-docs-card">
+        <span class="related-docs-icon">🌐</span>
+        <span class="related-docs-label">MCP Integration</span>
+        <span class="related-docs-desc">Connect to AI assistants</span>
+      </a>
+    {% elsif page.url contains 'USE-CASES' %}
+      <a href="{{ '/docs/CLI/' | relative_url }}" class="related-docs-card">
+        <span class="related-docs-icon">📖</span>
+        <span class="related-docs-label">CLI Reference</span>
+        <span class="related-docs-desc">All commands and options</span>
+      </a>
+      <a href="{{ '/docs/MCP/' | relative_url }}" class="related-docs-card">
+        <span class="related-docs-icon">🌐</span>
+        <span class="related-docs-label">MCP Integration</span>
+        <span class="related-docs-desc">Connect to AI assistants</span>
+      </a>
+    {% elsif page.url contains 'TROUBLESHOOTING' %}
+      <a href="{{ '/docs/INSTALLATION/' | relative_url }}" class="related-docs-card">
+        <span class="related-docs-icon">📥</span>
+        <span class="related-docs-label">Installation</span>
+        <span class="related-docs-desc">Setup instructions</span>
+      </a>
+      <a href="{{ '/docs/CONFIGURATION/' | relative_url }}" class="related-docs-card">
+        <span class="related-docs-icon">⚙️</span>
+        <span class="related-docs-label">Configuration</span>
+        <span class="related-docs-desc">Customize GNO</span>
+      </a>
+    {% elsif page.url contains 'GLOSSARY' %}
+      <a href="{{ '/docs/ARCHITECTURE/' | relative_url }}" class="related-docs-card">
+        <span class="related-docs-icon">🏗️</span>
+        <span class="related-docs-label">Architecture</span>
+        <span class="related-docs-desc">How GNO works</span>
+      </a>
+      <a href="{{ '/docs/QUICKSTART/' | relative_url }}" class="related-docs-card">
+        <span class="related-docs-icon">🚀</span>
+        <span class="related-docs-label">Quick Start</span>
+        <span class="related-docs-desc">Get started now</span>
+      </a>
+    {% else %}
+      <a href="{{ '/docs/QUICKSTART/' | relative_url }}" class="related-docs-card">
+        <span class="related-docs-icon">🚀</span>
+        <span class="related-docs-label">Quick Start</span>
+        <span class="related-docs-desc">Get searching in 5 minutes</span>
+      </a>
+      <a href="{{ '/docs/CLI/' | relative_url }}" class="related-docs-card">
+        <span class="related-docs-icon">📖</span>
+        <span class="related-docs-label">CLI Reference</span>
+        <span class="related-docs-desc">All commands and options</span>
+      </a>
+    {% endif %}
+  </div>
+</aside>
+{% endif %}
