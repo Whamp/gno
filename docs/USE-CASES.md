@@ -51,7 +51,7 @@ All local. All private. Your data never leaves your machine.
 - **Scales to 15,000+ files** - SQLite + FTS5 handles it
 - **Query expansion** - LLM rewrites your question for better matches
 - **Reranking** - Cross-encoder picks the truly relevant results
-- **Skills** - Native integration for Claude Code, Codex, OpenCode
+- **Skills** - Native integration for Claude Code, Codex, OpenCode via CLI (no context pollution)
 - **MCP standard** - Works with Claude Desktop, Cursor, any MCP client
 
 Your second brain finally becomes accessible.
@@ -194,11 +194,13 @@ gno context add "personal:" "Personal notes and journal"
 
 ## AI Agent Integration
 
-Use GNO as a knowledge base for AI assistants like Claude Code, Codex, or any MCP-compatible agent.
+Use GNO as a knowledge base for AI assistants like Claude Code, Codex, OpenCode, or any MCP-compatible agent.
 
 ### Option 1: Skill Installation (Recommended)
 
-Install GNO as a skill for Claude Code or Codex:
+Skills integrate directly via CLI - the agent runs `gno search` or `gno query` as a tool. Results come back without polluting your context window with MCP protocol overhead.
+
+Install GNO as a skill for Claude Code, Codex, or OpenCode:
 
 ```bash
 # Install for Claude Code (project scope)

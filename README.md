@@ -90,9 +90,21 @@ gno query "meeting notes on user feedback" --json -n 5
 gno search "API design" --files --min-score 0.3
 ```
 
-### MCP Server Integration
+### Skill Installation (Recommended for Claude Code/Codex/OpenCode)
 
-Exposes a stable MCP server for tighter integration with LLM applications.
+Skills integrate via CLI - the agent runs GNO commands directly. No MCP overhead, no context pollution.
+
+```bash
+gno skill install --scope user    # User-wide for Claude Code
+gno skill install --target codex  # For Codex
+gno skill install --target all    # Both
+```
+
+After install, restart your agent. It will detect GNO and can search your indexed documents.
+
+### MCP Server (For Claude Desktop/Cursor)
+
+Exposes an MCP server for GUI-based AI applications.
 
 **Tools Exposed:**
 *   `gno_search` (BM25)
