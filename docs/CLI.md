@@ -122,13 +122,14 @@ Retrieve document content by reference. Supports multiple reference formats:
 gno get abc123def456
 gno get "gno://notes/projects/readme.md"
 gno get notes/projects/readme.md --json
-gno get abc123 --from 50 -n 100  # Lines 50-150
+gno get abc123 --from 50 -l 100  # Lines 50-150
 ```
 
 Options:
 - `--from <line>` - Start output at line number (1-indexed)
-- `-n, --limit <n>` - Limit lines returned
-- `--source` - Include source file metadata in output
+- `-l, --limit <lines>` - Limit to N lines
+- `--line-numbers` - Prefix lines with numbers
+- `--source` - Include source metadata
 
 ### gno multi-get
 
@@ -169,11 +170,11 @@ gno collection add ~/code --name code --pattern "**/*.ts" --exclude node_modules
 ```
 
 Options:
-- `--name <name>` - Collection identifier (required)
+- `-n, --name <name>` - Collection identifier (required)
 - `--pattern <glob>` - File matching pattern
-- `--include <csv>` - Extension allowlist
-- `--exclude <csv>` - Exclude patterns
-- `--language <code>` - BCP-47 language hint
+- `--include <exts>` - Extension allowlist (CSV)
+- `--exclude <patterns>` - Exclude patterns (CSV)
+- `--update <cmd>` - Shell command to run before indexing
 
 ### gno collection list
 
@@ -210,13 +211,10 @@ Re-index all collections (incremental). Only processes files changed since last 
 gno update
 gno update --yes            # Non-interactive
 gno update --git-pull       # Pull git repos first
-gno update --models-pull    # Auto-download missing models
 ```
 
 Options:
-- `--git-pull` - Run `git pull` in collections that are git repositories
-- `--models-pull` - Download models if not cached
-- `--no-embed` - Skip embedding generation (BM25 only)
+- `--git-pull` - Run `git pull` in git repositories
 
 ### gno index
 

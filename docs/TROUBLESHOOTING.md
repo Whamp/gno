@@ -172,13 +172,13 @@ This shows scoring breakdown for each result:
 |---------|-------|-----|
 | High BM25, low vector | Query too keyword-specific | Use `gno query` not `gno search` |
 | Low BM25, high vector | Query too abstract | Add specific keywords |
-| Good scores, wrong order | Fusion needs tuning | Use `--rerank` |
+| Good scores, wrong order | Fusion needs tuning | Use `gno query` (reranking on by default) |
 | All low scores | Content not indexed | Check `gno ls`, re-index |
 
 **Improve Results:**
 
 1. **Add contexts** - Semantic hints improve relevance
-2. **Use reranking** - `gno query "text" --rerank` (slower but better)
+2. **Use reranking** - `gno query` has reranking on by default (slower but better)
 3. **Choose right mode:**
    - `gno search` - Exact keyword matching
    - `gno vsearch` - Conceptual/semantic matching

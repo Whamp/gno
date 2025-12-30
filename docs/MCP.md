@@ -8,7 +8,7 @@ Use GNO as an MCP server for AI assistants like Claude Desktop, Cursor, and othe
 
 MCP (Model Context Protocol) allows AI assistants to access external tools and resources. GNO provides:
 
-- **Tools**: search, vsearch, query, get, multi_get, status
+- **Tools**: gno_search, gno_vsearch, gno_query, gno_get, gno_multi_get, gno_status
 - **Resources**: Access documents via `gno://collection/path`
 
 ## Claude Desktop Setup
@@ -54,7 +54,7 @@ The server uses stdio transport (JSON-RPC 2.0 over stdin/stdout).
 
 ## Available Tools
 
-### gno.search
+### gno_search
 
 BM25 keyword search.
 
@@ -64,7 +64,7 @@ Collection: (optional)
 Limit: 5 (default)
 ```
 
-### gno.vsearch
+### gno_vsearch
 
 Vector semantic search.
 
@@ -72,7 +72,7 @@ Vector semantic search.
 Query: "how to handle errors gracefully"
 ```
 
-### gno.query
+### gno_query
 
 Hybrid search (BM25 + vector).
 
@@ -80,23 +80,23 @@ Hybrid search (BM25 + vector).
 Query: "database optimization"
 ```
 
-### gno.get
+### gno_get
 
 Retrieve document by ID.
 
 ```
-Docid: "abc123def456"
+ref: "abc123def456"
 ```
 
-### gno.multi_get
+### gno_multi_get
 
 Retrieve multiple documents.
 
 ```
-Docids: ["abc123", "def456"]
+refs: ["abc123", "def456"]
 ```
 
-### gno.status
+### gno_status
 
 Check index health.
 
@@ -122,7 +122,7 @@ Ask the AI assistant:
 
 > "Search my notes for meeting decisions from last week"
 
-The assistant will use `gno.search` or `gno.query` to find relevant documents.
+The assistant will use `gno_search` or `gno_query` to find relevant documents.
 
 ### Getting Document Content
 
@@ -130,7 +130,7 @@ Ask:
 
 > "Get the contents of my project README"
 
-The assistant uses `gno.get` with the docid from search results.
+The assistant uses `gno_get` with the docid from search results.
 
 ### Research Workflow
 

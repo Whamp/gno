@@ -95,12 +95,12 @@ gno search "API design" --files --min-score 0.3
 Exposes a stable MCP server for tighter integration with LLM applications.
 
 **Tools Exposed:**
-*   `gno.search` (BM25)
-*   `gno.vsearch` (Vector)
-*   `gno.query` (Hybrid)
-*   `gno.get` (Document retrieval)
-*   `gno.multi_get` (Batch retrieval)
-*   `gno.status` (Index health)
+*   `gno_search` (BM25)
+*   `gno_vsearch` (Vector)
+*   `gno_query` (Hybrid)
+*   `gno_get` (Document retrieval)
+*   `gno_multi_get` (Batch retrieval)
+*   `gno_status` (Index health)
 
 **Example Claude Desktop Configuration** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
 
