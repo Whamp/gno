@@ -52,12 +52,12 @@ Once connected, your AI assistant can:
 
 | Tool | Description |
 |------|-------------|
-| `search` | BM25 keyword search |
-| `vsearch` | Vector similarity search |
-| `query` | Hybrid search |
-| `get` | Retrieve document content |
-| `multi_get` | Batch document retrieval |
-| `status` | Check index status |
+| `gno_search` | BM25 keyword search |
+| `gno_vsearch` | Vector similarity search |
+| `gno_query` | Hybrid search |
+| `gno_get` | Retrieve document content |
+| `gno_multi_get` | Batch document retrieval |
+| `gno_status` | Check index status |
 
 ## Example Prompts
 
