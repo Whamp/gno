@@ -32,7 +32,7 @@ sync-docs:
 		echo 'permalink: /changelog/'; \
 		echo '---'; \
 		echo ''; \
-		cat ../CHANGELOG.md; \
+		tail -n +3 ../CHANGELOG.md; \
 		echo ''; \
 		echo '[View on GitHub](https://github.com/gmickel/gno/blob/main/CHANGELOG.md)'; \
 	} > changelog.md
