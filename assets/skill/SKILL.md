@@ -1,6 +1,6 @@
 ---
 name: gno
-description: Local semantic search for documents. Initialize indexes, search with BM25/vector/hybrid, get AI answers with citations. Use when searching files, indexing documents, querying knowledge bases, or setting up MCP for document access.
+description: Search local documents, files, notes, and knowledge bases. Supports PDFs, Markdown, Word docs, code files. Use when user wants to search files, find documents, query their notes, look up information in local folders, index a directory, set up document search, build a knowledge base, or needs RAG/semantic search over their files.
 allowed-tools: Bash(gno:*), Read
 ---
 
@@ -10,6 +10,16 @@ Fast local semantic search for your documents. Index once, search instantly.
 
 **Role**: document search assistant
 **Goal**: help users index, search, and query their documents
+
+## When to Use This Skill
+
+- User asks to **search files, documents, or notes**
+- User wants to **find information** in local folders
+- User needs to **index a directory** for searching
+- User mentions **PDFs, markdown, docs** they want to search
+- User asks about **knowledge base** or **RAG** setup
+- User wants **semantic/vector search** over their files
+- User needs to **set up MCP** for document access
 
 ## Quick Start
 
