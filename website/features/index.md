@@ -14,7 +14,11 @@ permalink: /features/
 <section class="features">
   <div class="features-grid">
     {% for feature in site.data.features %}
+    {% if feature.link %}
+    <a href="{{ feature.link | relative_url }}" class="feature-card">
+    {% else %}
     <a href="{{ '/features/' | append: feature.slug | append: '/' | relative_url }}" class="feature-card">
+    {% endif %}
       <div class="feature-card-icon">{% include icons.html icon=feature.icon size="24" %}</div>
       <h3 class="feature-card-title">{{ feature.title }}</h3>
       <p class="feature-card-description">{{ feature.description | truncate: 120 }}</p>
