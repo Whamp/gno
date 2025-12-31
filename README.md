@@ -185,7 +185,7 @@ Requires **Bun** >= 1.0.0.
 bun install -g @gmickel/gno
 ```
 
-**macOS users**: For optimal vector search performance, install Homebrew SQLite:
+**macOS users**: Vector search requires Homebrew SQLite (Apple's bundled SQLite lacks extension support):
 ```sh
 brew install sqlite3
 ```
