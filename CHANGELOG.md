@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2025-12-31
+
+### Fixed
+- CI: Serial test execution on Windows fixes exit code issue
+- CI: TTY workaround for macOS/Ubuntu test output
+- CI: Use native Bun ecosystem for Dependabot
+
+### Changed
+- Use npm trusted publishing (OIDC) instead of tokens
+
+## [0.3.0] - 2025-12-31
+
+### Added
+- 10 MCP installation targets (Claude Desktop, Claude Code, Cursor, Zed, Windsurf, etc.)
+- LibreChat YAML config support
+- Incremental sync (only new/modified files re-indexed)
+
 ## [0.2.1] - 2025-12-31
 
 ### Added
