@@ -393,13 +393,8 @@ describe('CLI smoke tests', () => {
     });
   });
 
-  describe('stub commands', () => {
-    test('mcp returns not implemented', async () => {
-      const { code, stderr } = await cli('mcp');
-      expect(code).toBe(2);
-      expect(stderr).toContain('not yet implemented');
-    });
-  });
+  // Note: MCP server tests skipped - MCP blocks on stdin and cannot be
+  // tested via in-process runCli(). Use subprocess tests for MCP.
 
   describe('global options', () => {
     test('--no-color is accepted', async () => {
@@ -526,9 +521,5 @@ describe('CLI error envelope format', () => {
     expect(stderr).toContain('does not exist');
   });
 
-  test('runtime error from stub commands', async () => {
-    const { code, stderr } = await cli('mcp');
-    expect(code).toBe(2);
-    expect(stderr).toContain('not yet implemented');
-  });
+  // Note: MCP runtime test removed - MCP is now implemented and blocks on stdin
 });
