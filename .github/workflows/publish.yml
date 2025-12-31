@@ -119,6 +119,13 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      # Need Node.js 24+ for npm OIDC support (npm >= 11.5.1)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
@@ -128,5 +135,5 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Publish to npm
-        run: npm publish --access public
+        run: npm publish --provenance --access public
         # No token needed - uses OIDC trusted publishing
