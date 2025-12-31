@@ -1359,6 +1359,42 @@ code:not(pre code) {
 }
 
 // -----------------------------------------------------------------------------
+// Quick Start Section
+// -----------------------------------------------------------------------------
+
+.quickstart {
+  padding: $space-8 0;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.quickstart-content {
+  .highlight {
+    margin: 0;
+  }
+
+  .c {
+    color: var(--color-text-tertiary);
+  }
+}
+
+.quickstart-link {
+  text-align: center;
+  margin-top: $space-5;
+  margin-bottom: 0;
+
+  a {
+    font-family: $font-sans;
+    font-weight: 500;
+    color: var(--color-accent);
+
+    &:hover {
+      color: var(--color-accent-hover);
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
 // Demos Section
 // -----------------------------------------------------------------------------
 

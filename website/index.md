@@ -30,21 +30,3 @@ Once connected, you can ask Claude things like:
 
 [Full MCP setup guide →](/docs/MCP/)
 
-## Quick Start
-
-```bash
-# Install
-bun install -g @gmickel/gno
-
-# Initialize with your notes folder
-gno init ~/notes --name notes
-
-# Index documents (BM25 + vectors)
-gno index
-
-# Search
-gno query "authentication best practices"
-gno ask "summarize the API discussion" --answer
-```
-
-[Read the Full Documentation](/docs/QUICKSTART/)

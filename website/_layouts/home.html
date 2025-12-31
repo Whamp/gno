@@ -29,6 +29,30 @@ layout: default
     </div>
   </section>
 
+  <section class="quickstart">
+    <h2 class="section-title">Quick Start</h2>
+    <div class="quickstart-content">
+      <div class="highlight">
+        <pre><code><span class="c"># Install</span>
+bun install -g @gmickel/gno
+
+<span class="c"># macOS: Vector search requires Homebrew SQLite</span>
+brew install sqlite3
+
+<span class="c"># Initialize with your notes folder</span>
+gno init ~/notes --name notes
+
+<span class="c"># Index documents (BM25 + vectors)</span>
+gno index
+
+<span class="c"># Search</span>
+gno query "authentication best practices"
+gno ask "summarize the API discussion" --answer</code></pre>
+      </div>
+      <p class="quickstart-link"><a href="{{ '/docs/QUICKSTART/' | relative_url }}">Read the Full Documentation →</a></p>
+    </div>
+  </section>
+
   <section class="demos">
     <h2 class="section-title">See It In Action</h2>
 
