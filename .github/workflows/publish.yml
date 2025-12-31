@@ -59,8 +59,16 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
-      - name: Test
-        run: bun test
+      - name: Test (Unix)
+        if: matrix.os != 'windows-latest'
+        run: bun test | cat
+        env:
+          CI: 'true'
+
+      - name: Test (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: cmd
+        run: bun test --concurrency 1
         env:
           CI: 'true'
 
