@@ -64,9 +64,12 @@ export function rrfFuse(
   );
 
   // Process BM25 sources
+  // Original query gets 2x weight to prevent dilution by expansion variants
   for (const input of bm25Inputs) {
     const weight =
-      input.source === 'bm25' ? config.bm25Weight : config.bm25Weight * 0.5;
+      input.source === 'bm25'
+        ? config.bm25Weight * 2.0
+        : config.bm25Weight * 0.5;
 
     for (const result of input.results) {
       const key = `${result.mirrorHash}:${result.seq}`;
@@ -98,8 +101,9 @@ export function rrfFuse(
   }
 
   // Process vector sources
+  // Original query gets 2x weight to prevent dilution by expansion variants
   for (const input of vectorInputs) {
-    let weight = config.vecWeight;
+    let weight = config.vecWeight * 2.0; // Default for original vector
     if (input.source === 'vector_variant') {
       weight = config.vecWeight * 0.5;
     } else if (input.source === 'hyde') {
@@ -135,15 +139,22 @@ export function rrfFuse(
     }
   }
 
-  // Apply top-rank bonus
+  // Apply tiered top-rank bonus
+  // Rewards documents ranking highly in ANY list (not requiring both)
   for (const candidate of candidates.values()) {
-    if (
-      candidate.bm25Rank !== null &&
-      candidate.bm25Rank <= config.topRankThreshold &&
-      candidate.vecRank !== null &&
-      candidate.vecRank <= config.topRankThreshold
-    ) {
+    const bm25Rank = candidate.bm25Rank;
+    const vecRank = candidate.vecRank;
+
+    // Tier 1: #1 in any list
+    if (bm25Rank === 1 || vecRank === 1) {
       candidate.fusionScore += config.topRankBonus;
+    }
+    // Tier 2: Top-3 in any list (but not #1)
+    else if (
+      (bm25Rank !== null && bm25Rank <= config.topRankThreshold) ||
+      (vecRank !== null && vecRank <= config.topRankThreshold)
+    ) {
+      candidate.fusionScore += config.topRankBonus * 0.4; // 40% of tier 1
     }
   }
 

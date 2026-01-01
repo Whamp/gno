@@ -32,11 +32,16 @@ export const DEFAULT_EXCLUDES: readonly string[] = [
 ];
 
 /** Valid FTS tokenizer options */
-export const FTS_TOKENIZERS = ['unicode61', 'porter', 'trigram'] as const;
+export const FTS_TOKENIZERS = [
+  'unicode61',
+  'porter',
+  'trigram',
+  'snowball english',
+] as const;
 export type FtsTokenizer = (typeof FTS_TOKENIZERS)[number];
 
-/** Default FTS tokenizer */
-export const DEFAULT_FTS_TOKENIZER: FtsTokenizer = 'unicode61';
+/** Default FTS tokenizer - snowball english for multilingual stemming */
+export const DEFAULT_FTS_TOKENIZER: FtsTokenizer = 'snowball english';
 
 /**
  * BCP-47 language tag pattern (simplified, case-insensitive).
@@ -173,7 +178,7 @@ export const DEFAULT_MODEL_PRESETS: ModelPreset[] = [
     name: 'Slim (Fast, ~1GB)',
     embed: 'hf:gpustack/bge-m3-GGUF/bge-m3-Q4_K_M.gguf',
     rerank:
-      'hf:gpustack/bge-reranker-v2-m3-GGUF/bge-reranker-v2-m3-Q4_K_M.gguf',
+      'hf:ggml-org/Qwen3-Reranker-0.6B-Q8_0-GGUF/qwen3-reranker-0.6b-q8_0.gguf',
     gen: 'hf:unsloth/Qwen3-1.7B-GGUF/Qwen3-1.7B-Q4_K_M.gguf',
   },
   {
@@ -181,7 +186,7 @@ export const DEFAULT_MODEL_PRESETS: ModelPreset[] = [
     name: 'Balanced (Default, ~2GB)',
     embed: 'hf:gpustack/bge-m3-GGUF/bge-m3-Q4_K_M.gguf',
     rerank:
-      'hf:gpustack/bge-reranker-v2-m3-GGUF/bge-reranker-v2-m3-Q4_K_M.gguf',
+      'hf:ggml-org/Qwen3-Reranker-0.6B-Q8_0-GGUF/qwen3-reranker-0.6b-q8_0.gguf',
     gen: 'hf:ggml-org/SmolLM3-3B-GGUF/SmolLM3-Q4_K_M.gguf',
   },
   {
@@ -189,7 +194,7 @@ export const DEFAULT_MODEL_PRESETS: ModelPreset[] = [
     name: 'Quality (Best Answers, ~2.5GB)',
     embed: 'hf:gpustack/bge-m3-GGUF/bge-m3-Q4_K_M.gguf',
     rerank:
-      'hf:gpustack/bge-reranker-v2-m3-GGUF/bge-reranker-v2-m3-Q4_K_M.gguf',
+      'hf:ggml-org/Qwen3-Reranker-0.6B-Q8_0-GGUF/qwen3-reranker-0.6b-q8_0.gguf',
     gen: 'hf:unsloth/Qwen3-4B-Instruct-2507-GGUF/Qwen3-4B-Instruct-2507-Q4_K_M.gguf',
   },
 ];

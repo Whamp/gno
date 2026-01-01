@@ -18,6 +18,7 @@ export type StoreErrorCode =
   | 'CONSTRAINT_VIOLATION'
   | 'MIGRATION_FAILED'
   | 'CONNECTION_FAILED'
+  | 'EXTENSION_LOAD_FAILED'
   | 'QUERY_FAILED'
   | 'TRANSACTION_FAILED'
   | 'INVALID_INPUT'
@@ -195,7 +196,11 @@ export interface FtsSearchOptions {
   limit?: number;
   /** Filter by collection */
   collection?: string;
-  /** Filter by language */
+  /**
+   * Language hint (reserved for future use).
+   * Note: FTS5 snowball tokenizer is language-aware at index time,
+   * so runtime language filtering is not currently implemented.
+   */
   language?: string;
   /** Include snippet with highlights */
   snippet?: boolean;
@@ -469,7 +474,7 @@ export interface StorePort {
   // ─────────────────────────────────────────────────────────────────────────
 
   /**
-   * Search chunks using FTS5.
+   * Search documents using FTS5 (document-level).
    */
   searchFts(
     query: string,
@@ -477,8 +482,23 @@ export interface StorePort {
   ): Promise<StoreResult<FtsResult[]>>;
 
   /**
+   * Sync a document to documents_fts for full-text search.
+   * Must be called after document and content are both upserted.
+   */
+  syncDocumentFts(
+    collection: string,
+    relPath: string
+  ): Promise<StoreResult<void>>;
+
+  /**
+   * Rebuild entire documents_fts index from scratch.
+   * Use after migration or for recovery. Returns count of indexed docs.
+   */
+  rebuildAllDocumentsFts(): Promise<StoreResult<number>>;
+
+  /**
+   * @deprecated Use syncDocumentFts for document-level FTS.
    * Rebuild FTS index for a mirror hash.
-   * Called after upserting chunks.
    */
   rebuildFtsForHash(mirrorHash: string): Promise<StoreResult<void>>;
 
