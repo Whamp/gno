@@ -24,6 +24,8 @@ All endpoints are JSON-based and run entirely on your machine.
 
 ## Quick Reference
 
+### Read Operations
+
 | Endpoint | Method | Description |
 |:---------|:-------|:------------|
 | `/api/health` | GET | Health check |
@@ -40,13 +42,52 @@ All endpoints are JSON-based and run entirely on your machine.
 | `/api/models/status` | GET | Download status |
 | `/api/models/pull` | POST | Start model download |
 
+### Write Operations
+
+| Endpoint | Method | Description |
+|:---------|:-------|:------------|
+| `/api/collections` | POST | Add new collection |
+| `/api/collections/:name` | DELETE | Remove collection |
+| `/api/sync` | POST | Trigger re-index |
+| `/api/docs` | POST | Create new document |
+| `/api/docs/:id/deactivate` | POST | Unindex document |
+| `/api/jobs/:id` | GET | Poll job status |
+
 ---
 
-## Authentication
+## Authentication & Security
 
-None required. The API binds to `127.0.0.1` only and is not accessible from the network.
+The API binds to `127.0.0.1` only and is not accessible from the network.
 
-> **Security**: Cross-origin requests are blocked. Only same-origin requests from `localhost` are allowed.
+### CSRF Protection
+
+All mutating requests (POST, DELETE) require one of:
+
+1. **Same-origin request** — No `Origin` header (curl, scripts)
+2. **Valid Origin** — `Origin: http://localhost:<port>` or `http://127.0.0.1:<port>`
+3. **API Token** — `X-GNO-Token` header (for non-browser clients)
+
+Cross-origin requests from other domains are rejected with `403 Forbidden`.
+
+### Token Authentication
+
+For non-browser clients (Raycast, scripts), set the `GNO_API_TOKEN` environment variable:
+
+```bash
+export GNO_API_TOKEN="your-secret-token"
+gno serve
+```
+
+Then include the token in requests:
+
+```bash
+curl -X POST http://localhost:3000/api/collections \
+  -H "X-GNO-Token: your-secret-token" \
+  -H "Content-Type: application/json" \
+  -d '{"path": "/path/to/folder"}'
+```
+
+> **Note**: Token auth is optional. Requests without an `Origin` header (like curl) work without a token.
 
 ---
 
@@ -148,6 +189,212 @@ GET /api/collections
 
 ---
 
+### Add Collection
+
+```http
+POST /api/collections
+```
+
+Add a folder to the index as a new collection. Starts background indexing job.
+
+**Request Body**:
+```json
+{
+  "path": "/Users/you/notes",
+  "name": "notes",
+  "pattern": "**/*.md",
+  "include": "docs/**",
+  "exclude": "node_modules/**",
+  "gitPull": false
+}
+```
+
+| Field | Type | Required | Description |
+|:------|:-----|:---------|:------------|
+| `path` | string | Yes | Absolute path to folder |
+| `name` | string | No | Collection name (defaults to folder name) |
+| `pattern` | string | No | Glob pattern for files (default: `**/*.md`) |
+| `include` | string | No | Additional include patterns |
+| `exclude` | string | No | Exclude patterns |
+| `gitPull` | boolean | No | Run `git pull` before indexing |
+
+**Response** (202 Accepted):
+```json
+{
+  "jobId": "550e8400-e29b-41d4-a716-446655440000",
+  "collection": "notes"
+}
+```
+
+**Errors**:
+
+| Code | Status | Description |
+|:-----|:-------|:------------|
+| `VALIDATION` | 400 | Missing or invalid path |
+| `PATH_NOT_FOUND` | 400 | Path does not exist |
+| `DUPLICATE` | 409 | Collection name already exists |
+| `CONFLICT` | 409 | Another job is running |
+
+**Example**:
+```bash
+curl -X POST http://localhost:3000/api/collections \
+  -H "Content-Type: application/json" \
+  -d '{"path": "/Users/you/notes", "name": "notes"}'
+```
+
+---
+
+### Delete Collection
+
+```http
+DELETE /api/collections/:name
+```
+
+Remove a collection from the config. Indexed documents remain in DB but won't appear in searches.
+
+**Response**:
+```json
+{
+  "success": true,
+  "collection": "notes",
+  "note": "Collection removed from config. Indexed documents remain in DB."
+}
+```
+
+**Errors**:
+
+| Code | Status | Description |
+|:-----|:-------|:------------|
+| `NOT_FOUND` | 404 | Collection does not exist |
+| `HAS_REFERENCES` | 400 | Collection has context references |
+
+**Example**:
+```bash
+curl -X DELETE http://localhost:3000/api/collections/notes
+```
+
+---
+
+### Sync / Re-index
+
+```http
+POST /api/sync
+```
+
+Trigger re-indexing of all collections or a specific one.
+
+**Request Body**:
+```json
+{
+  "collection": "notes",
+  "gitPull": false
+}
+```
+
+| Field | Type | Required | Description |
+|:------|:-----|:---------|:------------|
+| `collection` | string | No | Specific collection to sync (case-insensitive) |
+| `gitPull` | boolean | No | Run `git pull` before sync |
+
+**Response** (202 Accepted):
+```json
+{
+  "jobId": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+**Example**:
+```bash
+# Sync all collections
+curl -X POST http://localhost:3000/api/sync
+
+# Sync specific collection
+curl -X POST http://localhost:3000/api/sync \
+  -H "Content-Type: application/json" \
+  -d '{"collection": "notes"}'
+```
+
+---
+
+### Job Status
+
+```http
+GET /api/jobs/:id
+```
+
+Poll the status of a background job (indexing, sync).
+
+**Response** (running):
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "type": "add",
+  "status": "running",
+  "createdAt": 1704067200000
+}
+```
+
+**Response** (completed):
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "type": "sync",
+  "status": "completed",
+  "createdAt": 1704067200000,
+  "result": {
+    "collections": [
+      {
+        "collection": "notes",
+        "filesProcessed": 42,
+        "filesAdded": 5,
+        "filesUpdated": 3,
+        "filesUnchanged": 34,
+        "filesErrored": 0,
+        "filesSkipped": 0,
+        "durationMs": 1250
+      }
+    ],
+    "totalDurationMs": 1250,
+    "totalFilesProcessed": 42,
+    "totalFilesAdded": 5,
+    "totalFilesUpdated": 3,
+    "totalFilesErrored": 0,
+    "totalFilesSkipped": 0
+  }
+}
+```
+
+**Response** (failed):
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "type": "add",
+  "status": "failed",
+  "createdAt": 1704067200000,
+  "error": "Permission denied: /private/folder"
+}
+```
+
+| Status | Description |
+|:-------|:------------|
+| `running` | Job in progress |
+| `completed` | Job finished successfully |
+| `failed` | Job failed with error |
+
+**Example**:
+```bash
+# Poll until complete
+JOB_ID="550e8400-e29b-41d4-a716-446655440000"
+while true; do
+  STATUS=$(curl -s "http://localhost:3000/api/jobs/$JOB_ID" | jq -r '.status')
+  echo "Status: $STATUS"
+  [ "$STATUS" != "running" ] && break
+  sleep 1
+done
+```
+
+---
+
 ### List Documents
 
 ```http
@@ -225,6 +472,107 @@ GET /api/doc?uri=gno://notes/projects/readme.md
 ```bash
 curl "http://localhost:3000/api/doc?uri=gno://notes/readme.md" | jq '.content'
 ```
+
+---
+
+### Create Document
+
+```http
+POST /api/docs
+```
+
+Create a new document file in a collection. Triggers background sync to index it.
+
+**Request Body**:
+```json
+{
+  "collection": "notes",
+  "relPath": "ideas/new-feature.md",
+  "content": "# New Feature\n\nDescription of the feature...",
+  "overwrite": false
+}
+```
+
+| Field | Type | Required | Description |
+|:------|:-----|:---------|:------------|
+| `collection` | string | Yes | Target collection name |
+| `relPath` | string | Yes | Relative path within collection |
+| `content` | string | Yes | File content (markdown) |
+| `overwrite` | boolean | No | Overwrite if exists (default: false) |
+
+**Response** (202 Accepted):
+```json
+{
+  "uri": "file:///Users/you/notes/ideas/new-feature.md",
+  "path": "/Users/you/notes/ideas/new-feature.md",
+  "jobId": "550e8400-e29b-41d4-a716-446655440000",
+  "note": "File created. Sync job started - poll /api/jobs/:id for status."
+}
+```
+
+**Errors**:
+
+| Code | Status | Description |
+|:-----|:-------|:------------|
+| `VALIDATION` | 400 | Missing collection, relPath, or content |
+| `NOT_FOUND` | 404 | Collection does not exist |
+| `CONFLICT` | 409 | File exists and overwrite=false |
+
+**Path Validation**:
+- `relPath` must be relative (no leading `/`)
+- Path traversal (`..`) is rejected
+- Null bytes are rejected
+
+**Example**:
+```bash
+curl -X POST http://localhost:3000/api/docs \
+  -H "Content-Type: application/json" \
+  -d '{
+    "collection": "notes",
+    "relPath": "journal/2025-01-01.md",
+    "content": "# January 1st\n\nNew year, new notes!"
+  }'
+```
+
+---
+
+### Deactivate Document
+
+```http
+POST /api/docs/:id/deactivate
+```
+
+Remove a document from the index. The file remains on disk.
+
+**URL Parameters**:
+
+| Param | Description |
+|:------|:------------|
+| `:id` | Document ID (the `#hexhash` from docid, URL-encoded as `%23hexhash`) |
+
+**Response**:
+```json
+{
+  "success": true,
+  "docId": "#abc123",
+  "path": "gno://notes/old-file.md",
+  "warning": "File still exists on disk. Will be re-indexed unless excluded."
+}
+```
+
+**Errors**:
+
+| Code | Status | Description |
+|:-----|:-------|:------------|
+| `NOT_FOUND` | 404 | Document not found |
+
+**Example**:
+```bash
+# Note: # must be URL-encoded as %23
+curl -X POST "http://localhost:3000/api/docs/%23abc123/deactivate"
+```
+
+> **Note**: The document will be re-indexed on next sync unless you add it to the collection's exclude pattern.
 
 ---
 
@@ -572,7 +920,11 @@ All errors follow a consistent format:
 | Code | HTTP Status | Description |
 |:-----|:------------|:------------|
 | `VALIDATION` | 400 | Invalid request parameters |
+| `PATH_NOT_FOUND` | 400 | Specified path does not exist |
+| `HAS_REFERENCES` | 400 | Resource has dependencies (e.g., collection in contexts) |
+| `CSRF_VIOLATION` | 403 | Cross-origin request rejected |
 | `NOT_FOUND` | 404 | Resource not found |
+| `DUPLICATE` | 409 | Resource already exists |
 | `CONFLICT` | 409 | Operation already in progress |
 | `UNAVAILABLE` | 503 | Feature not available (model not loaded) |
 | `RUNTIME` | 500 | Internal error |
