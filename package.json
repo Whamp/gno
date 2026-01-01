@@ -28,6 +28,7 @@
   "files": [
     "assets",
     "src",
+    "THIRD_PARTY_NOTICES.md",
     "vendor"
   ],
   "type": "module",
