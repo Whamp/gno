@@ -30,6 +30,22 @@
     - "gno models use balanced"
     - "gno models pull"
 
+- slug: web-ui
+  title: Web UI
+  headline: Visual Search at Your Fingertips
+  description: A local web dashboard for searching, browsing documents, and getting AI answers. Switch model presets live, download models in-browser, and explore your knowledge visually.
+  icon: globe
+  benefits:
+    - Visual search interface
+    - Document browser with filtering
+    - AI answers with citations
+    - Live preset switching
+    - In-browser model download
+    - 100% local, no cloud
+  commands:
+    - "gno serve"
+    - "gno serve --port 8080"
+
 - slug: multi-format
   title: Multi-Format Indexing
   headline: Index Everything You Write
@@ -72,6 +88,21 @@
     - Search, read, and cite documents
   commands:
     - "gno mcp"
+
+- slug: api
+  title: REST API
+  headline: Build Anything with Your Knowledge
+  description: HTTP API for programmatic access to GNO. Search, retrieve documents, get AI answers, and manage models from any language. Build custom tools, automate workflows, create integrations.
+  icon: code
+  benefits:
+    - Full search via HTTP
+    - JSON request/response
+    - Model download with progress
+    - No auth, no rate limits
+    - Python, JS, shell examples
+  commands:
+    - "curl /api/query -d '{...}'"
+    - "curl /api/models/pull -X POST"
 
 - slug: collections
   title: Collections
