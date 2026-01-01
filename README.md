@@ -36,6 +36,8 @@ gno query "auth best practices"  # Hybrid search
 gno ask "summarize the API" --answer  # AI answer with citations
 ```
 
+![GNO CLI](./assets/screenshots/cli.jpg)
+
 ---
 
 ## Installation
@@ -127,6 +129,8 @@ gno serve                    # Start on port 3000
 gno serve --port 8080        # Custom port
 ```
 
+![GNO Web UI](./assets/screenshots/webui-home.jpg)
+
 Open `http://localhost:3000` to:
 
 - **Search** — BM25, vector, or hybrid modes with visual results
@@ -181,6 +185,8 @@ No authentication. No rate limits. Build custom tools, automate workflows, integ
 
 ### MCP Server
 
+![GNO MCP](./assets/screenshots/mcp.jpg)
+
 GNO exposes 6 tools via [Model Context Protocol](https://modelcontextprotocol.io):
 
 | Tool | Description |
@@ -201,6 +207,8 @@ Skills add GNO search to Claude Code/Codex without MCP protocol overhead:
 ```bash
 gno skill install --scope user
 ```
+
+![GNO Skill in Claude Code](./assets/screenshots/claudecodeskill.jpg)
 
 Then ask your agent: *"Search my notes for the auth discussion"*
 
@@ -280,7 +288,7 @@ Models auto-download on first use to `~/.cache/gno/models/`.
 
 ```bash
 gno models use balanced
-gno models pull --all
+gno models pull --all  # Optional: pre-download models (auto-downloads on first use)
 ```
 
 > **Configuration**: [Model Setup](https://gno.sh/docs/CONFIGURATION/)

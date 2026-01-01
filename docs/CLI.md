@@ -4,6 +4,8 @@ GNO command-line interface guide.
 
 > **Full specification**: See [spec/cli.md](../spec/cli.md) for exhaustive command documentation.
 
+![GNO CLI](../assets/screenshots/cli.jpg)
+
 ## Quick Reference
 
 | Command | Description |
@@ -31,7 +33,10 @@ All commands accept:
 --no-color        Disable colored output
 --verbose         Enable verbose logging
 --yes             Non-interactive mode
+--offline         Use cached models only (no auto-download)
 ```
+
+**Offline mode**: Use `--offline` or set `HF_HUB_OFFLINE=1` to prevent auto-downloading models. Set `GNO_NO_AUTO_DOWNLOAD=1` to disable auto-download while still allowing explicit `gno models pull`.
 
 **Output format flags** (`--json`, `--files`, `--csv`, `--md`, `--xml`) are per-command.
 See [spec/cli.md](../spec/cli.md#output-format-support-matrix) for which commands support which formats.
@@ -125,6 +130,8 @@ gno ask "complex topic" --thorough       # Best recall
 ```
 
 **Full-document context**: When `--answer` is used, GNO passes complete document content to the generation model—not truncated snippets. This ensures the LLM sees tables, code examples, and full context needed for accurate answers.
+
+**Preset requirement**: For documents with markdown tables or structured data, use the `quality` preset (`gno models use quality`). Smaller models cannot reliably parse tabular content. This only applies to standalone `--answer` usage—when AI agents (Claude Code, Codex) call GNO via MCP/skill/CLI, they handle answer generation.
 
 Options:
 - `--fast` - Skip expansion and reranking (fastest)

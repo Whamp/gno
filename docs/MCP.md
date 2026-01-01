@@ -4,6 +4,8 @@ Use GNO as an MCP server for AI assistants like Claude Desktop, Cursor, and othe
 
 > **Full specification**: See [spec/mcp.md](../spec/mcp.md) for complete tool and resource schemas.
 
+![GNO MCP in Claude Desktop](../assets/screenshots/mcp.jpg)
+
 ## Overview
 
 MCP (Model Context Protocol) allows AI assistants to access external tools and resources. GNO provides:
@@ -302,6 +304,18 @@ The assistant uses `gno_get` with the docid from search results.
 2. Review results and scores
 3. Get full content of relevant docs
 4. Ask follow-up questions with context
+
+## Environment Variables
+
+Configure MCP server behavior with environment variables:
+
+| Variable | Effect |
+|----------|--------|
+| `HF_HUB_OFFLINE=1` | Offline mode: use cached models only, fail if missing |
+| `GNO_NO_AUTO_DOWNLOAD=1` | Disable auto-download but allow explicit `gno models pull` |
+| `GNO_VERBOSE=1` | Enable verbose logging |
+
+Models auto-download on first use. Use these variables in CI/air-gapped environments.
 
 ## Troubleshooting
 
