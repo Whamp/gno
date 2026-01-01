@@ -4,18 +4,18 @@ These markdown files are designed for testing gno's search capabilities.
 
 ## Contents
 
-| File | Topics | Languages | Purpose |
-|------|--------|-----------|---------|
-| authentication.md | JWT, OAuth, sessions, passwords | TypeScript | Auth flows, security |
-| database-queries.md | SQL, pooling, N+1, indexing | TypeScript, SQL | Database patterns |
-| error-handling.md | Result types, retries, errors | TypeScript | Error strategies |
-| rest-api-design.md | HTTP, REST, status codes | TypeScript, JSON | API contracts |
-| testing-strategies.md | Unit, integration, E2E, mocking | TypeScript | Test patterns |
-| caching-patterns.md | Redis, TTL, stampede, multi-level | TypeScript | Cache strategies |
-| python-async.md | asyncio, coroutines, generators | Python | Async Python |
-| go-concurrency.md | goroutines, channels, WaitGroup | Go | Go concurrency |
-| docker-deployment.md | Dockerfile, compose, health | Dockerfile, YAML | Container ops |
-| security-checklist.md | XSS, RBAC, encryption, secrets | TypeScript | Security audit |
+| File                  | Topics                            | Languages        | Purpose              |
+| --------------------- | --------------------------------- | ---------------- | -------------------- |
+| authentication.md     | JWT, OAuth, sessions, passwords   | TypeScript       | Auth flows, security |
+| database-queries.md   | SQL, pooling, N+1, indexing       | TypeScript, SQL  | Database patterns    |
+| error-handling.md     | Result types, retries, errors     | TypeScript       | Error strategies     |
+| rest-api-design.md    | HTTP, REST, status codes          | TypeScript, JSON | API contracts        |
+| testing-strategies.md | Unit, integration, E2E, mocking   | TypeScript       | Test patterns        |
+| caching-patterns.md   | Redis, TTL, stampede, multi-level | TypeScript       | Cache strategies     |
+| python-async.md       | asyncio, coroutines, generators   | Python           | Async Python         |
+| go-concurrency.md     | goroutines, channels, WaitGroup   | Go               | Go concurrency       |
+| docker-deployment.md  | Dockerfile, compose, health       | Dockerfile, YAML | Container ops        |
+| security-checklist.md | XSS, RBAC, encryption, secrets    | TypeScript       | Security audit       |
 
 ## Usage
 
@@ -43,6 +43,7 @@ gno vsearch "running code in parallel"
 ### Test Queries
 
 **BM25-specific** (exact keyword matches):
+
 - `"bcrypt password"` → authentication.md
 - `"N+1 query"` → database-queries.md
 - `"asyncio.gather"` → python-async.md
@@ -50,6 +51,7 @@ gno vsearch "running code in parallel"
 - `"multi-stage build"` → docker-deployment.md
 
 **Semantic-specific** (concept matching):
+
 - `"verify user identity"` → authentication.md
 - `"speed up data access"` → caching-patterns.md
 - `"run tests automatically"` → testing-strategies.md
@@ -57,6 +59,7 @@ gno vsearch "running code in parallel"
 - `"deploy to production"` → docker-deployment.md
 
 **Cross-document queries** (multiple relevant results):
+
 - `"error handling"` → error-handling.md, rest-api-design.md
 - `"concurrency"` → python-async.md, go-concurrency.md
 - `"security"` → authentication.md, security-checklist.md
@@ -74,6 +77,7 @@ gno vsearch "container" --lang dockerfile
 ## Design Notes
 
 Files are designed with:
+
 - **Distinct keywords** for BM25 precision testing
 - **Overlapping concepts** for semantic recall testing
 - **Multiple languages** for --lang filter testing

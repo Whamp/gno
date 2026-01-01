@@ -5,7 +5,7 @@
  * @module src/cli/commands/models/path
  */
 
-import { getModelsCachePath } from '../../../app/constants';
+import { getModelsCachePath } from "../../../app/constants";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types

@@ -15,6 +15,7 @@ Implement the configuration layer for GNO, a local knowledge indexing CLI. This 
 ## Problem Statement
 
 GNO needs a configuration system that:
+
 - Stores collection definitions (paths, patterns, exclusions)
 - Manages context metadata for search enhancement
 - Follows XDG Base Directory conventions (cross-platform)
@@ -83,6 +84,7 @@ contexts:
 **T2.1 - Config Schema + Loader/Saver**
 
 1. Create Zod schemas in `src/config/types.ts`:
+
    ```typescript
    const CollectionSchema = z.object({
      name: z.string().regex(/^[a-z0-9][a-z0-9_-]{0,63}$/i),
@@ -107,23 +109,24 @@ contexts:
 
 **T2.2 - Collection Commands**
 
-| Command | Description | Exit Codes |
-|---------|-------------|------------|
-| `gno collection add <path> --name <n>` | Add collection | 0=ok, 1=exists, 2=invalid |
-| `gno collection list [--json]` | List all | 0=ok |
-| `gno collection remove <name>` | Remove (checks contexts) | 0=ok, 1=not found, 3=in use |
-| `gno collection rename <old> <new>` | Rename + update contexts | 0=ok |
+| Command                                | Description              | Exit Codes                  |
+| -------------------------------------- | ------------------------ | --------------------------- |
+| `gno collection add <path> --name <n>` | Add collection           | 0=ok, 1=exists, 2=invalid   |
+| `gno collection list [--json]`         | List all                 | 0=ok                        |
+| `gno collection remove <name>`         | Remove (checks contexts) | 0=ok, 1=not found, 3=in use |
+| `gno collection rename <old> <new>`    | Rename + update contexts | 0=ok                        |
 
 **T2.3 - Context Commands**
 
-| Command | Description | Exit Codes |
-|---------|-------------|------------|
-| `gno context add <scope> "<text>"` | Add context | 0=ok, 1=invalid scope |
-| `gno context list [--json]` | List all | 0=ok |
-| `gno context check` | Validate all contexts | 0=valid, 1=invalid |
-| `gno context rm <scope>` | Remove context | 0=ok, 1=not found |
+| Command                            | Description           | Exit Codes            |
+| ---------------------------------- | --------------------- | --------------------- |
+| `gno context add <scope> "<text>"` | Add context           | 0=ok, 1=invalid scope |
+| `gno context list [--json]`        | List all              | 0=ok                  |
+| `gno context check`                | Validate all contexts | 0=valid, 1=invalid    |
+| `gno context rm <scope>`           | Remove context        | 0=ok, 1=not found     |
 
 Scope formats:
+
 - Global: `/`
 - Collection: `collection:<name>`
 - Prefix: `gno://<collection>/<path>`
@@ -135,6 +138,7 @@ gno init [<path>] [--name <name>] [--pattern <glob>] [--tokenizer <name>] [--yes
 ```
 
 Behavior:
+
 1. Check if already initialized (config exists + DB exists)
    - If yes: print status, exit 0 (idempotent)
 2. Create directories: config, data, cache
@@ -166,6 +170,7 @@ src/config/
 ```
 
 **Files to create:**
+
 - `src/config/types.ts` - Config schema
 - `src/config/paths.ts` - Path resolution (wraps constants.ts)
 - `src/config/defaults.ts` - Default values
@@ -178,6 +183,7 @@ src/config/
 - `test/fixtures/config/invalid-*.yml` - Error case fixtures
 
 **Dependencies to add:**
+
 ```bash
 bun add zod
 # js-yaml only if Bun.YAML not available
@@ -196,6 +202,7 @@ src/cli/commands/
 ```
 
 **Files to create:**
+
 - `src/cli/commands/collection/add.ts`
 - `src/cli/commands/collection/list.ts`
 - `src/cli/commands/collection/remove.ts`
@@ -215,6 +222,7 @@ src/cli/commands/
 ```
 
 **Files to create:**
+
 - `src/cli/commands/context/add.ts`
 - `src/cli/commands/context/list.ts`
 - `src/cli/commands/context/check.ts`
@@ -224,6 +232,7 @@ src/cli/commands/
 ### Phase 4: Init Command (T2.4)
 
 **Files to create/modify:**
+
 - `src/cli/commands/init.ts` - Init command
 - `test/cli/init.test.ts` - Idempotency tests
 
@@ -275,26 +284,29 @@ src/cli/commands/
 ## Dependencies & Prerequisites
 
 **Requires (complete):**
+
 - EPIC 0 complete (repo scaffold) ✓
 
 **Blocks:**
+
 - EPIC 3 (Store layer) - needs config types
 - EPIC 4 (Converters) - needs collection definitions
 - EPIC 5 (Indexing) - needs config + collections
 
 **External Dependencies:**
+
 - `zod` - Schema validation
 - Bun.YAML or `js-yaml` - YAML parsing
 - `bun:sqlite` - DB creation in init
 
 ## Risk Analysis & Mitigation
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| YAML parser incompatibility | High | Test both Bun.YAML and js-yaml |
-| Platform path edge cases | Medium | Comprehensive path tests per OS |
-| Atomic write failure on Windows | Medium | Use temp file + rename pattern |
-| Config schema migration | Low | Version field enables future migration |
+| Risk                            | Impact | Mitigation                             |
+| ------------------------------- | ------ | -------------------------------------- |
+| YAML parser incompatibility     | High   | Test both Bun.YAML and js-yaml         |
+| Platform path edge cases        | Medium | Comprehensive path tests per OS        |
+| Atomic write failure on Windows | Medium | Use temp file + rename pattern         |
+| Config schema migration         | Low    | Version field enables future migration |
 
 ## Open Questions (Resolved)
 
@@ -316,6 +328,7 @@ src/cli/commands/
 ## References
 
 ### Internal References
+
 - PRD §2.1-2.3: Directory resolution rules - `/Users/gordon/work/gno/PRD.md:78-90`
 - PRD §4.1-4.5: Collection/Context definitions - `/Users/gordon/work/gno/PRD.md:150-206`
 - PRD §7.1: Config features - `/Users/gordon/work/gno/PRD.md:265-297`
@@ -324,12 +337,14 @@ src/cli/commands/
 - CLI spec: `/Users/gordon/work/gno/spec/cli.md`
 
 ### External References
+
 - [Zod documentation](https://zod.dev/)
 - [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir/latest/)
 - [Bun YAML docs](https://bun.com/docs/api/yaml)
 - [BCP-47 language tags](https://www.ietf.org/rfc/bcp/bcp47.txt)
 
 ### Related Work
+
 - Beads: gno-du9 (this epic), gno-du9.1 through gno-du9.5 (tasks)
 - EPIC 0: gno-8db (dependency, closed)
 
@@ -337,13 +352,13 @@ src/cli/commands/
 
 ## Task Breakdown (from Beads)
 
-| Task ID | Description | Priority | Status | Blocks |
-|---------|-------------|----------|--------|--------|
-| gno-du9.1 | T2.1 Config schema + loader/saver | P0 | open | T2.2, T2.3, T2.4 |
-| gno-du9.2 | T2.2 collection add/list/remove/rename | P1 | open | - |
-| gno-du9.3 | T2.3 context add/list/check/rm | P1 | open | - |
-| gno-du9.4 | T2.4 init command | P0 | open | - |
-| gno-du9.5 | T2.5 Multilingual config | P2 | open | - |
+| Task ID   | Description                            | Priority | Status | Blocks           |
+| --------- | -------------------------------------- | -------- | ------ | ---------------- |
+| gno-du9.1 | T2.1 Config schema + loader/saver      | P0       | open   | T2.2, T2.3, T2.4 |
+| gno-du9.2 | T2.2 collection add/list/remove/rename | P1       | open   | -                |
+| gno-du9.3 | T2.3 context add/list/check/rm         | P1       | open   | -                |
+| gno-du9.4 | T2.4 init command                      | P0       | open   | -                |
+| gno-du9.5 | T2.5 Multilingual config               | P2       | open   | -                |
 
 **Critical Path:** T2.1 → T2.2 + T2.3 + T2.4 (parallel) → T2.5
 

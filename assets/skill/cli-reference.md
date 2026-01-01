@@ -6,14 +6,14 @@ Complete command reference for GNO.
 
 All commands accept:
 
-| Flag | Description |
-|------|-------------|
-| `--index <name>` | Use alternate index (default: "default") |
-| `--config <path>` | Override config file path |
-| `--no-color` | Disable colored output |
-| `--verbose` | Enable verbose logging |
-| `--yes` | Non-interactive mode |
-| `--json` | JSON output (where supported) |
+| Flag              | Description                              |
+| ----------------- | ---------------------------------------- |
+| `--index <name>`  | Use alternate index (default: "default") |
+| `--config <path>` | Override config file path                |
+| `--no-color`      | Disable colored output                   |
+| `--verbose`       | Enable verbose logging                   |
+| `--yes`           | Non-interactive mode                     |
+| `--json`          | JSON output (where supported)            |
 
 ## Initialization
 
@@ -23,14 +23,14 @@ All commands accept:
 gno init [<path>] [options]
 ```
 
-| Option | Description |
-|--------|-------------|
-| `--name <name>` | Collection name |
-| `--pattern <glob>` | File pattern (default: `**/*`) |
-| `--include <exts>` | Extension allowlist (e.g., `.md,.pdf`) |
-| `--exclude <paths>` | Exclude patterns (default: `.git,node_modules`) |
-| `--tokenizer <type>` | FTS tokenizer: unicode61, porter, trigram |
-| `--language <code>` | BCP-47 language hint |
+| Option               | Description                                     |
+| -------------------- | ----------------------------------------------- |
+| `--name <name>`      | Collection name                                 |
+| `--pattern <glob>`   | File pattern (default: `**/*`)                  |
+| `--include <exts>`   | Extension allowlist (e.g., `.md,.pdf`)          |
+| `--exclude <paths>`  | Exclude patterns (default: `.git,node_modules`) |
+| `--tokenizer <type>` | FTS tokenizer: unicode61, porter, trigram       |
+| `--language <code>`  | BCP-47 language hint                            |
 
 ## Collections
 
@@ -78,12 +78,12 @@ Full index (update + embed).
 gno index [options]
 ```
 
-| Option | Description |
-|--------|-------------|
+| Option                | Description                |
+| --------------------- | -------------------------- |
 | `--collection <name>` | Scope to single collection |
-| `--no-embed` | Skip embedding |
-| `--models-pull` | Download models if missing |
-| `--git-pull` | Git pull before indexing |
+| `--no-embed`          | Skip embedding             |
+| `--models-pull`       | Download models if missing |
+| `--git-pull`          | Git pull before indexing   |
 
 ### gno embed
 
@@ -103,14 +103,14 @@ BM25 keyword search.
 gno search <query> [options]
 ```
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `-n` | 5 | Max results |
-| `--min-score` | 0 | Minimum score (0-1) |
-| `-c, --collection` | all | Filter to collection |
-| `--full` | false | Full content (not snippets) |
-| `--line-numbers` | false | Include line numbers |
-| `--lang` | auto | Language filter |
+| Option             | Default | Description                 |
+| ------------------ | ------- | --------------------------- |
+| `-n`               | 5       | Max results                 |
+| `--min-score`      | 0       | Minimum score (0-1)         |
+| `-c, --collection` | all     | Filter to collection        |
+| `--full`           | false   | Full content (not snippets) |
+| `--line-numbers`   | false   | Include line numbers        |
+| `--lang`           | auto    | Language filter             |
 
 Output formats: `--json`, `--files`, `--csv`, `--md`, `--xml`
 
@@ -132,19 +132,19 @@ gno query <query> [options]
 
 **Search modes** (pick one):
 
-| Flag | Time | Description |
-|------|------|-------------|
-| `--fast` | ~0.7s | Skip expansion and reranking |
-| (default) | ~2-3s | Skip expansion, with reranking |
-| `--thorough` | ~5-8s | Full pipeline with expansion |
+| Flag         | Time  | Description                    |
+| ------------ | ----- | ------------------------------ |
+| `--fast`     | ~0.7s | Skip expansion and reranking   |
+| (default)    | ~2-3s | Skip expansion, with reranking |
+| `--thorough` | ~5-8s | Full pipeline with expansion   |
 
 Additional options:
 
-| Option | Description |
-|--------|-------------|
-| `--no-expand` | Disable query expansion |
-| `--no-rerank` | Disable reranking |
-| `--explain` | Print retrieval details to stderr |
+| Option        | Description                       |
+| ------------- | --------------------------------- |
+| `--no-expand` | Disable query expansion           |
+| `--no-rerank` | Disable reranking                 |
+| `--explain`   | Print retrieval details to stderr |
 
 ### gno ask
 
@@ -154,14 +154,14 @@ AI-powered Q&A with citations.
 gno ask <question> [options]
 ```
 
-| Option | Description |
-|--------|-------------|
-| `--fast` | Skip expansion and reranking (fastest) |
-| `--thorough` | Enable query expansion (better recall) |
-| `--answer` | Generate grounded answer |
-| `--no-answer` | Retrieval only |
-| `--max-answer-tokens <n>` | Cap answer length |
-| `--show-sources` | Show all sources |
+| Option                    | Description                            |
+| ------------------------- | -------------------------------------- |
+| `--fast`                  | Skip expansion and reranking (fastest) |
+| `--thorough`              | Enable query expansion (better recall) |
+| `--answer`                | Generate grounded answer               |
+| `--no-answer`             | Retrieval only                         |
+| `--max-answer-tokens <n>` | Cap answer length                      |
+| `--show-sources`          | Show all sources                       |
 
 ## Document Retrieval
 
@@ -174,6 +174,7 @@ gno get <ref> [--from <line>] [-l <lines>] [--line-numbers] [--source]
 ```
 
 Ref formats:
+
 - `gno://collection/path` — Full URI
 - `collection/path` — Relative path
 - `#docid` — Document ID
@@ -204,6 +205,7 @@ gno context add <scope> "<text>"
 ```
 
 Scope formats:
+
 - `/` — Global
 - `collection:` — Collection prefix
 - `gno://collection/path` — Path prefix
@@ -292,12 +294,12 @@ Install GNO as MCP server in client configurations.
 gno mcp install [options]
 ```
 
-| Option | Default | Description |
-|--------|---------|-------------|
+| Option         | Default        | Description                                      |
+| -------------- | -------------- | ------------------------------------------------ |
 | `-t, --target` | claude-desktop | Target: `claude-desktop`, `claude-code`, `codex` |
-| `-s, --scope` | user | Scope: `user`, `project` |
-| `-f, --force` | false | Overwrite existing config |
-| `--dry-run` | false | Preview changes |
+| `-s, --scope`  | user           | Scope: `user`, `project`                         |
+| `-f, --force`  | false          | Overwrite existing config                        |
+| `--dry-run`    | false          | Preview changes                                  |
 
 Examples:
 
@@ -330,8 +332,8 @@ gno mcp status [--json]
 
 ## Exit Codes
 
-| Code | Description |
-|------|-------------|
-| 0 | Success |
-| 1 | Validation error (bad args) |
-| 2 | Runtime error (IO, DB, model) |
+| Code | Description                   |
+| ---- | ----------------------------- |
+| 0    | Success                       |
+| 1    | Validation error (bad args)   |
+| 2    | Runtime error (IO, DB, model) |

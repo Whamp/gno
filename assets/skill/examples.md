@@ -195,15 +195,16 @@ gno models pull
 
 ### Search Modes
 
-| Command | Time | Use When |
-|---------|------|----------|
-| `gno search` | instant | Exact keyword matching |
-| `gno vsearch` | ~0.5s | Finding similar concepts |
-| `gno query --fast` | ~0.7s | Quick lookups |
-| `gno query` | ~2-3s | Default, balanced |
-| `gno query --thorough` | ~5-8s | Best recall, complex queries |
+| Command                | Time    | Use When                     |
+| ---------------------- | ------- | ---------------------------- |
+| `gno search`           | instant | Exact keyword matching       |
+| `gno vsearch`          | ~0.5s   | Finding similar concepts     |
+| `gno query --fast`     | ~0.7s   | Quick lookups                |
+| `gno query`            | ~2-3s   | Default, balanced            |
+| `gno query --thorough` | ~5-8s   | Best recall, complex queries |
 
 **Agent retry strategy**: Use default mode first. If no results:
+
 1. Rephrase the query (free, often helps)
 2. Try `--thorough` for better recall
 

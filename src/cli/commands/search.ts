@@ -5,13 +5,14 @@
  * @module src/cli/commands/search
  */
 
-import { searchBm25 } from '../../pipeline/search';
-import type { SearchOptions, SearchResults } from '../../pipeline/types';
+import type { SearchOptions, SearchResults } from "../../pipeline/types";
+
+import { searchBm25 } from "../../pipeline/search";
 import {
   type FormatOptions,
   formatSearchResults,
-} from '../format/search-results';
-import { initStore } from './shared';
+} from "../format/search-results";
+import { initStore } from "./shared";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -71,7 +72,7 @@ export async function search(
 
     if (!result.ok) {
       // Map INVALID_INPUT to validation error for proper exit code
-      const isValidation = result.error.code === 'INVALID_INPUT';
+      const isValidation = result.error.code === "INVALID_INPUT";
       return {
         success: false,
         error: result.error.message,
@@ -92,23 +93,23 @@ export async function search(
 /**
  * Get output format from options.
  */
-function getFormatType(options: SearchCommandOptions): FormatOptions['format'] {
+function getFormatType(options: SearchCommandOptions): FormatOptions["format"] {
   if (options.json) {
-    return 'json';
+    return "json";
   }
   if (options.files) {
-    return 'files';
+    return "files";
   }
   if (options.csv) {
-    return 'csv';
+    return "csv";
   }
   if (options.md) {
-    return 'md';
+    return "md";
   }
   if (options.xml) {
-    return 'xml';
+    return "xml";
   }
-  return 'terminal';
+  return "terminal";
 }
 
 /**
@@ -121,7 +122,7 @@ export function formatSearch(
   if (!result.success) {
     return options.json
       ? JSON.stringify({
-          error: { code: 'QUERY_FAILED', message: result.error },
+          error: { code: "QUERY_FAILED", message: result.error },
         })
       : `Error: ${result.error}`;
   }

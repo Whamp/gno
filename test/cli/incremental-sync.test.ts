@@ -3,18 +3,19 @@
  * Verifies that gno update/index only processes new or changed files.
  */
 
-import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
-import { mkdir, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { type UpdateResult, update } from '../../src/cli/commands/update';
-import { safeRm } from '../helpers/cleanup';
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { mkdir, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+import { type UpdateResult, update } from "../../src/cli/commands/update";
+import { safeRm } from "../helpers/cleanup";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Setup / Teardown
 // ─────────────────────────────────────────────────────────────────────────────
 
-const TEST_ROOT = join(tmpdir(), 'gno-incremental-sync');
+const TEST_ROOT = join(tmpdir(), "gno-incremental-sync");
 let testCounter = 0;
 
 function getTestDir(): string {
@@ -25,16 +26,16 @@ function getTestDir(): string {
 
 async function setupTestEnv(testDir: string) {
   await mkdir(testDir, { recursive: true });
-  process.env.GNO_CONFIG_DIR = join(testDir, 'config');
-  process.env.GNO_DATA_DIR = join(testDir, 'data');
-  process.env.GNO_CACHE_DIR = join(testDir, 'cache');
+  process.env.GNO_CONFIG_DIR = join(testDir, "config");
+  process.env.GNO_DATA_DIR = join(testDir, "data");
+  process.env.GNO_CACHE_DIR = join(testDir, "cache");
 }
 
 async function cleanupTestEnv(testDir: string) {
   await safeRm(testDir);
-  Reflect.deleteProperty(process.env, 'GNO_CONFIG_DIR');
-  Reflect.deleteProperty(process.env, 'GNO_DATA_DIR');
-  Reflect.deleteProperty(process.env, 'GNO_CACHE_DIR');
+  Reflect.deleteProperty(process.env, "GNO_CONFIG_DIR");
+  Reflect.deleteProperty(process.env, "GNO_DATA_DIR");
+  Reflect.deleteProperty(process.env, "GNO_CACHE_DIR");
 }
 
 // Use direct function import instead of CLI to get sync stats
@@ -54,21 +55,21 @@ const originalConsoleLog = console.log.bind(console);
 const originalConsoleError = console.error.bind(console);
 
 function captureOutput() {
-  stdoutData = '';
-  stderrData = '';
+  stdoutData = "";
+  stderrData = "";
   process.stdout.write = (chunk: string | Uint8Array): boolean => {
-    stdoutData += typeof chunk === 'string' ? chunk : chunk.toString();
+    stdoutData += typeof chunk === "string" ? chunk : chunk.toString();
     return true;
   };
   process.stderr.write = (chunk: string | Uint8Array): boolean => {
-    stderrData += typeof chunk === 'string' ? chunk : chunk.toString();
+    stderrData += typeof chunk === "string" ? chunk : chunk.toString();
     return true;
   };
   console.log = (...args: unknown[]) => {
-    stdoutData += `${args.join(' ')}\n`;
+    stdoutData += `${args.join(" ")}\n`;
   };
   console.error = (...args: unknown[]) => {
-    stderrData += `${args.join(' ')}\n`;
+    stderrData += `${args.join(" ")}\n`;
   };
 }
 
@@ -82,10 +83,10 @@ function restoreOutput() {
 async function cli(
   ...args: string[]
 ): Promise<{ code: number; stdout: string; stderr: string }> {
-  const { runCli } = await import('../../src/cli/run');
+  const { runCli } = await import("../../src/cli/run");
   captureOutput();
   try {
-    const code = await runCli(['node', 'gno', ...args]);
+    const code = await runCli(["node", "gno", ...args]);
     return { code, stdout: stdoutData, stderr: stderrData };
   } finally {
     restoreOutput();
@@ -96,13 +97,13 @@ async function cli(
 // Incremental Sync Tests
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('incremental sync', () => {
+describe("incremental sync", () => {
   let testDir: string;
   let docsDir: string;
 
   beforeEach(async () => {
     testDir = getTestDir();
-    docsDir = join(testDir, 'docs');
+    docsDir = join(testDir, "docs");
     await setupTestEnv(testDir);
     await mkdir(docsDir, { recursive: true });
   });
@@ -111,13 +112,13 @@ describe('incremental sync', () => {
     await cleanupTestEnv(testDir);
   });
 
-  test('first sync processes all files', async () => {
+  test("first sync processes all files", async () => {
     // Create initial files
-    await writeFile(join(docsDir, 'alpha.md'), '# Alpha\nFirst file');
-    await writeFile(join(docsDir, 'beta.md'), '# Beta\nSecond file');
+    await writeFile(join(docsDir, "alpha.md"), "# Alpha\nFirst file");
+    await writeFile(join(docsDir, "beta.md"), "# Beta\nSecond file");
 
     // Initialize collection
-    const initResult = await cli('init', docsDir, '--name', 'docs');
+    const initResult = await cli("init", docsDir, "--name", "docs");
     expect(initResult.code).toBe(0);
 
     // First sync - should process all files
@@ -131,13 +132,13 @@ describe('incremental sync', () => {
     expect(result.result.totalFilesSkipped).toBe(0);
   });
 
-  test('second sync skips unchanged files', async () => {
+  test("second sync skips unchanged files", async () => {
     // Create initial files
-    await writeFile(join(docsDir, 'alpha.md'), '# Alpha\nFirst file');
-    await writeFile(join(docsDir, 'beta.md'), '# Beta\nSecond file');
+    await writeFile(join(docsDir, "alpha.md"), "# Alpha\nFirst file");
+    await writeFile(join(docsDir, "beta.md"), "# Beta\nSecond file");
 
     // Initialize and first sync
-    await cli('init', docsDir, '--name', 'docs');
+    await cli("init", docsDir, "--name", "docs");
     const first = await runUpdate();
     expect(first.success).toBe(true);
     if (!first.success) {
@@ -159,12 +160,12 @@ describe('incremental sync', () => {
     expect(second.result.totalFilesUpdated).toBe(0);
   });
 
-  test('adding new file only processes the new file', async () => {
+  test("adding new file only processes the new file", async () => {
     // Create initial file
-    await writeFile(join(docsDir, 'alpha.md'), '# Alpha\nFirst file');
+    await writeFile(join(docsDir, "alpha.md"), "# Alpha\nFirst file");
 
     // Initialize and first sync
-    await cli('init', docsDir, '--name', 'docs');
+    await cli("init", docsDir, "--name", "docs");
     const first = await runUpdate();
     expect(first.success).toBe(true);
     if (!first.success) {
@@ -173,7 +174,7 @@ describe('incremental sync', () => {
     expect(first.result.totalFilesAdded).toBe(1);
 
     // Add new file
-    await writeFile(join(docsDir, 'beta.md'), '# Beta\nNew file');
+    await writeFile(join(docsDir, "beta.md"), "# Beta\nNew file");
 
     // Second sync - should only process new file
     const second = await runUpdate();
@@ -188,13 +189,13 @@ describe('incremental sync', () => {
     expect(second.result.totalFilesUpdated).toBe(0);
   });
 
-  test('modifying file reprocesses only modified file', async () => {
+  test("modifying file reprocesses only modified file", async () => {
     // Create initial files
-    await writeFile(join(docsDir, 'alpha.md'), '# Alpha\nOriginal content');
-    await writeFile(join(docsDir, 'beta.md'), '# Beta\nOriginal content');
+    await writeFile(join(docsDir, "alpha.md"), "# Alpha\nOriginal content");
+    await writeFile(join(docsDir, "beta.md"), "# Beta\nOriginal content");
 
     // Initialize and first sync
-    await cli('init', docsDir, '--name', 'docs');
+    await cli("init", docsDir, "--name", "docs");
     const first = await runUpdate();
     expect(first.success).toBe(true);
     if (!first.success) {
@@ -203,7 +204,7 @@ describe('incremental sync', () => {
     expect(first.result.totalFilesAdded).toBe(2);
 
     // Modify one file
-    await writeFile(join(docsDir, 'alpha.md'), '# Alpha\nModified content');
+    await writeFile(join(docsDir, "alpha.md"), "# Alpha\nModified content");
 
     // Second sync - should update only modified file
     const second = await runUpdate();
@@ -218,13 +219,13 @@ describe('incremental sync', () => {
     expect(second.result.totalFilesAdded).toBe(0);
   });
 
-  test('combined: add new + modify existing + unchanged', async () => {
+  test("combined: add new + modify existing + unchanged", async () => {
     // Create initial files
-    await writeFile(join(docsDir, 'unchanged.md'), '# Unchanged');
-    await writeFile(join(docsDir, 'will-modify.md'), '# Will Modify');
+    await writeFile(join(docsDir, "unchanged.md"), "# Unchanged");
+    await writeFile(join(docsDir, "will-modify.md"), "# Will Modify");
 
     // Initialize and first sync
-    await cli('init', docsDir, '--name', 'docs');
+    await cli("init", docsDir, "--name", "docs");
     const first = await runUpdate();
     expect(first.success).toBe(true);
     if (!first.success) {
@@ -233,8 +234,8 @@ describe('incremental sync', () => {
     expect(first.result.totalFilesAdded).toBe(2);
 
     // Add new file and modify existing
-    await writeFile(join(docsDir, 'new-file.md'), '# New File');
-    await writeFile(join(docsDir, 'will-modify.md'), '# Modified');
+    await writeFile(join(docsDir, "new-file.md"), "# New File");
+    await writeFile(join(docsDir, "will-modify.md"), "# Modified");
 
     // Second sync
     const second = await runUpdate();

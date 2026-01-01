@@ -5,43 +5,44 @@
  * @module src/config/types
  */
 
-import { z } from 'zod';
-import { URI_PREFIX } from '../app/constants';
+import { z } from "zod";
+
+import { URI_PREFIX } from "../app/constants";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Current config version */
-export const CONFIG_VERSION = '1.0';
+export const CONFIG_VERSION = "1.0";
 
 /** Default glob pattern for file matching */
-export const DEFAULT_PATTERN = '**/*';
+export const DEFAULT_PATTERN = "**/*";
 
 /** Default exclude patterns for collections */
 export const DEFAULT_EXCLUDES: readonly string[] = [
-  '.git',
-  'node_modules',
-  '.venv',
-  '.idea',
-  'dist',
-  'build',
-  '__pycache__',
-  '.DS_Store',
-  'Thumbs.db',
+  ".git",
+  "node_modules",
+  ".venv",
+  ".idea",
+  "dist",
+  "build",
+  "__pycache__",
+  ".DS_Store",
+  "Thumbs.db",
 ];
 
 /** Valid FTS tokenizer options */
 export const FTS_TOKENIZERS = [
-  'unicode61',
-  'porter',
-  'trigram',
-  'snowball english',
+  "unicode61",
+  "porter",
+  "trigram",
+  "snowball english",
 ] as const;
 export type FtsTokenizer = (typeof FTS_TOKENIZERS)[number];
 
 /** Default FTS tokenizer - snowball english for multilingual stemming */
-export const DEFAULT_FTS_TOKENIZER: FtsTokenizer = 'snowball english';
+export const DEFAULT_FTS_TOKENIZER: FtsTokenizer = "snowball english";
 
 /**
  * BCP-47 language tag pattern (simplified, case-insensitive).
@@ -73,11 +74,11 @@ export const CollectionSchema = z.object({
     .string()
     .regex(
       COLLECTION_NAME_REGEX,
-      'Collection name must be lowercase alphanumeric with hyphens/underscores, 1-64 chars'
+      "Collection name must be lowercase alphanumeric with hyphens/underscores, 1-64 chars"
     ),
 
   /** Absolute path to collection root */
-  path: z.string().min(1, 'Path is required'),
+  path: z.string().min(1, "Path is required"),
 
   /** Glob pattern for file matching */
   pattern: z.string().default(DEFAULT_PATTERN),
@@ -95,7 +96,7 @@ export const CollectionSchema = z.object({
   languageHint: z
     .string()
     .refine((val) => isValidLanguageHint(val), {
-      message: 'Invalid BCP-47 language code (e.g., en, de, zh-CN, und)',
+      message: "Invalid BCP-47 language code (e.g., en, de, zh-CN, und)",
     })
     .optional(),
 });
@@ -112,7 +113,7 @@ export type Collection = z.infer<typeof CollectionSchema>;
  * - collection: "name:" - applies to a specific collection
  * - prefix: "gno://collection/path" - applies to documents under a path
  */
-export const ScopeTypeSchema = z.enum(['global', 'collection', 'prefix']);
+export const ScopeTypeSchema = z.enum(["global", "collection", "prefix"]);
 export type ScopeType = z.infer<typeof ScopeTypeSchema>;
 
 /**
@@ -127,26 +128,26 @@ export const ContextSchema = z
     scopeType: ScopeTypeSchema,
 
     /** Scope key (format depends on scopeType) */
-    scopeKey: z.string().min(1, 'Scope key is required'),
+    scopeKey: z.string().min(1, "Scope key is required"),
 
     /** Context description text */
-    text: z.string().min(1, 'Context text is required'),
+    text: z.string().min(1, "Context text is required"),
   })
   .refine(
     (ctx) => {
       switch (ctx.scopeType) {
-        case 'global':
-          return ctx.scopeKey === '/';
-        case 'collection':
+        case "global":
+          return ctx.scopeKey === "/";
+        case "collection":
           return COLLECTION_SCOPE_REGEX.test(ctx.scopeKey);
-        case 'prefix':
+        case "prefix":
           return ctx.scopeKey.startsWith(URI_PREFIX);
         default:
           return false;
       }
     },
     {
-      message: 'Scope key format does not match scope type',
+      message: "Scope key format does not match scope type",
     }
   );
 
@@ -174,34 +175,34 @@ export type ModelPreset = z.infer<typeof ModelPresetSchema>;
 /** Default model presets */
 export const DEFAULT_MODEL_PRESETS: ModelPreset[] = [
   {
-    id: 'slim',
-    name: 'Slim (Fast, ~1GB)',
-    embed: 'hf:gpustack/bge-m3-GGUF/bge-m3-Q4_K_M.gguf',
+    id: "slim",
+    name: "Slim (Fast, ~1GB)",
+    embed: "hf:gpustack/bge-m3-GGUF/bge-m3-Q4_K_M.gguf",
     rerank:
-      'hf:ggml-org/Qwen3-Reranker-0.6B-Q8_0-GGUF/qwen3-reranker-0.6b-q8_0.gguf',
-    gen: 'hf:unsloth/Qwen3-1.7B-GGUF/Qwen3-1.7B-Q4_K_M.gguf',
+      "hf:ggml-org/Qwen3-Reranker-0.6B-Q8_0-GGUF/qwen3-reranker-0.6b-q8_0.gguf",
+    gen: "hf:unsloth/Qwen3-1.7B-GGUF/Qwen3-1.7B-Q4_K_M.gguf",
   },
   {
-    id: 'balanced',
-    name: 'Balanced (Default, ~2GB)',
-    embed: 'hf:gpustack/bge-m3-GGUF/bge-m3-Q4_K_M.gguf',
+    id: "balanced",
+    name: "Balanced (Default, ~2GB)",
+    embed: "hf:gpustack/bge-m3-GGUF/bge-m3-Q4_K_M.gguf",
     rerank:
-      'hf:ggml-org/Qwen3-Reranker-0.6B-Q8_0-GGUF/qwen3-reranker-0.6b-q8_0.gguf',
-    gen: 'hf:ggml-org/SmolLM3-3B-GGUF/SmolLM3-Q4_K_M.gguf',
+      "hf:ggml-org/Qwen3-Reranker-0.6B-Q8_0-GGUF/qwen3-reranker-0.6b-q8_0.gguf",
+    gen: "hf:ggml-org/SmolLM3-3B-GGUF/SmolLM3-Q4_K_M.gguf",
   },
   {
-    id: 'quality',
-    name: 'Quality (Best Answers, ~2.5GB)',
-    embed: 'hf:gpustack/bge-m3-GGUF/bge-m3-Q4_K_M.gguf',
+    id: "quality",
+    name: "Quality (Best Answers, ~2.5GB)",
+    embed: "hf:gpustack/bge-m3-GGUF/bge-m3-Q4_K_M.gguf",
     rerank:
-      'hf:ggml-org/Qwen3-Reranker-0.6B-Q8_0-GGUF/qwen3-reranker-0.6b-q8_0.gguf',
-    gen: 'hf:unsloth/Qwen3-4B-Instruct-2507-GGUF/Qwen3-4B-Instruct-2507-Q4_K_M.gguf',
+      "hf:ggml-org/Qwen3-Reranker-0.6B-Q8_0-GGUF/qwen3-reranker-0.6b-q8_0.gguf",
+    gen: "hf:unsloth/Qwen3-4B-Instruct-2507-GGUF/Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
   },
 ];
 
 export const ModelConfigSchema = z.object({
   /** Active preset ID */
-  activePreset: z.string().default('balanced'),
+  activePreset: z.string().default("balanced"),
   /** Model presets */
   presets: z.array(ModelPresetSchema).default(DEFAULT_MODEL_PRESETS),
   /** Model load timeout in ms */
@@ -251,14 +252,14 @@ export type Config = z.infer<typeof ConfigSchema>;
 export function parseScope(
   scope: string
 ): { type: ScopeType; key: string } | null {
-  if (scope === '/') {
-    return { type: 'global', key: '/' };
+  if (scope === "/") {
+    return { type: "global", key: "/" };
   }
   if (scope.startsWith(URI_PREFIX)) {
-    return { type: 'prefix', key: scope };
+    return { type: "prefix", key: scope };
   }
   if (COLLECTION_SCOPE_REGEX.test(scope)) {
-    return { type: 'collection', key: scope };
+    return { type: "collection", key: scope };
   }
   return null;
 }
@@ -270,15 +271,15 @@ export function parseScope(
  * - "/" -> null
  */
 export function getCollectionFromScope(scopeKey: string): string | null {
-  if (scopeKey === '/') {
+  if (scopeKey === "/") {
     return null;
   }
-  if (scopeKey.endsWith(':')) {
+  if (scopeKey.endsWith(":")) {
     return scopeKey.slice(0, -1);
   }
   if (scopeKey.startsWith(URI_PREFIX)) {
     const rest = scopeKey.slice(URI_PREFIX.length);
-    const slashIndex = rest.indexOf('/');
+    const slashIndex = rest.indexOf("/");
     return slashIndex === -1 ? rest : rest.slice(0, slashIndex);
   }
   return null;

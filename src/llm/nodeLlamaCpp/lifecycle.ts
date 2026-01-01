@@ -5,16 +5,17 @@
  * @module src/llm/nodeLlamaCpp/lifecycle
  */
 
-import type { ModelConfig } from '../../config/types';
-import { loadFailedError, outOfMemoryError, timeoutError } from '../errors';
-import type { LlmResult, LoadedModel, ModelType } from '../types';
+import type { ModelConfig } from "../../config/types";
+import type { LlmResult, LoadedModel, ModelType } from "../types";
+
+import { loadFailedError, outOfMemoryError, timeoutError } from "../errors";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
 
-type Llama = Awaited<ReturnType<typeof import('node-llama-cpp').getLlama>>;
-type LlamaModel = Awaited<ReturnType<Llama['loadModel']>>;
+type Llama = Awaited<ReturnType<typeof import("node-llama-cpp").getLlama>>;
+type LlamaModel = Awaited<ReturnType<Llama["loadModel"]>>;
 
 interface CachedModel {
   uri: string;
@@ -46,7 +47,7 @@ export class ModelManager {
    */
   async getLlama(): Promise<Llama> {
     if (!this.llama) {
-      const { getLlama, LlamaLogLevel } = await import('node-llama-cpp');
+      const { getLlama, LlamaLogLevel } = await import("node-llama-cpp");
       // Suppress model loading warnings (vocab tokens, pooling type)
       this.llama = await getLlama({ logLevel: LlamaLogLevel.error });
     }
@@ -169,13 +170,13 @@ export class ModelManager {
       }
 
       if (e instanceof Error) {
-        if (e.message.includes('timeout')) {
+        if (e.message.includes("timeout")) {
           return {
             ok: false,
-            error: timeoutError(uri, 'load', this.config.loadTimeout),
+            error: timeoutError(uri, "load", this.config.loadTimeout),
           };
         }
-        if (e.message.includes('out of memory') || e.message.includes('OOM')) {
+        if (e.message.includes("out of memory") || e.message.includes("OOM")) {
           return { ok: false, error: outOfMemoryError(uri, e) };
         }
       }
@@ -274,7 +275,7 @@ export class ModelManager {
     }, this.config.warmModelTtl);
 
     // Allow CLI processes to exit without waiting for TTL timer
-    if (typeof timer.unref === 'function') {
+    if (typeof timer.unref === "function") {
       timer.unref();
     }
 

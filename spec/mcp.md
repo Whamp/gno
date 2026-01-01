@@ -9,11 +9,11 @@ This document specifies the MCP server interface for GNO.
 
 ## Server Information
 
-| Property | Value |
-|----------|-------|
-| Name | `gno` |
-| Version | `1.0.0` |
-| Command | `gno mcp` |
+| Property  | Value                |
+| --------- | -------------------- |
+| Name      | `gno`                |
+| Version   | `1.0.0`              |
+| Command   | `gno mcp`            |
 | Transport | stdio (stdin/stdout) |
 
 ## Capabilities
@@ -41,6 +41,7 @@ This document specifies the MCP server interface for GNO.
 BM25 keyword search over indexed documents.
 
 **Input Schema:**
+
 ```json
 {
   "type": "object",
@@ -78,6 +79,7 @@ BM25 keyword search over indexed documents.
 **Output Schema:** `gno://schemas/search-results`
 
 **Response:**
+
 ```json
 {
   "content": [
@@ -111,6 +113,7 @@ BM25 keyword search over indexed documents.
 ```
 
 **Errors:**
+
 - Invalid query (empty string): returns `isError: true`
 - Collection not found: returns `isError: true`
 
@@ -121,6 +124,7 @@ BM25 keyword search over indexed documents.
 Vector semantic search over indexed documents.
 
 **Input Schema:**
+
 ```json
 {
   "type": "object",
@@ -158,6 +162,7 @@ Vector semantic search over indexed documents.
 **Output Schema:** `gno://schemas/search-results`
 
 **Errors:**
+
 - Vectors not available: returns `isError: true` with message suggesting `gno index`
 
 ---
@@ -167,6 +172,7 @@ Vector semantic search over indexed documents.
 Hybrid search combining BM25 and vector retrieval with optional expansion and reranking.
 
 **Input Schema:**
+
 ```json
 {
   "type": "object",
@@ -224,6 +230,7 @@ Hybrid search combining BM25 and vector retrieval with optional expansion and re
 **Output Schema:** `gno://schemas/search-results`
 
 **Response structuredContent includes:**
+
 ```json
 {
   "results": [...],
@@ -239,6 +246,7 @@ Hybrid search combining BM25 and vector retrieval with optional expansion and re
 ```
 
 **Graceful Degradation:**
+
 - If vectors unavailable: `mode: "bm25_only"`, `vectorsUsed: false`
 - If expansion model unavailable: `expanded: false`
 - If rerank model unavailable: `reranked: false`
@@ -250,6 +258,7 @@ Hybrid search combining BM25 and vector retrieval with optional expansion and re
 Retrieve a single document by reference.
 
 **Input Schema:**
+
 ```json
 {
   "type": "object",
@@ -281,6 +290,7 @@ Retrieve a single document by reference.
 **Output Schema:** `gno://schemas/get`
 
 **Response:**
+
 ```json
 {
   "content": [
@@ -309,6 +319,7 @@ Retrieve a single document by reference.
 ```
 
 **Errors:**
+
 - Document not found: returns `isError: true`
 - Invalid ref format: returns `isError: true`
 
@@ -319,6 +330,7 @@ Retrieve a single document by reference.
 Retrieve multiple documents by pattern or list.
 
 **Input Schema:**
+
 ```json
 {
   "type": "object",
@@ -353,6 +365,7 @@ Retrieve multiple documents by pattern or list.
 **Output Schema:** `gno://schemas/multi-get`
 
 **Response:**
+
 ```json
 {
   "content": [
@@ -385,6 +398,7 @@ Retrieve multiple documents by pattern or list.
 Get index status and health information.
 
 **Input Schema:**
+
 ```json
 {
   "type": "object",
@@ -395,6 +409,7 @@ Get index status and health information.
 **Output Schema:** `gno://schemas/status`
 
 **Response:**
+
 ```json
 {
   "content": [
@@ -432,6 +447,7 @@ Read document content by URI.
 **URI Pattern:** `gno://{collection}/{relativePath}`
 
 **Examples:**
+
 - `gno://work/contracts/nda.docx`
 - `gno://notes/2025/01/meeting.md`
 
@@ -440,6 +456,7 @@ Read document content by URI.
 MIME type: `text/markdown`
 
 Content includes optional header comment:
+
 ```markdown
 <!-- gno://work/contracts/nda.docx
      docid: #a1b2c3d4
@@ -462,11 +479,13 @@ Content includes optional header comment:
 | language | Document language hint (if available) |
 
 **Behavior:**
+
 - Returns Markdown mirror content (converted from source)
 - Line numbers included by default for agent friendliness
 - Header is display-only, not part of indexed content
 
 **Errors:**
+
 - Document not found: standard MCP resource error
 - Collection not found: standard MCP resource error
 
@@ -477,15 +496,16 @@ Content includes optional header comment:
 Special characters in URIs are URL-encoded per RFC 3986:
 
 | Character | Encoded |
-|-----------|---------|
-| Space | `%20` |
-| `#` | `%23` |
-| `?` | `%3F` |
-| `%` | `%25` |
+| --------- | ------- |
+| Space     | `%20`   |
+| `#`       | `%23`   |
+| `?`       | `%3F`   |
+| `%`       | `%25`   |
 
 Path separators (`/`) are preserved.
 
 **Example:**
+
 - File: `My Documents/file name.pdf`
 - URI: `gno://work/My%20Documents/file%20name.pdf`
 
@@ -494,6 +514,7 @@ Path separators (`/`) are preserved.
 ## Error Handling
 
 Tool errors return:
+
 ```json
 {
   "isError": true,
@@ -517,6 +538,7 @@ Resource errors use standard MCP error responses.
 Tools are versioned via the server version. Breaking changes require major version bump.
 
 **Compatibility Rules:**
+
 - New optional input parameters: minor version
 - New output fields: minor version
 - Removing/renaming parameters: major version
@@ -525,6 +547,7 @@ Tools are versioned via the server version. Breaking changes require major versi
 ### Schema Versioning
 
 Output schemas include version in `$id`:
+
 - `gno://schemas/search-result@1.0`
 
 Clients should check schema version for compatibility.
@@ -549,31 +572,33 @@ GNO provides CLI commands to manage MCP server installation.
 Install gno as an MCP server in client configurations.
 
 **Synopsis:**
+
 ```bash
 gno mcp install [options]
 ```
 
 **Options:**
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `-t, --target <target>` | Target client: `claude-desktop`, `claude-code`, `codex` | `claude-desktop` |
-| `-s, --scope <scope>` | Scope: `user`, `project` (project only for claude-code/codex) | `user` |
-| `-f, --force` | Overwrite existing configuration | `false` |
-| `--dry-run` | Show what would be done without changes | `false` |
-| `--json` | JSON output | `false` |
+| Option                  | Description                                                   | Default          |
+| ----------------------- | ------------------------------------------------------------- | ---------------- |
+| `-t, --target <target>` | Target client: `claude-desktop`, `claude-code`, `codex`       | `claude-desktop` |
+| `-s, --scope <scope>`   | Scope: `user`, `project` (project only for claude-code/codex) | `user`           |
+| `-f, --force`           | Overwrite existing configuration                              | `false`          |
+| `--dry-run`             | Show what would be done without changes                       | `false`          |
+| `--json`                | JSON output                                                   | `false`          |
 
 **Config Locations:**
 
-| Target | Scope | macOS Path |
-|--------|-------|------------|
-| `claude-desktop` | user | `~/Library/Application Support/Claude/claude_desktop_config.json` |
-| `claude-code` | user | `~/.claude.json` |
-| `claude-code` | project | `./.mcp.json` |
-| `codex` | user | `~/.codex.json` |
-| `codex` | project | `./.codex/.mcp.json` |
+| Target           | Scope   | macOS Path                                                        |
+| ---------------- | ------- | ----------------------------------------------------------------- |
+| `claude-desktop` | user    | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| `claude-code`    | user    | `~/.claude.json`                                                  |
+| `claude-code`    | project | `./.mcp.json`                                                     |
+| `codex`          | user    | `~/.codex.json`                                                   |
+| `codex`          | project | `./.codex/.mcp.json`                                              |
 
 **Example:**
+
 ```bash
 # Install for Claude Desktop (default)
 gno mcp install
@@ -593,34 +618,36 @@ gno mcp install --dry-run
 Remove gno MCP server from client configurations.
 
 **Synopsis:**
+
 ```bash
 gno mcp uninstall [options]
 ```
 
 **Options:**
 
-| Option | Description | Default |
-|--------|-------------|---------|
+| Option                  | Description   | Default          |
+| ----------------------- | ------------- | ---------------- |
 | `-t, --target <target>` | Target client | `claude-desktop` |
-| `-s, --scope <scope>` | Scope | `user` |
-| `--json` | JSON output | `false` |
+| `-s, --scope <scope>`   | Scope         | `user`           |
+| `--json`                | JSON output   | `false`          |
 
 ### gno mcp status
 
 Show MCP server installation status across all targets.
 
 **Synopsis:**
+
 ```bash
 gno mcp status [options]
 ```
 
 **Options:**
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `-t, --target <target>` | Filter by target (or `all`) | `all` |
-| `-s, --scope <scope>` | Filter by scope (or `all`) | `all` |
-| `--json` | JSON output | `false` |
+| Option                  | Description                 | Default |
+| ----------------------- | --------------------------- | ------- |
+| `-t, --target <target>` | Filter by target (or `all`) | `all`   |
+| `-s, --scope <scope>`   | Filter by scope (or `all`)  | `all`   |
+| `--json`                | JSON output                 | `false` |
 
 **Example Output:**
 

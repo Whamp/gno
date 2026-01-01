@@ -1,24 +1,25 @@
-import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
-import { mkdir } from 'node:fs/promises';
-import { join } from 'node:path';
-import { installMcp } from '../../src/cli/commands/mcp/install';
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { mkdir } from "node:fs/promises";
+import { join } from "node:path";
+
+import { installMcp } from "../../src/cli/commands/mcp/install";
 import {
   MCP_SERVER_NAME,
   MCP_TARGETS,
   resolveAllMcpPaths,
   resolveMcpConfigPath,
   TARGETS_WITH_PROJECT_SCOPE,
-} from '../../src/cli/commands/mcp/paths';
-import { statusMcp } from '../../src/cli/commands/mcp/status';
-import { uninstallMcp } from '../../src/cli/commands/mcp/uninstall';
-import { CliError } from '../../src/cli/errors';
-import { resetGlobals } from '../../src/cli/program';
-import { safeRm } from '../helpers/cleanup';
+} from "../../src/cli/commands/mcp/paths";
+import { statusMcp } from "../../src/cli/commands/mcp/status";
+import { uninstallMcp } from "../../src/cli/commands/mcp/uninstall";
+import { CliError } from "../../src/cli/errors";
+import { resetGlobals } from "../../src/cli/program";
+import { safeRm } from "../helpers/cleanup";
 
 // Temp directory for tests
-const TEST_DIR = join(import.meta.dir, '.temp-mcp-tests');
-const FAKE_HOME = join(TEST_DIR, 'home');
-const FAKE_CWD = join(TEST_DIR, 'project');
+const TEST_DIR = join(import.meta.dir, ".temp-mcp-tests");
+const FAKE_HOME = join(TEST_DIR, "home");
+const FAKE_CWD = join(TEST_DIR, "project");
 
 // Capture stdout output
 let stdoutOutput: string[] = [];
@@ -28,7 +29,7 @@ const mockWrite = (chunk: string | Uint8Array): boolean => {
   return true;
 };
 
-describe('MCP CLI commands', () => {
+describe("MCP CLI commands", () => {
   beforeEach(async () => {
     // Set up mocks
     process.stdout.write = mockWrite as typeof process.stdout.write;
@@ -49,66 +50,66 @@ describe('MCP CLI commands', () => {
     await safeRm(TEST_DIR);
   });
 
-  describe('resolveMcpConfigPath', () => {
-    test('resolves claude-desktop path (macOS)', () => {
+  describe("resolveMcpConfigPath", () => {
+    test("resolves claude-desktop path (macOS)", () => {
       const result = resolveMcpConfigPath({
-        target: 'claude-desktop',
+        target: "claude-desktop",
         homeDir: FAKE_HOME,
       });
 
       // On macOS this is Library/Application Support/Claude
-      expect(result.configPath).toContain('Claude');
-      expect(result.configPath).toContain('claude_desktop_config.json');
+      expect(result.configPath).toContain("Claude");
+      expect(result.configPath).toContain("claude_desktop_config.json");
       expect(result.supportsProjectScope).toBe(false);
     });
 
-    test('resolves claude-code user path', () => {
+    test("resolves claude-code user path", () => {
       const result = resolveMcpConfigPath({
-        target: 'claude-code',
-        scope: 'user',
+        target: "claude-code",
+        scope: "user",
         homeDir: FAKE_HOME,
       });
 
-      expect(result.configPath).toBe(join(FAKE_HOME, '.claude.json'));
+      expect(result.configPath).toBe(join(FAKE_HOME, ".claude.json"));
       expect(result.supportsProjectScope).toBe(true);
     });
 
-    test('resolves claude-code project path', () => {
+    test("resolves claude-code project path", () => {
       const result = resolveMcpConfigPath({
-        target: 'claude-code',
-        scope: 'project',
+        target: "claude-code",
+        scope: "project",
         cwd: FAKE_CWD,
         homeDir: FAKE_HOME,
       });
 
-      expect(result.configPath).toBe(join(FAKE_CWD, '.mcp.json'));
+      expect(result.configPath).toBe(join(FAKE_CWD, ".mcp.json"));
     });
 
-    test('resolves codex user path', () => {
+    test("resolves codex user path", () => {
       const result = resolveMcpConfigPath({
-        target: 'codex',
-        scope: 'user',
+        target: "codex",
+        scope: "user",
         homeDir: FAKE_HOME,
       });
 
-      expect(result.configPath).toBe(join(FAKE_HOME, '.codex.json'));
+      expect(result.configPath).toBe(join(FAKE_HOME, ".codex.json"));
     });
 
-    test('resolves codex project path', () => {
+    test("resolves codex project path", () => {
       const result = resolveMcpConfigPath({
-        target: 'codex',
-        scope: 'project',
+        target: "codex",
+        scope: "project",
         cwd: FAKE_CWD,
         homeDir: FAKE_HOME,
       });
 
-      expect(result.configPath).toBe(join(FAKE_CWD, '.codex/.mcp.json'));
+      expect(result.configPath).toBe(join(FAKE_CWD, ".codex/.mcp.json"));
     });
   });
 
-  describe('resolveAllMcpPaths', () => {
-    test('returns 13 entries for all/all', () => {
-      const results = resolveAllMcpPaths('all', 'all', {
+  describe("resolveAllMcpPaths", () => {
+    test("returns 13 entries for all/all", () => {
+      const results = resolveAllMcpPaths("all", "all", {
         cwd: FAKE_CWD,
         homeDir: FAKE_HOME,
       });
@@ -119,77 +120,77 @@ describe('MCP CLI commands', () => {
       expect(results).toHaveLength(15);
 
       const targets = results.map((r) => r.target);
-      expect(targets.filter((t) => t === 'claude-desktop')).toHaveLength(1);
-      expect(targets.filter((t) => t === 'claude-code')).toHaveLength(2);
-      expect(targets.filter((t) => t === 'codex')).toHaveLength(2);
-      expect(targets.filter((t) => t === 'cursor')).toHaveLength(2);
-      expect(targets.filter((t) => t === 'zed')).toHaveLength(1);
-      expect(targets.filter((t) => t === 'windsurf')).toHaveLength(1);
-      expect(targets.filter((t) => t === 'opencode')).toHaveLength(2);
-      expect(targets.filter((t) => t === 'amp')).toHaveLength(1);
-      expect(targets.filter((t) => t === 'lmstudio')).toHaveLength(1);
-      expect(targets.filter((t) => t === 'librechat')).toHaveLength(2);
+      expect(targets.filter((t) => t === "claude-desktop")).toHaveLength(1);
+      expect(targets.filter((t) => t === "claude-code")).toHaveLength(2);
+      expect(targets.filter((t) => t === "codex")).toHaveLength(2);
+      expect(targets.filter((t) => t === "cursor")).toHaveLength(2);
+      expect(targets.filter((t) => t === "zed")).toHaveLength(1);
+      expect(targets.filter((t) => t === "windsurf")).toHaveLength(1);
+      expect(targets.filter((t) => t === "opencode")).toHaveLength(2);
+      expect(targets.filter((t) => t === "amp")).toHaveLength(1);
+      expect(targets.filter((t) => t === "lmstudio")).toHaveLength(1);
+      expect(targets.filter((t) => t === "librechat")).toHaveLength(2);
     });
 
-    test('filters by target', () => {
-      const results = resolveAllMcpPaths('all', 'claude-code', {
+    test("filters by target", () => {
+      const results = resolveAllMcpPaths("all", "claude-code", {
         cwd: FAKE_CWD,
         homeDir: FAKE_HOME,
       });
 
       expect(results).toHaveLength(2);
-      expect(results.every((r) => r.target === 'claude-code')).toBe(true);
+      expect(results.every((r) => r.target === "claude-code")).toBe(true);
     });
 
-    test('filters by scope', () => {
-      const results = resolveAllMcpPaths('project', 'all', {
+    test("filters by scope", () => {
+      const results = resolveAllMcpPaths("project", "all", {
         cwd: FAKE_CWD,
         homeDir: FAKE_HOME,
       });
 
       // claude-code, codex, cursor, opencode, librechat support project scope
       expect(results).toHaveLength(5);
-      expect(results.every((r) => r.scope === 'project')).toBe(true);
+      expect(results.every((r) => r.scope === "project")).toBe(true);
     });
   });
 
-  describe('installMcp', () => {
-    test('installs to claude-code (user scope)', async () => {
+  describe("installMcp", () => {
+    test("installs to claude-code (user scope)", async () => {
       await installMcp({
-        target: 'claude-code',
-        scope: 'user',
+        target: "claude-code",
+        scope: "user",
         homeDir: FAKE_HOME,
         cwd: FAKE_CWD,
       });
 
-      const configPath = join(FAKE_HOME, '.claude.json');
+      const configPath = join(FAKE_HOME, ".claude.json");
       const config = await Bun.file(configPath).json();
 
       expect(config.mcpServers).toBeDefined();
       expect(config.mcpServers[MCP_SERVER_NAME]).toBeDefined();
       expect(config.mcpServers[MCP_SERVER_NAME].command).toBeTruthy();
-      expect(stdoutOutput.join('')).toContain('Installed');
+      expect(stdoutOutput.join("")).toContain("Installed");
     });
 
-    test('installs to claude-code (project scope)', async () => {
+    test("installs to claude-code (project scope)", async () => {
       await installMcp({
-        target: 'claude-code',
-        scope: 'project',
+        target: "claude-code",
+        scope: "project",
         homeDir: FAKE_HOME,
         cwd: FAKE_CWD,
       });
 
-      const configPath = join(FAKE_CWD, '.mcp.json');
+      const configPath = join(FAKE_CWD, ".mcp.json");
       const config = await Bun.file(configPath).json();
 
       expect(config.mcpServers[MCP_SERVER_NAME]).toBeDefined();
     });
 
-    test('errors on duplicate without --force', async () => {
+    test("errors on duplicate without --force", async () => {
       // First install
       await installMcp({
-        target: 'claude-code',
-        scope: 'user',
+        target: "claude-code",
+        scope: "user",
         homeDir: FAKE_HOME,
         cwd: FAKE_CWD,
       });
@@ -198,8 +199,8 @@ describe('MCP CLI commands', () => {
       let error: CliError | undefined;
       try {
         await installMcp({
-          target: 'claude-code',
-          scope: 'user',
+          target: "claude-code",
+          scope: "user",
           homeDir: FAKE_HOME,
           cwd: FAKE_CWD,
         });
@@ -208,15 +209,15 @@ describe('MCP CLI commands', () => {
       }
 
       expect(error).toBeInstanceOf(CliError);
-      expect(error?.code).toBe('VALIDATION');
-      expect(error?.message).toContain('already has gno configured');
+      expect(error?.code).toBe("VALIDATION");
+      expect(error?.message).toContain("already has gno configured");
     });
 
-    test('overwrites with --force', async () => {
+    test("overwrites with --force", async () => {
       // First install
       await installMcp({
-        target: 'claude-code',
-        scope: 'user',
+        target: "claude-code",
+        scope: "user",
         homeDir: FAKE_HOME,
         cwd: FAKE_CWD,
       });
@@ -224,61 +225,61 @@ describe('MCP CLI commands', () => {
       // Second install with force
       stdoutOutput = [];
       await installMcp({
-        target: 'claude-code',
-        scope: 'user',
+        target: "claude-code",
+        scope: "user",
         force: true,
         homeDir: FAKE_HOME,
         cwd: FAKE_CWD,
       });
 
-      expect(stdoutOutput.join('')).toContain('Updated');
+      expect(stdoutOutput.join("")).toContain("Updated");
     });
 
-    test('dry-run does not modify files and reports create', async () => {
+    test("dry-run does not modify files and reports create", async () => {
       await installMcp({
-        target: 'claude-code',
-        scope: 'user',
+        target: "claude-code",
+        scope: "user",
         dryRun: true,
         homeDir: FAKE_HOME,
         cwd: FAKE_CWD,
       });
 
-      const configPath = join(FAKE_HOME, '.claude.json');
+      const configPath = join(FAKE_HOME, ".claude.json");
       expect(await Bun.file(configPath).exists()).toBe(false);
-      expect(stdoutOutput.join('')).toContain('Dry run');
-      expect(stdoutOutput.join('')).toContain('Would create');
+      expect(stdoutOutput.join("")).toContain("Dry run");
+      expect(stdoutOutput.join("")).toContain("Would create");
     });
 
-    test('dry-run reports update when config exists', async () => {
+    test("dry-run reports update when config exists", async () => {
       // Create existing config with gno
-      const configPath = join(FAKE_HOME, '.claude.json');
+      const configPath = join(FAKE_HOME, ".claude.json");
       await mkdir(FAKE_HOME, { recursive: true });
       await Bun.write(
         configPath,
         JSON.stringify({
-          mcpServers: { [MCP_SERVER_NAME]: { command: 'old', args: [] } },
+          mcpServers: { [MCP_SERVER_NAME]: { command: "old", args: [] } },
         })
       );
 
       stdoutOutput = [];
       await installMcp({
-        target: 'claude-code',
-        scope: 'user',
+        target: "claude-code",
+        scope: "user",
         dryRun: true,
         force: true,
         homeDir: FAKE_HOME,
         cwd: FAKE_CWD,
       });
 
-      expect(stdoutOutput.join('')).toContain('Would update');
+      expect(stdoutOutput.join("")).toContain("Would update");
     });
 
-    test('errors on project scope for claude-desktop', async () => {
+    test("errors on project scope for claude-desktop", async () => {
       let error: CliError | undefined;
       try {
         await installMcp({
-          target: 'claude-desktop',
-          scope: 'project',
+          target: "claude-desktop",
+          scope: "project",
           homeDir: FAKE_HOME,
           cwd: FAKE_CWD,
         });
@@ -287,48 +288,48 @@ describe('MCP CLI commands', () => {
       }
 
       expect(error).toBeInstanceOf(CliError);
-      expect(error?.code).toBe('VALIDATION');
-      expect(error?.message).toContain('does not support project scope');
+      expect(error?.code).toBe("VALIDATION");
+      expect(error?.message).toContain("does not support project scope");
     });
 
-    test('preserves other mcpServers entries', async () => {
+    test("preserves other mcpServers entries", async () => {
       // Create config with existing server
-      const configPath = join(FAKE_HOME, '.claude.json');
+      const configPath = join(FAKE_HOME, ".claude.json");
       await mkdir(FAKE_HOME, { recursive: true });
       await Bun.write(
         configPath,
         JSON.stringify({
           mcpServers: {
-            other: { command: 'other-cmd', args: ['arg1'] },
+            other: { command: "other-cmd", args: ["arg1"] },
           },
         })
       );
 
       // Install gno
       await installMcp({
-        target: 'claude-code',
-        scope: 'user',
+        target: "claude-code",
+        scope: "user",
         homeDir: FAKE_HOME,
         cwd: FAKE_CWD,
       });
 
       const config = await Bun.file(configPath).json();
       expect(config.mcpServers.other).toBeDefined();
-      expect(config.mcpServers.other.command).toBe('other-cmd');
+      expect(config.mcpServers.other.command).toBe("other-cmd");
       expect(config.mcpServers[MCP_SERVER_NAME]).toBeDefined();
     });
 
-    test('errors on malformed JSON config', async () => {
+    test("errors on malformed JSON config", async () => {
       // Create malformed JSON file
-      const configPath = join(FAKE_HOME, '.claude.json');
+      const configPath = join(FAKE_HOME, ".claude.json");
       await mkdir(FAKE_HOME, { recursive: true });
       await Bun.write(configPath, '{ "invalid json');
 
       let error: CliError | undefined;
       try {
         await installMcp({
-          target: 'claude-code',
-          scope: 'user',
+          target: "claude-code",
+          scope: "user",
           homeDir: FAKE_HOME,
           cwd: FAKE_CWD,
         });
@@ -337,22 +338,22 @@ describe('MCP CLI commands', () => {
       }
 
       expect(error).toBeInstanceOf(CliError);
-      expect(error?.code).toBe('RUNTIME');
-      expect(error?.message).toContain('Malformed JSON');
+      expect(error?.code).toBe("RUNTIME");
+      expect(error?.message).toContain("Malformed JSON");
     });
 
-    test('creates backup before modifying existing config', async () => {
+    test("creates backup before modifying existing config", async () => {
       // Create initial config
-      const configPath = join(FAKE_HOME, '.claude.json');
+      const configPath = join(FAKE_HOME, ".claude.json");
       const backupPath = `${configPath}.bak`;
-      const originalContent = JSON.stringify({ existing: 'data' });
+      const originalContent = JSON.stringify({ existing: "data" });
       await mkdir(FAKE_HOME, { recursive: true });
       await Bun.write(configPath, originalContent);
 
       // Install gno (modifies config)
       await installMcp({
-        target: 'claude-code',
-        scope: 'user',
+        target: "claude-code",
+        scope: "user",
         homeDir: FAKE_HOME,
         cwd: FAKE_CWD,
       });
@@ -364,12 +365,12 @@ describe('MCP CLI commands', () => {
     });
   });
 
-  describe('uninstallMcp', () => {
-    test('removes gno entry', async () => {
+  describe("uninstallMcp", () => {
+    test("removes gno entry", async () => {
       // First install
       await installMcp({
-        target: 'claude-code',
-        scope: 'user',
+        target: "claude-code",
+        scope: "user",
         homeDir: FAKE_HOME,
         cwd: FAKE_CWD,
       });
@@ -377,37 +378,37 @@ describe('MCP CLI commands', () => {
       // Then uninstall
       stdoutOutput = [];
       await uninstallMcp({
-        target: 'claude-code',
-        scope: 'user',
+        target: "claude-code",
+        scope: "user",
         homeDir: FAKE_HOME,
         cwd: FAKE_CWD,
       });
 
-      const configPath = join(FAKE_HOME, '.claude.json');
+      const configPath = join(FAKE_HOME, ".claude.json");
       const config = await Bun.file(configPath).json();
 
       expect(config.mcpServers?.[MCP_SERVER_NAME]).toBeUndefined();
-      expect(stdoutOutput.join('')).toContain('Removed');
+      expect(stdoutOutput.join("")).toContain("Removed");
     });
 
-    test('preserves other mcpServers entries', async () => {
+    test("preserves other mcpServers entries", async () => {
       // Create config with gno and another server
-      const configPath = join(FAKE_HOME, '.claude.json');
+      const configPath = join(FAKE_HOME, ".claude.json");
       await mkdir(FAKE_HOME, { recursive: true });
       await Bun.write(
         configPath,
         JSON.stringify({
           mcpServers: {
-            [MCP_SERVER_NAME]: { command: 'gno', args: ['mcp'] },
-            other: { command: 'other-cmd', args: ['arg1'] },
+            [MCP_SERVER_NAME]: { command: "gno", args: ["mcp"] },
+            other: { command: "other-cmd", args: ["arg1"] },
           },
         })
       );
 
       // Uninstall gno
       await uninstallMcp({
-        target: 'claude-code',
-        scope: 'user',
+        target: "claude-code",
+        scope: "user",
         homeDir: FAKE_HOME,
         cwd: FAKE_CWD,
       });
@@ -417,137 +418,137 @@ describe('MCP CLI commands', () => {
       expect(config.mcpServers?.other).toBeDefined();
     });
 
-    test('handles not found gracefully', async () => {
+    test("handles not found gracefully", async () => {
       await uninstallMcp({
-        target: 'claude-code',
-        scope: 'user',
+        target: "claude-code",
+        scope: "user",
         homeDir: FAKE_HOME,
         cwd: FAKE_CWD,
       });
 
-      expect(stdoutOutput.join('')).toContain('not configured');
+      expect(stdoutOutput.join("")).toContain("not configured");
     });
 
-    test('cleans up empty mcpServers object', async () => {
+    test("cleans up empty mcpServers object", async () => {
       // Create config with only gno
-      const configPath = join(FAKE_HOME, '.claude.json');
+      const configPath = join(FAKE_HOME, ".claude.json");
       await mkdir(FAKE_HOME, { recursive: true });
       await Bun.write(
         configPath,
         JSON.stringify({
           mcpServers: {
-            [MCP_SERVER_NAME]: { command: 'gno', args: ['mcp'] },
+            [MCP_SERVER_NAME]: { command: "gno", args: ["mcp"] },
           },
-          otherKey: 'preserved',
+          otherKey: "preserved",
         })
       );
 
       await uninstallMcp({
-        target: 'claude-code',
-        scope: 'user',
+        target: "claude-code",
+        scope: "user",
         homeDir: FAKE_HOME,
         cwd: FAKE_CWD,
       });
 
       const config = await Bun.file(configPath).json();
       expect(config.mcpServers).toBeUndefined();
-      expect(config.otherKey).toBe('preserved');
+      expect(config.otherKey).toBe("preserved");
     });
   });
 
-  describe('statusMcp', () => {
-    test('shows not configured for empty targets', async () => {
+  describe("statusMcp", () => {
+    test("shows not configured for empty targets", async () => {
       await statusMcp({
-        target: 'claude-code',
-        scope: 'user',
+        target: "claude-code",
+        scope: "user",
         homeDir: FAKE_HOME,
         cwd: FAKE_CWD,
       });
 
-      expect(stdoutOutput.join('')).toContain('not configured');
+      expect(stdoutOutput.join("")).toContain("not configured");
     });
 
-    test('shows configured after install', async () => {
+    test("shows configured after install", async () => {
       // Install first
       await installMcp({
-        target: 'claude-code',
-        scope: 'user',
+        target: "claude-code",
+        scope: "user",
         homeDir: FAKE_HOME,
         cwd: FAKE_CWD,
       });
 
       stdoutOutput = [];
       await statusMcp({
-        target: 'claude-code',
-        scope: 'user',
+        target: "claude-code",
+        scope: "user",
         homeDir: FAKE_HOME,
         cwd: FAKE_CWD,
       });
 
-      expect(stdoutOutput.join('')).toContain('configured');
-      expect(stdoutOutput.join('')).toContain('1/1');
+      expect(stdoutOutput.join("")).toContain("configured");
+      expect(stdoutOutput.join("")).toContain("1/1");
     });
 
-    test('shows all targets with target=all', async () => {
+    test("shows all targets with target=all", async () => {
       await statusMcp({
-        target: 'all',
-        scope: 'all',
+        target: "all",
+        scope: "all",
         homeDir: FAKE_HOME,
         cwd: FAKE_CWD,
       });
 
-      const output = stdoutOutput.join('');
-      expect(output).toContain('Claude Desktop');
-      expect(output).toContain('Claude Code');
-      expect(output).toContain('Codex');
+      const output = stdoutOutput.join("");
+      expect(output).toContain("Claude Desktop");
+      expect(output).toContain("Claude Code");
+      expect(output).toContain("Codex");
     });
 
-    test('JSON output includes all targets', async () => {
+    test("JSON output includes all targets", async () => {
       await statusMcp({
-        target: 'all',
-        scope: 'all',
+        target: "all",
+        scope: "all",
         json: true,
         homeDir: FAKE_HOME,
         cwd: FAKE_CWD,
       });
 
-      const output = JSON.parse(stdoutOutput.join(''));
+      const output = JSON.parse(stdoutOutput.join(""));
       expect(output.targets).toHaveLength(15);
       expect(output.summary.total).toBe(15);
     });
   });
 
-  describe('constants', () => {
-    test('MCP_SERVER_NAME is gno', () => {
-      expect(MCP_SERVER_NAME).toBe('gno');
+  describe("constants", () => {
+    test("MCP_SERVER_NAME is gno", () => {
+      expect(MCP_SERVER_NAME).toBe("gno");
     });
 
-    test('MCP_TARGETS includes all expected targets', () => {
-      expect(MCP_TARGETS).toContain('claude-desktop');
-      expect(MCP_TARGETS).toContain('claude-code');
-      expect(MCP_TARGETS).toContain('codex');
-      expect(MCP_TARGETS).toContain('cursor');
-      expect(MCP_TARGETS).toContain('zed');
-      expect(MCP_TARGETS).toContain('windsurf');
-      expect(MCP_TARGETS).toContain('opencode');
-      expect(MCP_TARGETS).toContain('amp');
-      expect(MCP_TARGETS).toContain('lmstudio');
-      expect(MCP_TARGETS).toContain('librechat');
+    test("MCP_TARGETS includes all expected targets", () => {
+      expect(MCP_TARGETS).toContain("claude-desktop");
+      expect(MCP_TARGETS).toContain("claude-code");
+      expect(MCP_TARGETS).toContain("codex");
+      expect(MCP_TARGETS).toContain("cursor");
+      expect(MCP_TARGETS).toContain("zed");
+      expect(MCP_TARGETS).toContain("windsurf");
+      expect(MCP_TARGETS).toContain("opencode");
+      expect(MCP_TARGETS).toContain("amp");
+      expect(MCP_TARGETS).toContain("lmstudio");
+      expect(MCP_TARGETS).toContain("librechat");
       expect(MCP_TARGETS).toHaveLength(10);
     });
 
-    test('TARGETS_WITH_PROJECT_SCOPE includes correct targets', () => {
-      expect(TARGETS_WITH_PROJECT_SCOPE).toContain('claude-code');
-      expect(TARGETS_WITH_PROJECT_SCOPE).toContain('codex');
-      expect(TARGETS_WITH_PROJECT_SCOPE).toContain('cursor');
-      expect(TARGETS_WITH_PROJECT_SCOPE).toContain('opencode');
-      expect(TARGETS_WITH_PROJECT_SCOPE).toContain('librechat');
+    test("TARGETS_WITH_PROJECT_SCOPE includes correct targets", () => {
+      expect(TARGETS_WITH_PROJECT_SCOPE).toContain("claude-code");
+      expect(TARGETS_WITH_PROJECT_SCOPE).toContain("codex");
+      expect(TARGETS_WITH_PROJECT_SCOPE).toContain("cursor");
+      expect(TARGETS_WITH_PROJECT_SCOPE).toContain("opencode");
+      expect(TARGETS_WITH_PROJECT_SCOPE).toContain("librechat");
       // User-only targets
-      expect(TARGETS_WITH_PROJECT_SCOPE).not.toContain('claude-desktop');
-      expect(TARGETS_WITH_PROJECT_SCOPE).not.toContain('zed');
-      expect(TARGETS_WITH_PROJECT_SCOPE).not.toContain('windsurf');
-      expect(TARGETS_WITH_PROJECT_SCOPE).not.toContain('amp');
-      expect(TARGETS_WITH_PROJECT_SCOPE).not.toContain('lmstudio');
+      expect(TARGETS_WITH_PROJECT_SCOPE).not.toContain("claude-desktop");
+      expect(TARGETS_WITH_PROJECT_SCOPE).not.toContain("zed");
+      expect(TARGETS_WITH_PROJECT_SCOPE).not.toContain("windsurf");
+      expect(TARGETS_WITH_PROJECT_SCOPE).not.toContain("amp");
+      expect(TARGETS_WITH_PROJECT_SCOPE).not.toContain("lmstudio");
       expect(TARGETS_WITH_PROJECT_SCOPE).toHaveLength(5);
     });
   });

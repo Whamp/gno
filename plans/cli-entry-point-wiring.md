@@ -39,6 +39,7 @@ src/cli/help.ts       → Custom grouped help renderer (optional)
 ```
 
 **Key Principles:**
+
 1. **No `process.exit()` inside actions** - return exit codes, single exit point
 2. **Explicit option mappers** - no blind merging of globalOpts + cmdOpts
 3. **Centralized error model** - consistent JSON envelope for `--json` errors
@@ -51,20 +52,20 @@ src/cli/help.ts       → Custom grouped help renderer (optional)
 
 ### New Files
 
-| File | Purpose |
-|------|---------|
-| `src/cli/run.ts` | Main CLI runner, returns exit code |
-| `src/cli/program.ts` | Commander program + command wiring |
-| `src/cli/context.ts` | Global options resolution |
-| `src/cli/options.ts` | Format selection, validation, defaults |
-| `src/cli/errors.ts` | CliError class, JSON envelope formatting |
+| File                 | Purpose                                  |
+| -------------------- | ---------------------------------------- |
+| `src/cli/run.ts`     | Main CLI runner, returns exit code       |
+| `src/cli/program.ts` | Commander program + command wiring       |
+| `src/cli/context.ts` | Global options resolution                |
+| `src/cli/options.ts` | Format selection, validation, defaults   |
+| `src/cli/errors.ts`  | CliError class, JSON envelope formatting |
 
 ### Modified Files
 
-| File | Change |
-|------|--------|
-| `src/index.ts` | Replace placeholder with thin bootstrap |
-| `src/app/constants.ts` | Add VERSION constant |
+| File                   | Change                                  |
+| ---------------------- | --------------------------------------- |
+| `src/index.ts`         | Replace placeholder with thin bootstrap |
+| `src/app/constants.ts` | Add VERSION constant                    |
 
 ---
 
@@ -454,6 +455,7 @@ Critical gaps identified in review:
 ## Acceptance Criteria
 
 ### Functional
+
 - [ ] `gno --help` shows all commands
 - [ ] `gno --version` shows version
 - [ ] `gno search "test"` executes search command
@@ -466,6 +468,7 @@ Critical gaps identified in review:
 - [ ] `--json` errors return JSON envelope to stderr
 
 ### Quality
+
 - [ ] Typecheck passes
 - [ ] All tests pass
 - [ ] Lint passes
@@ -475,13 +478,13 @@ Critical gaps identified in review:
 
 ## Risks & Mitigations
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Spec duplication drift (Commander vs command types) | Inconsistent behavior | Explicit option mappers per command |
-| Missing command implementations | Can't wire all 22 | Stub with "Not implemented" + exit 2 |
-| Commander async issues with Bun | Commands fail | Use parseAsync(), test thoroughly |
-| Heavy module loading on --help | Slow startup | Lazy imports only in action handlers |
-| MCP stdout pollution | Protocol breaks | Strict stderr for all logs |
+| Risk                                                | Impact                | Mitigation                           |
+| --------------------------------------------------- | --------------------- | ------------------------------------ |
+| Spec duplication drift (Commander vs command types) | Inconsistent behavior | Explicit option mappers per command  |
+| Missing command implementations                     | Can't wire all 22     | Stub with "Not implemented" + exit 2 |
+| Commander async issues with Bun                     | Commands fail         | Use parseAsync(), test thoroughly    |
+| Heavy module loading on --help                      | Slow startup          | Lazy imports only in action handlers |
+| MCP stdout pollution                                | Protocol breaks       | Strict stderr for all logs           |
 
 ---
 
@@ -522,12 +525,14 @@ gno search "test"  # then Ctrl+C → exit 130
 ## References
 
 ### Internal
+
 - `spec/cli.md` - CLI specification (authoritative)
 - `src/cli/commands/index.ts` - Command exports
 - `src/cli/commands/shared.ts` - Shared utilities
 - `src/app/constants.ts` - CLI_NAME, etc.
 
 ### External
+
 - [Commander.js Documentation](https://github.com/tj/commander.js)
 - [NO_COLOR Standard](https://no-color.org/)
 - [CLI Guidelines](https://clig.dev/)

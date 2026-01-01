@@ -6,7 +6,7 @@
  * @module src/cli/commands/context/list
  */
 
-import { loadConfig } from '../../../config';
+import { loadConfig } from "../../../config";
 
 /**
  * Exit codes
@@ -16,7 +16,7 @@ const EXIT_SUCCESS = 0;
 /**
  * Output format
  */
-export type OutputFormat = 'terminal' | 'json' | 'md';
+export type OutputFormat = "terminal" | "json" | "md";
 
 /**
  * List all configured contexts.
@@ -25,7 +25,7 @@ export type OutputFormat = 'terminal' | 'json' | 'md';
  * @returns Exit code
  */
 export async function contextList(
-  format: OutputFormat = 'terminal'
+  format: OutputFormat = "terminal"
 ): Promise<number> {
   // Load config
   const configResult = await loadConfig();
@@ -48,12 +48,12 @@ function formatOutput(
   format: OutputFormat,
   contexts: Array<{ scopeKey: string; text: string }>
 ): void {
-  if (format === 'json') {
+  if (format === "json") {
     formatJson(contexts);
     return;
   }
 
-  if (format === 'md') {
+  if (format === "md") {
     formatMarkdown(contexts);
     return;
   }
@@ -78,14 +78,14 @@ function formatJson(contexts: Array<{ scopeKey: string; text: string }>): void {
 function formatMarkdown(
   contexts: Array<{ scopeKey: string; text: string }>
 ): void {
-  console.log('# Contexts\n');
+  console.log("# Contexts\n");
   if (contexts.length === 0) {
-    console.log('No contexts configured.');
+    console.log("No contexts configured.");
     return;
   }
 
-  console.log('| Scope | Text |');
-  console.log('|-------|------|');
+  console.log("| Scope | Text |");
+  console.log("|-------|------|");
   for (const ctx of contexts) {
     console.log(`| ${ctx.scopeKey} | ${ctx.text} |`);
   }
@@ -98,11 +98,11 @@ function formatTerminal(
   contexts: Array<{ scopeKey: string; text: string }>
 ): void {
   if (contexts.length === 0) {
-    console.log('No contexts configured.');
+    console.log("No contexts configured.");
     return;
   }
 
-  console.log('Contexts:');
+  console.log("Contexts:");
   for (const ctx of contexts) {
     console.log(`  ${ctx.scopeKey} - ${ctx.text}`);
   }

@@ -1,24 +1,25 @@
-import { beforeAll, describe, expect, test } from 'bun:test';
-import { assertInvalid, assertValid, loadSchema } from './validator';
+import { beforeAll, describe, expect, test } from "bun:test";
 
-describe('status schema', () => {
+import { assertInvalid, assertValid, loadSchema } from "./validator";
+
+describe("status schema", () => {
   let schema: object;
 
   beforeAll(async () => {
-    schema = await loadSchema('status');
+    schema = await loadSchema("status");
   });
 
-  describe('valid inputs', () => {
-    test('validates healthy status fixture', async () => {
+  describe("valid inputs", () => {
+    test("validates healthy status fixture", async () => {
       const fixture = await Bun.file(
-        'test/fixtures/outputs/status-healthy.json'
+        "test/fixtures/outputs/status-healthy.json"
       ).json();
       expect(assertValid(fixture, schema)).toBe(true);
     });
 
-    test('validates minimal status', () => {
+    test("validates minimal status", () => {
       const status = {
-        indexName: 'default',
+        indexName: "default",
         collections: [],
         totalDocuments: 0,
         totalChunks: 0,
@@ -28,13 +29,13 @@ describe('status schema', () => {
       expect(assertValid(status, schema)).toBe(true);
     });
 
-    test('validates status with single collection', () => {
+    test("validates status with single collection", () => {
       const status = {
-        indexName: 'test',
+        indexName: "test",
         collections: [
           {
-            name: 'docs',
-            path: '/path/to/docs',
+            name: "docs",
+            path: "/path/to/docs",
             documentCount: 10,
             chunkCount: 50,
             embeddedCount: 50,
@@ -48,9 +49,9 @@ describe('status schema', () => {
       expect(assertValid(status, schema)).toBe(true);
     });
 
-    test('validates unhealthy status', () => {
+    test("validates unhealthy status", () => {
       const status = {
-        indexName: 'default',
+        indexName: "default",
         collections: [],
         totalDocuments: 0,
         totalChunks: 0,
@@ -61,8 +62,8 @@ describe('status schema', () => {
     });
   });
 
-  describe('invalid inputs', () => {
-    test('rejects missing indexName', () => {
+  describe("invalid inputs", () => {
+    test("rejects missing indexName", () => {
       const status = {
         collections: [],
         totalDocuments: 0,
@@ -73,9 +74,9 @@ describe('status schema', () => {
       expect(assertInvalid(status, schema)).toBe(true);
     });
 
-    test('rejects missing collections array', () => {
+    test("rejects missing collections array", () => {
       const status = {
-        indexName: 'default',
+        indexName: "default",
         totalDocuments: 0,
         totalChunks: 0,
         embeddingBacklog: 0,
@@ -84,10 +85,10 @@ describe('status schema', () => {
       expect(assertInvalid(status, schema)).toBe(true);
     });
 
-    test('rejects collection missing required fields', () => {
+    test("rejects collection missing required fields", () => {
       const status = {
-        indexName: 'default',
-        collections: [{ name: 'docs' }],
+        indexName: "default",
+        collections: [{ name: "docs" }],
         totalDocuments: 0,
         totalChunks: 0,
         embeddingBacklog: 0,
@@ -96,9 +97,9 @@ describe('status schema', () => {
       expect(assertInvalid(status, schema)).toBe(true);
     });
 
-    test('rejects negative document count', () => {
+    test("rejects negative document count", () => {
       const status = {
-        indexName: 'default',
+        indexName: "default",
         collections: [],
         totalDocuments: -1,
         totalChunks: 0,
@@ -108,9 +109,9 @@ describe('status schema', () => {
       expect(assertInvalid(status, schema)).toBe(true);
     });
 
-    test('rejects missing healthy field', () => {
+    test("rejects missing healthy field", () => {
       const status = {
-        indexName: 'default',
+        indexName: "default",
         collections: [],
         totalDocuments: 0,
         totalChunks: 0,

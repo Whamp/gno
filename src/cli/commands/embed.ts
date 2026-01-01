@@ -5,22 +5,24 @@
  * @module src/cli/commands/embed
  */
 
-import type { Database } from 'bun:sqlite';
-import { getIndexDbPath } from '../../app/constants';
+import type { Database } from "bun:sqlite";
+
+import type { EmbeddingPort } from "../../llm/types";
+import type { StoreResult } from "../../store/types";
+
+import { getIndexDbPath } from "../../app/constants";
 import {
   type Config,
   getConfigPaths,
   isInitialized,
   loadConfig,
-} from '../../config';
-import { LlmAdapter } from '../../llm/nodeLlamaCpp/adapter';
-import { resolveDownloadPolicy } from '../../llm/policy';
-import { getActivePreset } from '../../llm/registry';
-import type { EmbeddingPort } from '../../llm/types';
-import { formatDocForEmbedding } from '../../pipeline/contextual';
-import { SqliteAdapter } from '../../store/sqlite/adapter';
-import type { StoreResult } from '../../store/types';
-import { err, ok } from '../../store/types';
+} from "../../config";
+import { LlmAdapter } from "../../llm/nodeLlamaCpp/adapter";
+import { resolveDownloadPolicy } from "../../llm/policy";
+import { getActivePreset } from "../../llm/registry";
+import { formatDocForEmbedding } from "../../pipeline/contextual";
+import { SqliteAdapter } from "../../store/sqlite/adapter";
+import { err, ok } from "../../store/types";
 import {
   type BacklogItem,
   createVectorIndexPort,
@@ -28,12 +30,12 @@ import {
   type VectorIndexPort,
   type VectorRow,
   type VectorStatsPort,
-} from '../../store/vector';
-import { getGlobals } from '../program';
+} from "../../store/vector";
+import { getGlobals } from "../program";
 import {
   createProgressRenderer,
   createThrottledProgressRenderer,
-} from '../progress';
+} from "../progress";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -81,10 +83,10 @@ function formatDuration(seconds: number): string {
 }
 
 async function checkVecAvailable(
-  db: import('bun:sqlite').Database
+  db: import("bun:sqlite").Database
 ): Promise<boolean> {
   try {
-    const sqliteVec = await import('sqlite-vec');
+    const sqliteVec = await import("sqlite-vec");
     sqliteVec.load(db);
     return true;
   } catch {
@@ -93,7 +95,7 @@ async function checkVecAvailable(
 }
 
 interface BatchContext {
-  db: import('bun:sqlite').Database;
+  db: import("bun:sqlite").Database;
   stats: VectorStatsPort;
   embedPort: EmbeddingPort;
   vectorIndex: VectorIndexPort;
@@ -190,7 +192,7 @@ async function processBatches(ctx: BatchContext): Promise<BatchResult> {
   }
 
   if (ctx.showProgress) {
-    process.stdout.write('\n');
+    process.stdout.write("\n");
   }
 
   return {
@@ -220,7 +222,7 @@ async function initEmbedContext(
 ): Promise<({ ok: true } & EmbedContext) | { ok: false; error: string }> {
   const initialized = await isInitialized(configPath);
   if (!initialized) {
-    return { ok: false, error: 'GNO not initialized. Run: gno init' };
+    return { ok: false, error: "GNO not initialized. Run: gno init" };
   }
 
   const configResult = await loadConfig(configPath);
@@ -324,7 +326,7 @@ export async function embed(options: EmbedOptions = {}): Promise<EmbedResult> {
     const embedResult = await llm.createEmbeddingPort(modelUri, {
       policy,
       onProgress: downloadProgress
-        ? (progress) => downloadProgress('embed', progress)
+        ? (progress) => downloadProgress("embed", progress)
         : undefined,
     });
     if (!embedResult.ok) {
@@ -334,11 +336,11 @@ export async function embed(options: EmbedOptions = {}): Promise<EmbedResult> {
 
     // Clear download progress line if shown
     if (showDownloadProgress) {
-      process.stderr.write('\n');
+      process.stderr.write("\n");
     }
 
     // Discover dimensions via probe embedding
-    const probeResult = await embedPort.embed('dimension probe');
+    const probeResult = await embedPort.embed("dimension probe");
     if (!probeResult.ok) {
       return { success: false, error: probeResult.error.message };
     }
@@ -408,7 +410,7 @@ function getActiveChunkCount(db: Database): Promise<StoreResult<number>> {
   } catch (e) {
     return Promise.resolve(
       err(
-        'QUERY_FAILED',
+        "QUERY_FAILED",
         `Failed to count chunks: ${e instanceof Error ? e.message : String(e)}`
       )
     );
@@ -458,7 +460,7 @@ function getActiveChunks(
   } catch (e) {
     return Promise.resolve(
       err(
-        'QUERY_FAILED',
+        "QUERY_FAILED",
         `Failed to get chunks: ${e instanceof Error ? e.message : String(e)}`
       )
     );
@@ -478,7 +480,7 @@ export function formatEmbed(
 ): string {
   if (!result.success) {
     return options.json
-      ? JSON.stringify({ error: { code: 'RUNTIME', message: result.error } })
+      ? JSON.stringify({ error: { code: "RUNTIME", message: result.error } })
       : `Error: ${result.error}`;
   }
 
@@ -501,7 +503,7 @@ export function formatEmbed(
   }
 
   if (result.embedded === 0 && result.errors === 0) {
-    return 'No chunks need embedding. All up to date.';
+    return "No chunks need embedding. All up to date.";
   }
 
   const lines: string[] = [];
@@ -515,9 +517,9 @@ export function formatEmbed(
 
   if (!result.searchAvailable) {
     lines.push(
-      'Warning: sqlite-vec not available. Embeddings stored but KNN search disabled.'
+      "Warning: sqlite-vec not available. Embeddings stored but KNN search disabled."
     );
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }

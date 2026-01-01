@@ -5,10 +5,11 @@ import {
   Download,
   Loader2,
   SlidersHorizontal,
-} from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { apiFetch } from '../hooks/use-api';
-import { Button } from './ui/button';
+} from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import { apiFetch } from "../hooks/use-api";
+import { Button } from "./ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,8 +18,8 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from './ui/dropdown-menu';
-import { Progress } from './ui/progress';
+} from "./ui/dropdown-menu";
+import { Progress } from "./ui/progress";
 
 interface Preset {
   id: string;
@@ -82,7 +83,7 @@ function extractDesc(name: string): string | null {
 }
 
 function extractBaseName(name: string): string {
-  return name.split('(')[0].trim();
+  return name.split("(")[0].trim();
 }
 
 function formatBytes(bytes: number): string {
@@ -123,17 +124,17 @@ function getButtonLabel(
   activePreset: Preset | undefined
 ): string {
   if (switching) {
-    return 'Switching...';
+    return "Switching...";
   }
   if (downloading) {
-    return 'Downloading...';
+    return "Downloading...";
   }
-  return activePreset ? extractBaseName(activePreset.name) : 'Preset';
+  return activePreset ? extractBaseName(activePreset.name) : "Preset";
 }
 
 export function PresetSelector() {
   const [presets, setPresets] = useState<Preset[]>([]);
-  const [activeId, setActiveId] = useState<string>('');
+  const [activeId, setActiveId] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [switching, setSwitching] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -150,14 +151,14 @@ export function PresetSelector() {
   const checkCapabilities = useCallback((caps: Capabilities) => {
     const missing: string[] = [];
     if (!caps.vector) {
-      missing.push('vector search');
+      missing.push("vector search");
     }
     if (!caps.answer) {
-      missing.push('AI answers');
+      missing.push("AI answers");
     }
 
     if (missing.length > 0) {
-      setError(`Missing: ${missing.join(', ')}`);
+      setError(`Missing: ${missing.join(", ")}`);
       setModelsNeeded(true);
     } else {
       setError(null);
@@ -167,7 +168,7 @@ export function PresetSelector() {
 
   // Poll download status
   const pollStatus = useCallback(async () => {
-    const { data } = await apiFetch<DownloadStatus>('/api/models/status');
+    const { data } = await apiFetch<DownloadStatus>("/api/models/status");
     if (data) {
       setDownloadStatus(data);
 
@@ -181,14 +182,14 @@ export function PresetSelector() {
 
         // Refresh presets to get updated capabilities
         const { data: presetsData } =
-          await apiFetch<PresetsResponse>('/api/presets');
+          await apiFetch<PresetsResponse>("/api/presets");
         if (presetsData) {
           checkCapabilities(presetsData.capabilities);
         }
 
         // Show any failures
         if (data.failed.length > 0) {
-          setError(`Failed: ${data.failed.map((f) => f.type).join(', ')}`);
+          setError(`Failed: ${data.failed.map((f) => f.type).join(", ")}`);
         }
       }
     }
@@ -196,7 +197,7 @@ export function PresetSelector() {
 
   // Initial load
   useEffect(() => {
-    apiFetch<PresetsResponse>('/api/presets').then(({ data }) => {
+    void apiFetch<PresetsResponse>("/api/presets").then(({ data }) => {
       if (data) {
         setPresets(data.presets);
         setActiveId(data.activePreset);
@@ -206,7 +207,7 @@ export function PresetSelector() {
     });
 
     // Check if download already in progress
-    apiFetch<DownloadStatus>('/api/models/status').then(({ data }) => {
+    void apiFetch<DownloadStatus>("/api/models/status").then(({ data }) => {
       if (data?.active) {
         setDownloading(true);
         setDownloadStatus(data);
@@ -242,10 +243,10 @@ export function PresetSelector() {
     setError(null);
 
     const { data, error: fetchError } = await apiFetch<SetPresetResponse>(
-      '/api/presets',
+      "/api/presets",
       {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ presetId: id }),
       }
     );
@@ -271,8 +272,8 @@ export function PresetSelector() {
     setDownloading(true);
     setError(null);
 
-    const { error: fetchError } = await apiFetch('/api/models/pull', {
-      method: 'POST',
+    const { error: fetchError } = await apiFetch("/api/models/pull", {
+      method: "POST",
     });
 
     if (fetchError) {
@@ -282,7 +283,7 @@ export function PresetSelector() {
     }
 
     // Start polling
-    pollStatus();
+    void pollStatus();
   };
 
   return (
@@ -317,11 +318,11 @@ export function PresetSelector() {
             <div className="space-y-2 px-2 py-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">
-                  {downloadStatus.currentType || 'Starting...'}
+                  {downloadStatus.currentType || "Starting..."}
                 </span>
                 {downloadStatus.progress && (
                   <span className="font-mono text-[10px] text-muted-foreground">
-                    {formatBytes(downloadStatus.progress.downloadedBytes)} /{' '}
+                    {formatBytes(downloadStatus.progress.downloadedBytes)} /{" "}
                     {formatBytes(downloadStatus.progress.totalBytes)}
                   </span>
                 )}
@@ -329,7 +330,7 @@ export function PresetSelector() {
               <Progress value={downloadStatus.progress?.percent ?? 0} />
               {downloadStatus.completed.length > 0 && (
                 <div className="text-[10px] text-muted-foreground">
-                  Done: {downloadStatus.completed.join(', ')}
+                  Done: {downloadStatus.completed.join(", ")}
                 </div>
               )}
             </div>

@@ -5,11 +5,13 @@
  * @module src/cli/commands/multi-get
  */
 
-import { minimatch } from 'minimatch';
-import type { DocumentRow, StorePort, StoreResult } from '../../store/types';
-import type { ParsedRef } from './ref-parser';
-import { isGlobPattern, parseRef, splitRefs } from './ref-parser';
-import { initStore } from './shared';
+import { minimatch } from "minimatch";
+
+import type { DocumentRow, StorePort, StoreResult } from "../../store/types";
+import type { ParsedRef } from "./ref-parser";
+
+import { isGlobPattern, parseRef, splitRefs } from "./ref-parser";
+import { initStore } from "./shared";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -46,7 +48,7 @@ export interface MultiGetDocument {
 
 export interface SkippedDoc {
   ref: string;
-  reason: 'not_found' | 'conversion_error' | 'invalid_ref';
+  reason: "not_found" | "conversion_error" | "invalid_ref";
 }
 
 export interface MultiGetResponse {
@@ -73,11 +75,11 @@ function lookupDocument(
   parsed: ParsedRef
 ): Promise<StoreResult<DocumentRow | null>> {
   switch (parsed.type) {
-    case 'docid':
+    case "docid":
       return store.getDocumentByDocid(parsed.value);
-    case 'uri':
+    case "uri":
       return store.getDocumentByUri(parsed.value);
-    case 'collPath':
+    case "collPath":
       if (!(parsed.collection && parsed.relPath)) {
         return Promise.resolve({ ok: true as const, value: null });
       }
@@ -109,7 +111,7 @@ async function expandGlobs(
       continue;
     }
 
-    const slashIdx = ref.indexOf('/');
+    const slashIdx = ref.indexOf("/");
     if (slashIdx === -1) {
       invalidRefs.push(ref);
       continue;
@@ -145,8 +147,8 @@ function truncateContent(
     return { content, truncated: false };
   }
 
-  const lines = content.split('\n');
-  let accumulated = '';
+  const lines = content.split("\n");
+  let accumulated = "";
   let byteLen = 0;
 
   for (const line of lines) {
@@ -184,31 +186,31 @@ async function fetchSingleDocument(
   ctx.seen.add(ref);
 
   const parsed = parseRef(ref);
-  if ('error' in parsed) {
-    ctx.skipped.push({ ref, reason: 'invalid_ref' });
+  if ("error" in parsed) {
+    ctx.skipped.push({ ref, reason: "invalid_ref" });
     return;
   }
 
   const docResult = await lookupDocument(ctx.store, parsed);
   if (!docResult.ok) {
-    ctx.skipped.push({ ref, reason: 'not_found' });
+    ctx.skipped.push({ ref, reason: "not_found" });
     return;
   }
 
   const doc = docResult.value;
   if (!doc?.active) {
-    ctx.skipped.push({ ref, reason: 'not_found' });
+    ctx.skipped.push({ ref, reason: "not_found" });
     return;
   }
 
   if (!doc.mirrorHash) {
-    ctx.skipped.push({ ref, reason: 'conversion_error' });
+    ctx.skipped.push({ ref, reason: "conversion_error" });
     return;
   }
 
   const contentResult = await ctx.store.getContent(doc.mirrorHash);
   if (!contentResult.ok || contentResult.value === null) {
-    ctx.skipped.push({ ref, reason: 'conversion_error' });
+    ctx.skipped.push({ ref, reason: "conversion_error" });
     return;
   }
 
@@ -224,7 +226,7 @@ async function fetchSingleDocument(
     title: doc.title ?? undefined,
     content,
     truncated: truncated || undefined,
-    totalLines: content.split('\n').length,
+    totalLines: content.split("\n").length,
     source: {
       absPath: coll ? `${coll.path}/${doc.relPath}` : undefined,
       relPath: doc.relPath,
@@ -270,7 +272,7 @@ export async function multiGet(
 
     // Track invalid refs as skipped
     for (const ref of invalidRefs) {
-      ctx.skipped.push({ ref, reason: 'invalid_ref' });
+      ctx.skipped.push({ ref, reason: "invalid_ref" });
     }
 
     for (const ref of expandedRefs) {
@@ -302,9 +304,9 @@ export async function multiGet(
 
 function addLineNumbers(text: string, startLine = 1): string {
   return text
-    .split('\n')
+    .split("\n")
     .map((line, i) => `${startLine + i}: ${line}`)
-    .join('\n');
+    .join("\n");
 }
 
 function formatContent(content: string, lineNumbers: boolean): string {
@@ -316,10 +318,10 @@ function formatMarkdown(
   options: MultiGetCommandOptions
 ): string {
   const lines: string[] = [];
-  lines.push('# Multi-Get Results');
-  lines.push('');
+  lines.push("# Multi-Get Results");
+  lines.push("");
   lines.push(`*${data.meta.returned} of ${data.meta.requested} documents*`);
-  lines.push('');
+  lines.push("");
 
   for (const doc of data.documents) {
     lines.push(`## ${doc.title || doc.source.relPath}`);
@@ -327,21 +329,21 @@ function formatMarkdown(
     if (doc.truncated) {
       lines.push(`- **Truncated**: yes (max ${data.meta.maxBytes} bytes)`);
     }
-    lines.push('');
-    lines.push('```');
+    lines.push("");
+    lines.push("```");
     lines.push(formatContent(doc.content, Boolean(options.lineNumbers)));
-    lines.push('```');
-    lines.push('');
+    lines.push("```");
+    lines.push("");
   }
 
   if (data.skipped.length > 0) {
-    lines.push('## Skipped');
+    lines.push("## Skipped");
     for (const s of data.skipped) {
       lines.push(`- ${s.ref}: ${s.reason}`);
     }
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 function formatTerminal(
@@ -353,17 +355,17 @@ function formatTerminal(
   for (const doc of data.documents) {
     lines.push(`=== ${doc.uri} ===`);
     lines.push(formatContent(doc.content, Boolean(options.lineNumbers)));
-    lines.push('');
+    lines.push("");
   }
 
   if (data.skipped.length > 0) {
-    lines.push(`Skipped: ${data.skipped.map((s) => s.ref).join(', ')}`);
+    lines.push(`Skipped: ${data.skipped.map((s) => s.ref).join(", ")}`);
   }
 
   lines.push(
     `${data.meta.returned}/${data.meta.requested} documents retrieved`
   );
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**
@@ -376,7 +378,7 @@ export function formatMultiGet(
   if (!result.success) {
     if (options.json) {
       return JSON.stringify({
-        error: { code: 'MULTI_GET_FAILED', message: result.error },
+        error: { code: "MULTI_GET_FAILED", message: result.error },
       });
     }
     return `Error: ${result.error}`;
@@ -389,7 +391,7 @@ export function formatMultiGet(
   }
 
   if (options.files) {
-    return data.documents.map((d) => `${d.docid},${d.uri}`).join('\n');
+    return data.documents.map((d) => `${d.docid},${d.uri}`).join("\n");
   }
 
   if (options.md) {

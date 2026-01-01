@@ -5,11 +5,11 @@
  * @module src/llm/lockfile
  */
 
-import { open, rename, rm, stat } from 'node:fs/promises';
+import { open, rename, rm, stat } from "node:fs/promises";
 // node:os: hostname and user for lock ownership
-import { hostname, userInfo } from 'node:os';
+import { hostname, userInfo } from "node:os";
 // node:path: join for manifest lock path
-import { join } from 'node:path';
+import { join } from "node:path";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -101,7 +101,7 @@ async function createLockExclusive(
   const content = JSON.stringify(meta, null, 2);
 
   // Create lock file with O_EXCL - fails if exists
-  const fh = await open(lockPath, 'wx');
+  const fh = await open(lockPath, "wx");
   try {
     await fh.writeFile(content);
     await fh.sync();
@@ -147,7 +147,7 @@ export async function acquireLock(
       };
     } catch (e) {
       // EEXIST means lock exists
-      if (e && typeof e === 'object' && 'code' in e && e.code === 'EEXIST') {
+      if (e && typeof e === "object" && "code" in e && e.code === "EEXIST") {
         // Check if stale
         const stale = await isLockStale(lockPath, ttlMs);
 
@@ -212,5 +212,5 @@ export function getLockPath(modelPath: string): string {
  * Get the manifest lock path for a cache directory.
  */
 export function getManifestLockPath(cacheDir: string): string {
-  return join(cacheDir, 'manifest.lock');
+  return join(cacheDir, "manifest.lock");
 }

@@ -19,6 +19,7 @@ gno search <query> [options]
 ```
 
 Options:
+
 - `-n, --limit <n>` - Limit results
 - `--json` - JSON output
 - `--files` - URI list output

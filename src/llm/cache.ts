@@ -6,13 +6,23 @@
  */
 
 // node:crypto: createHash for safe lock filenames
-import { createHash } from 'node:crypto';
-import { mkdir, open, readFile, rename, rm, stat } from 'node:fs/promises';
+import { createHash } from "node:crypto";
+import { mkdir, open, readFile, rename, rm, stat } from "node:fs/promises";
 // node:path: join for path construction, isAbsolute for cross-platform path detection
-import { isAbsolute, join } from 'node:path';
+import { isAbsolute, join } from "node:path";
 // node:url: fileURLToPath for proper file:// URL handling
-import { fileURLToPath } from 'node:url';
-import { getModelsCachePath } from '../app/constants';
+import { fileURLToPath } from "node:url";
+
+import type { DownloadPolicy } from "./policy";
+import type {
+  DownloadProgress,
+  LlmResult,
+  ModelCacheEntry,
+  ModelType,
+  ProgressCallback,
+} from "./types";
+
+import { getModelsCachePath } from "../app/constants";
 import {
   autoDownloadDisabledError,
   downloadFailedError,
@@ -20,16 +30,8 @@ import {
   lockFailedError,
   modelNotCachedError,
   modelNotFoundError,
-} from './errors';
-import { getLockPath, getManifestLockPath, withLock } from './lockfile';
-import type { DownloadPolicy } from './policy';
-import type {
-  DownloadProgress,
-  LlmResult,
-  ModelCacheEntry,
-  ModelType,
-  ProgressCallback,
-} from './types';
+} from "./errors";
+import { getLockPath, getManifestLockPath, withLock } from "./lockfile";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // URI Parsing
@@ -41,14 +43,14 @@ const HF_PATH_PATTERN = /^([^/]+)\/([^/]+)\/(.+\.gguf)$/;
 
 export type ParsedModelUri =
   | {
-      scheme: 'hf';
+      scheme: "hf";
       org: string;
       repo: string;
       file: string;
       quantization?: string;
     }
   | {
-      scheme: 'file';
+      scheme: "file";
       file: string;
     };
 
@@ -69,7 +71,7 @@ export function parseModelUri(
   uri: string
 ): { ok: true; value: ParsedModelUri } | { ok: false; error: string } {
   // Handle hf: scheme
-  if (uri.startsWith('hf:')) {
+  if (uri.startsWith("hf:")) {
     const rest = uri.slice(3);
 
     // Check for quantization shorthand: hf:org/repo:Q4_K_M
@@ -81,10 +83,10 @@ export function parseModelUri(
         return {
           ok: true,
           value: {
-            scheme: 'hf',
+            scheme: "hf",
             org,
             repo,
-            file: '', // Will be resolved by node-llama-cpp
+            file: "", // Will be resolved by node-llama-cpp
             quantization: quant,
           },
         };
@@ -100,7 +102,7 @@ export function parseModelUri(
         return {
           ok: true,
           value: {
-            scheme: 'hf',
+            scheme: "hf",
             org,
             repo,
             file,
@@ -113,12 +115,12 @@ export function parseModelUri(
   }
 
   // Handle file:// URLs (proper file URLs like file:///C:/path or file:///path)
-  if (uri.startsWith('file://')) {
+  if (uri.startsWith("file://")) {
     try {
       const filePath = fileURLToPath(new URL(uri));
       return {
         ok: true,
-        value: { scheme: 'file', file: filePath },
+        value: { scheme: "file", file: filePath },
       };
     } catch {
       return { ok: false, error: `Invalid file URL: ${uri}` };
@@ -126,14 +128,14 @@ export function parseModelUri(
   }
 
   // Handle simplified file: scheme (file:/path or file:C:\path)
-  if (uri.startsWith('file:')) {
+  if (uri.startsWith("file:")) {
     const path = uri.slice(5);
     if (!path) {
-      return { ok: false, error: 'Empty file path' };
+      return { ok: false, error: "Empty file path" };
     }
     return {
       ok: true,
-      value: { scheme: 'file', file: path },
+      value: { scheme: "file", file: path },
     };
   }
 
@@ -141,7 +143,7 @@ export function parseModelUri(
   if (isAbsolute(uri)) {
     return {
       ok: true,
-      value: { scheme: 'file', file: uri },
+      value: { scheme: "file", file: uri },
     };
   }
 
@@ -152,7 +154,7 @@ export function parseModelUri(
  * Convert parsed URI back to node-llama-cpp format.
  */
 export function toNodeLlamaCppUri(parsed: ParsedModelUri): string {
-  if (parsed.scheme === 'file') {
+  if (parsed.scheme === "file") {
     return parsed.file;
   }
 
@@ -168,11 +170,11 @@ export function toNodeLlamaCppUri(parsed: ParsedModelUri): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface Manifest {
-  version: '1.0';
+  version: "1.0";
   models: ModelCacheEntry[];
 }
 
-const MANIFEST_VERSION = '1.0' as const;
+const MANIFEST_VERSION = "1.0" as const;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ModelCache
@@ -185,7 +187,7 @@ export class ModelCache {
 
   constructor(cacheDir?: string) {
     this.dir = cacheDir ?? getModelsCachePath();
-    this.manifestPath = join(this.dir, 'manifest.json');
+    this.manifestPath = join(this.dir, "manifest.json");
   }
 
   /**
@@ -199,7 +201,7 @@ export class ModelCache {
     }
 
     // Local files: verify existence
-    if (parsed.value.scheme === 'file') {
+    if (parsed.value.scheme === "file") {
       const exists = await this.fileExists(parsed.value.file);
       if (!exists) {
         return {
@@ -238,7 +240,7 @@ export class ModelCache {
     }
 
     // Local files: just verify
-    if (parsed.value.scheme === 'file') {
+    if (parsed.value.scheme === "file") {
       const exists = await this.fileExists(parsed.value.file);
       if (!exists) {
         return {
@@ -266,7 +268,7 @@ export class ModelCache {
     }
 
     try {
-      const { resolveModelFile } = await import('node-llama-cpp');
+      const { resolveModelFile } = await import("node-llama-cpp");
 
       // Convert to node-llama-cpp format (handles quantization shorthand)
       // node-llama-cpp needs hf: prefix to identify HuggingFace models
@@ -279,11 +281,11 @@ export class ModelCache {
               // Type-safe check for download progress status
               if (
                 status &&
-                typeof status === 'object' &&
-                'type' in status &&
-                status.type === 'download' &&
-                'downloadedSize' in status &&
-                'totalSize' in status
+                typeof status === "object" &&
+                "type" in status &&
+                status.type === "download" &&
+                "downloadedSize" in status &&
+                "totalSize" in status
               ) {
                 const s = status as {
                   downloadedSize: number;
@@ -340,7 +342,7 @@ export class ModelCache {
     }
 
     // Local files: just verify existence (no download needed)
-    if (parsed.value.scheme === 'file') {
+    if (parsed.value.scheme === "file") {
       const exists = await this.fileExists(parsed.value.file);
       if (!exists) {
         return {
@@ -366,9 +368,9 @@ export class ModelCache {
     // Acquire lock for download (prevents concurrent downloads of same model)
     // Use hash for lock filename to avoid collisions and path issues
     await mkdir(this.dir, { recursive: true });
-    const lockName = createHash('sha256')
+    const lockName = createHash("sha256")
       .update(uri)
-      .digest('hex')
+      .digest("hex")
       .slice(0, 32);
     const lockPath = getLockPath(join(this.dir, lockName));
 
@@ -409,7 +411,7 @@ export class ModelCache {
   async getCachedPath(uri: string): Promise<string | null> {
     // Handle file: URIs directly (check filesystem, not manifest)
     const parsed = parseModelUri(uri);
-    if (parsed.ok && parsed.value.scheme === 'file') {
+    if (parsed.ok && parsed.value.scheme === "file") {
       const exists = await this.fileExists(parsed.value.file);
       return exists ? parsed.value.file : null;
     }
@@ -505,7 +507,7 @@ export class ModelCache {
    */
   private async readManifestFromDisk(): Promise<Manifest> {
     try {
-      const content = await readFile(this.manifestPath, 'utf-8');
+      const content = await readFile(this.manifestPath, "utf-8");
       return JSON.parse(content) as Manifest;
     } catch {
       // No manifest or invalid - create empty
@@ -539,7 +541,7 @@ export class ModelCache {
     });
 
     if (result === null) {
-      throw new Error('Failed to acquire manifest lock');
+      throw new Error("Failed to acquire manifest lock");
     }
   }
 
@@ -553,7 +555,7 @@ export class ModelCache {
     const content = JSON.stringify(manifest, null, 2);
 
     // Write to temp file with fsync
-    const fh = await open(tmpPath, 'w');
+    const fh = await open(tmpPath, "w");
     try {
       await fh.writeFile(content);
       await fh.sync();
@@ -565,9 +567,9 @@ export class ModelCache {
     await rename(tmpPath, this.manifestPath);
 
     // Fsync parent directory for rename durability (best-effort, not supported on Windows)
-    if (process.platform !== 'win32') {
+    if (process.platform !== "win32") {
       try {
-        const dirFh = await open(this.dir, 'r');
+        const dirFh = await open(this.dir, "r");
         try {
           await dirFh.sync();
         } finally {
@@ -603,7 +605,7 @@ export class ModelCache {
         type,
         path: modelPath,
         size,
-        checksum: '', // TODO: compute SHA-256 for large files
+        checksum: "", // TODO: compute SHA-256 for large files
         cachedAt: new Date().toISOString(),
       });
     });

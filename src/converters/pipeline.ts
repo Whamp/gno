@@ -13,10 +13,11 @@
  * CRITICAL: Canonicalization is ONLY done here, not in individual converters.
  */
 
-import { canonicalize, mirrorHash } from './canonicalize';
-import { internalError, outputTooLargeError } from './errors';
-import { type ConverterRegistry, createDefaultRegistry } from './registry';
-import type { ConversionArtifact, ConvertInput, PipelineResult } from './types';
+import type { ConversionArtifact, ConvertInput, PipelineResult } from "./types";
+
+import { canonicalize, mirrorHash } from "./canonicalize";
+import { internalError, outputTooLargeError } from "./errors";
+import { type ConverterRegistry, createDefaultRegistry } from "./registry";
 
 export class ConversionPipeline {
   private registry: ConverterRegistry | null = null;
@@ -84,10 +85,10 @@ export class ConversionPipeline {
       if (maxChars > 0 && rawMarkdown.length > maxChars) {
         return {
           ok: false,
-          error: outputTooLargeError(input, 'pipeline', {
+          error: outputTooLargeError(input, "pipeline", {
             outputChars: rawMarkdown.length,
             limitChars: maxChars,
-            stage: 'raw',
+            stage: "raw",
           }),
         };
       }
@@ -99,10 +100,10 @@ export class ConversionPipeline {
       if (maxChars > 0 && canonical.length > maxChars) {
         return {
           ok: false,
-          error: outputTooLargeError(input, 'pipeline', {
+          error: outputTooLargeError(input, "pipeline", {
             outputChars: canonical.length,
             limitChars: maxChars,
-            stage: 'canonical',
+            stage: "canonical",
           }),
         };
       }
@@ -126,8 +127,8 @@ export class ConversionPipeline {
         ok: false,
         error: internalError(
           input,
-          'pipeline',
-          cause instanceof Error ? cause.message : 'Unknown pipeline error',
+          "pipeline",
+          cause instanceof Error ? cause.message : "Unknown pipeline error",
           cause
         ),
       };

@@ -5,10 +5,11 @@
  * @module src/config/saver
  */
 
-import { mkdir, rename, unlink } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
-import { expandPath, getConfigPaths } from './paths';
-import { type Config, ConfigSchema } from './types';
+import { mkdir, rename, unlink } from "node:fs/promises";
+import { dirname, join } from "node:path";
+
+import { expandPath, getConfigPaths } from "./paths";
+import { type Config, ConfigSchema } from "./types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Result Types
@@ -19,8 +20,8 @@ export type SaveResult =
   | { ok: false; error: SaveError };
 
 export type SaveError =
-  | { code: 'VALIDATION_ERROR'; message: string }
-  | { code: 'IO_ERROR'; message: string; cause: Error };
+  | { code: "VALIDATION_ERROR"; message: string }
+  | { code: "IO_ERROR"; message: string; cause: Error };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Saving Functions
@@ -55,8 +56,8 @@ export async function saveConfigToPath(
     return {
       ok: false,
       error: {
-        code: 'VALIDATION_ERROR',
-        message: `Invalid config: ${validation.error.issues[0]?.message ?? 'unknown error'}`,
+        code: "VALIDATION_ERROR",
+        message: `Invalid config: ${validation.error.issues[0]?.message ?? "unknown error"}`,
       },
     };
   }
@@ -72,7 +73,7 @@ export async function saveConfigToPath(
     return {
       ok: false,
       error: {
-        code: 'IO_ERROR',
+        code: "IO_ERROR",
         message: `Failed to create config directory: ${dir}`,
         cause: cause instanceof Error ? cause : new Error(String(cause)),
       },
@@ -92,7 +93,7 @@ export async function saveConfigToPath(
     return {
       ok: false,
       error: {
-        code: 'IO_ERROR',
+        code: "IO_ERROR",
         message: `Failed to write temp config file: ${tempPath}`,
         cause: cause instanceof Error ? cause : new Error(String(cause)),
       },
@@ -117,7 +118,7 @@ export async function saveConfigToPath(
     return {
       ok: false,
       error: {
-        code: 'IO_ERROR',
+        code: "IO_ERROR",
         message: `Failed to save config file: ${filePath}`,
         cause: cause instanceof Error ? cause : new Error(String(cause)),
       },
@@ -144,8 +145,8 @@ export async function ensureDirectories(): Promise<SaveResult> {
     return {
       ok: false,
       error: {
-        code: 'IO_ERROR',
-        message: 'Failed to create GNO directories',
+        code: "IO_ERROR",
+        message: "Failed to create GNO directories",
         cause: cause instanceof Error ? cause : new Error(String(cause)),
       },
     };

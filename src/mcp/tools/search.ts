@@ -4,12 +4,14 @@
  * @module src/mcp/tools/search
  */
 
-import { join as pathJoin } from 'node:path';
-import { parseUri } from '../../app/constants';
-import { searchBm25 } from '../../pipeline/search';
-import type { SearchResult, SearchResults } from '../../pipeline/types';
-import type { ToolContext } from '../server';
-import { runTool, type ToolResult } from './index';
+import { join as pathJoin } from "node:path";
+
+import type { SearchResult, SearchResults } from "../../pipeline/types";
+import type { ToolContext } from "../server";
+
+import { parseUri } from "../../app/constants";
+import { searchBm25 } from "../../pipeline/search";
+import { runTool, type ToolResult } from "./index";
 
 interface SearchInput {
   query: string;
@@ -59,7 +61,7 @@ function formatSearchResults(data: SearchResults): string {
 
   const lines: string[] = [];
   lines.push(`Found ${data.results.length} results for "${data.meta.query}":`);
-  lines.push('');
+  lines.push("");
 
   for (const r of data.results) {
     lines.push(`[${r.docid}] ${r.uri} (score: ${r.score.toFixed(3)})`);
@@ -67,13 +69,13 @@ function formatSearchResults(data: SearchResults): string {
       lines.push(`  Title: ${r.title}`);
     }
     if (r.snippet) {
-      const snippetPreview = r.snippet.slice(0, 200).replace(/\n/g, ' ');
-      lines.push(`  ${snippetPreview}${r.snippet.length > 200 ? '...' : ''}`);
+      const snippetPreview = r.snippet.slice(0, 200).replace(/\n/g, " ");
+      lines.push(`  ${snippetPreview}${r.snippet.length > 200 ? "..." : ""}`);
     }
-    lines.push('');
+    lines.push("");
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**
@@ -85,7 +87,7 @@ export function handleSearch(
 ): Promise<ToolResult> {
   return runTool(
     ctx,
-    'gno_search',
+    "gno_search",
     async () => {
       // Validate collection exists if specified
       if (args.collection) {

@@ -1,5 +1,5 @@
-import Ajv from 'ajv';
-import addFormats from 'ajv-formats';
+import Ajv from "ajv";
+import addFormats from "ajv-formats";
 
 const ajv = new Ajv({ strict: true, allErrors: true });
 addFormats(ajv);
@@ -13,13 +13,13 @@ async function loadAllSchemas(): Promise<void> {
   }
 
   const schemaFiles = [
-    'search-result',
-    'search-results',
-    'status',
-    'get',
-    'multi-get',
-    'ask',
-    'error',
+    "search-result",
+    "search-results",
+    "status",
+    "get",
+    "multi-get",
+    "ask",
+    "error",
   ];
 
   for (const name of schemaFiles) {
@@ -60,7 +60,7 @@ export function assertInvalid(data: unknown, schema: object): boolean {
   const validate = createValidator(schema);
   const valid = validate(data);
   if (valid) {
-    throw new Error('Expected validation to fail but it passed');
+    throw new Error("Expected validation to fail but it passed");
   }
   return true;
 }

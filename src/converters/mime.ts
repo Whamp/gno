@@ -3,13 +3,13 @@
  * PRD §8.5 - MIME detection strategy
  */
 
-import { extname } from './path';
+import { extname } from "./path";
 
 export interface MimeDetection {
   mime: string;
   ext: string;
-  confidence: 'high' | 'medium' | 'low';
-  via: 'sniff' | 'sniff+ext' | 'ext' | 'fallback';
+  confidence: "high" | "medium" | "low";
+  via: "sniff" | "sniff+ext" | "ext" | "fallback";
 }
 
 export interface MimeDetector {
@@ -18,23 +18,23 @@ export interface MimeDetector {
 
 /** Extension to MIME type mapping (PRD §8.5) */
 const EXTENSION_MAP: Record<string, string> = {
-  '.md': 'text/markdown',
-  '.txt': 'text/plain',
-  '.pdf': 'application/pdf',
-  '.docx':
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  '.pptx':
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-  '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  ".md": "text/markdown",
+  ".txt": "text/plain",
+  ".pdf": "application/pdf",
+  ".docx":
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ".pptx":
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 };
 
 /** OOXML extension to MIME mapping */
 const OOXML_MAP: Record<string, string> = {
-  '.docx':
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  '.pptx':
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-  '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  ".docx":
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ".pptx":
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 };
 
 /** PDF magic bytes: %PDF- */
@@ -74,7 +74,7 @@ function sniffMagicBytes(
 ): SniffResult | undefined {
   // PDF detection - pure sniff, no extension needed
   if (startsWith(bytes, PDF_MAGIC)) {
-    return { mime: 'application/pdf', pureSniff: true };
+    return { mime: "application/pdf", pureSniff: true };
   }
 
   // ZIP/OOXML detection - requires extension to distinguish OOXML from generic ZIP
@@ -87,7 +87,7 @@ function sniffMagicBytes(
       return { mime: ooxmlMime, pureSniff: false };
     }
     // Generic ZIP (not OOXML)
-    return { mime: 'application/zip', pureSniff: true };
+    return { mime: "application/zip", pureSniff: true };
   }
 
   return;
@@ -115,8 +115,8 @@ export class DefaultMimeDetector implements MimeDetector {
         ext,
         // Pure sniff (e.g., PDF) is high confidence
         // Extension-assisted sniff (OOXML) is medium confidence
-        confidence: sniffed.pureSniff ? 'high' : 'medium',
-        via: sniffed.pureSniff ? 'sniff' : 'sniff+ext',
+        confidence: sniffed.pureSniff ? "high" : "medium",
+        via: sniffed.pureSniff ? "sniff" : "sniff+ext",
       };
     }
 
@@ -128,17 +128,17 @@ export class DefaultMimeDetector implements MimeDetector {
       return {
         mime: extMime,
         ext,
-        confidence: 'medium',
-        via: 'ext',
+        confidence: "medium",
+        via: "ext",
       };
     }
 
     // 3. Fallback
     return {
-      mime: 'application/octet-stream',
+      mime: "application/octet-stream",
       ext,
-      confidence: 'low',
-      via: 'fallback',
+      confidence: "low",
+      via: "fallback",
     };
   }
 }

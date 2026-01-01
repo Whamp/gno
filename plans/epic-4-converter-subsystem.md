@@ -12,16 +12,19 @@
 Implement the document converter subsystem that transforms source files (PDF, DOCX, XLSX, TXT, MD) into canonical Markdown mirrors for indexing and retrieval. This is the foundation for all downstream operations (chunking, embedding, search).
 
 **Hard constraints:**
+
 - No Python dependencies anywhere
 - Deterministic output (same input → same canonical markdown)
 - Local-only (no external services)
 
 **Scope adjustments from review:**
+
 - `.pptx` via officeparser: markitdown-ts has incomplete PPTX; use officeparser (239 stars, 119K downloads)
 - `maxBytes` enforcement: Handled in EPIC 5 (stat-based, before file read) - see `gno-nqu`
 - Timeout process isolation: Future work (current: best-effort Promise.race timeout)
 
 **Timeout semantics (MVP):**
+
 - Adapters wrap conversion in `Promise.race([conversion, timeoutPromise])`
 - If timeout fires first, return `TIMEOUT` error immediately
 - Underlying library work may continue (known limitation)
@@ -33,6 +36,7 @@ Implement the document converter subsystem that transforms source files (PDF, DO
 ## Problem Statement
 
 GNO needs to index mixed-format document archives. Users have PDFs, Word docs, Excel sheets, and Markdown files they want to search. The converter subsystem:
+
 1. Detects file types via MIME/extension
 2. Routes to appropriate converter adapter
 3. Produces canonical Markdown mirrors
@@ -55,6 +59,7 @@ GNO needs to index mixed-format document archives. Users have PDFs, Word docs, E
 ```
 
 **Module Structure:**
+
 ```
 src/converters/
   ├── types.ts              # ConverterId, ConvertInput, ConvertOutput, ConvertResult
@@ -75,20 +80,22 @@ src/converters/
 
 ### Key Dependencies
 
-| Package | Purpose | Status |
-|---------|---------|--------|
-| `markitdown-ts` | PDF/DOCX/XLSX conversion | npm v0.0.8 (85 stars, active) |
-| `officeparser` | PPTX conversion | npm v5.2.0 (239 stars, 119K weekly downloads) |
-| `bun:test` | Testing | Built-in |
-| `bun:sqlite` | Storage (EPIC 3) | Built-in |
+| Package         | Purpose                  | Status                                        |
+| --------------- | ------------------------ | --------------------------------------------- |
+| `markitdown-ts` | PDF/DOCX/XLSX conversion | npm v0.0.8 (85 stars, active)                 |
+| `officeparser`  | PPTX conversion          | npm v5.2.0 (239 stars, 119K weekly downloads) |
+| `bun:test`      | Testing                  | Built-in                                      |
+| `bun:sqlite`    | Storage (EPIC 3)         | Built-in                                      |
 
 **Why markitdown-ts over markitdown-js:**
+
 - More active: 85 stars vs 7, last commit Nov 2025 vs Feb 2025
 - No native binaries (markitdown-js uses exiftool-vendored)
 - Buffer-based conversion (serverless-friendly, better for our use case)
 - Zero open issues vs 1
 
 **Why officeparser for PPTX:**
+
 - markitdown-ts has incomplete PPTX support
 - officeparser: 239 stars, 119K weekly downloads, actively maintained
 - In-memory extraction (no disk writes)
@@ -104,6 +111,7 @@ src/converters/
 **Files to create:**
 
 #### `src/converters/types.ts`
+
 ```typescript
 export type ConverterId =
   | "native/markdown"
@@ -177,6 +185,7 @@ export type PipelineResult =
 ```
 
 #### `src/converters/errors.ts`
+
 ```typescript
 export type ConvertErrorCode =
   | "UNSUPPORTED"
@@ -214,6 +223,7 @@ export function isRetryable(code: ConvertErrorCode): boolean {
 ```
 
 **Acceptance criteria:**
+
 - [ ] Types exported and usable by other modules
 - [ ] Result pattern matches existing StoreResult pattern
 - [ ] Error codes cover all failure modes in PRD §8.3
@@ -254,16 +264,19 @@ export interface MimeDetector {
 | `PK\x03\x04` + ext in {docx,pptx,xlsx} | OOXML MIME |
 
 **Detection priority:**
+
 1. Magic bytes (sniff) → high confidence
 2. Extension map → medium confidence
 3. Fallback `application/octet-stream` → low confidence
 
 **Key decisions:**
+
 - **Buffer size for sniffing**: First 512 bytes
 - **Conflict resolution**: Magic bytes always win over extension
 - **Unsupported fallback**: `application/octet-stream`
 
 **Acceptance criteria:**
+
 - [ ] Extension-based detection works for all MVP types
 - [ ] Magic byte sniffing detects PDF and OOXML
 - [ ] Confidence levels correctly assigned
@@ -276,6 +289,7 @@ export interface MimeDetector {
 **File to create:** `src/converters/canonicalize.ts`
 
 **Canonicalization rules (PRD §8.4):**
+
 1. Normalize to `\n` newlines (no `\r`)
 2. Apply NFC Unicode normalization (cross-platform hash stability)
 3. Strip control chars U+0000-U+001F and U+007F except `\n` (U+000A) and `\t` (U+0009)
@@ -285,6 +299,7 @@ export interface MimeDetector {
 7. Ensure exactly one final `\n`
 
 **Critical constraints:**
+
 - **Deterministic**: Same input → same output always
 - **No timestamps**: Never inject run-specific data
 - **No paths**: Source paths surfaced via metadata, not in mirror
@@ -292,11 +307,13 @@ export interface MimeDetector {
 
 **Versioning contract:**
 Canonicalization rules are a **compatibility contract**. If these rules change:
+
 - All existing `mirror_hash` values become invalid
 - Documents must be re-converted to get new hashes
 - Content deduplication breaks silently
 
 **Decision**: Canonicalization is versioned via `converterVersion`. The version format is:
+
 - `<converter>@<canonicalizer>` e.g., `native/markdown@1.0.0`
 - When canonicalization rules change, ALL converter versions bump together
 - This is simpler than tracking a separate `canonicalizerVersion`
@@ -315,6 +332,7 @@ export function mirrorHash(canonical: string): string {
 ```
 
 **Acceptance criteria:**
+
 - [ ] All 7 canonicalization rules implemented
 - [ ] Deterministic across macOS/Linux (NFC normalization)
 - [ ] Unit tests for each rule
@@ -327,6 +345,7 @@ export function mirrorHash(canonical: string): string {
 #### `src/converters/native/markdown.ts`
 
 Passthrough converter for `.md` files:
+
 - Read file as text (raw, no normalization)
 - Extract title from first `# ` heading if present
 - Return ConvertOutput (pipeline handles canonicalization)
@@ -356,6 +375,7 @@ export const markdownConverter: Converter = {
 #### `src/converters/native/plaintext.ts`
 
 Convert `.txt` to Markdown:
+
 - Decode as UTF-8 with replacement for invalid bytes
 - Strip UTF-8 BOM if present (`\uFEFF`)
 - Pass through as paragraphs (no code fence wrapping - better for search)
@@ -363,6 +383,7 @@ Convert `.txt` to Markdown:
 - Return raw text (pipeline handles canonicalization)
 
 **Encoding policy (deterministic):**
+
 ```typescript
 // 1. Always decode as UTF-8
 const decoder = new TextDecoder("utf-8", {
@@ -380,11 +401,13 @@ if (text.charCodeAt(0) === 0xFEFF) {
 ```
 
 **Rationale:**
+
 - UTF-8 is the de facto standard; Latin-1/other encodings are edge cases we don't auto-detect
 - BOM stripping ensures consistent hashes regardless of editor that saved the file
 - Replacement character (�) is visible to users, indicating encoding issues
 
 **Acceptance criteria:**
+
 - [ ] Markdown passthrough preserves structure
 - [ ] Title extraction from headings works
 - [ ] Plaintext conversion handles edge cases
@@ -481,6 +504,7 @@ export const markitdownAdapter: Converter = {
 | All others | ADAPTER_FAILURE |
 
 **Acceptance criteria:**
+
 - [ ] Converts PDF, DOCX, XLSX successfully
 - [ ] Respects maxBytes limit
 - [ ] Respects timeoutMs limit with Promise.race (best-effort)
@@ -567,6 +591,7 @@ function formatPptxAsMarkdown(text: string, filename: string): string {
 | All others | ADAPTER_FAILURE |
 
 **Acceptance criteria:**
+
 - [ ] Converts PPTX successfully
 - [ ] Extracts speaker notes (ignoreNotes: false)
 - [ ] Respects maxBytes limit
@@ -616,12 +641,14 @@ export function createDefaultRegistry(): ConverterRegistry {
 ```
 
 **Routing priority (PRD §8.6):**
+
 1. `native/markdown` - handles `.md`
 2. `native/plaintext` - handles `.txt`
 3. `adapter/markitdown-ts` - handles `.pdf`, `.docx`, `.xlsx`
 4. `adapter/officeparser` - handles `.pptx`
 
 **Acceptance criteria:**
+
 - [ ] Priority order enforced
 - [ ] First matching converter wins
 - [ ] UNSUPPORTED error for unknown types
@@ -634,12 +661,14 @@ export function createDefaultRegistry(): ConverterRegistry {
 **File to create:** `src/converters/pipeline.ts`
 
 The pipeline is the **single entry point** for all conversions. It:
+
 1. Calls the registry to find and invoke the appropriate converter
 2. Canonicalizes the raw markdown output (centralized, not per-converter)
 3. Computes mirrorHash from canonical markdown
 4. Returns ConversionArtifact (not ConvertOutput)
 
 **CRITICAL**: Canonicalization is **only** done in the pipeline, not in individual converters. This ensures:
+
 - Single source of truth for normalization rules
 - Easier to update rules (one location)
 - Converters return raw markdown; pipeline normalizes
@@ -691,12 +720,14 @@ export function getDefaultPipeline(): ConversionPipeline {
 ```
 
 **Why pipeline-level canonicalization?**
+
 - Converters focus on extraction, not normalization
 - Single place to update canonicalization rules
 - Easier to test canonicalization in isolation
 - mirrorHash is always computed after normalization (never on raw output)
 
 **Acceptance criteria:**
+
 - [ ] Pipeline is the only entry point for external consumers
 - [ ] Canonicalization happens once, in pipeline (not in converters)
 - [ ] mirrorHash is computed from canonical markdown
@@ -708,6 +739,7 @@ export function getDefaultPipeline(): ConversionPipeline {
 ### Phase 7: Golden Fixtures & Tests
 
 **Directory structure (PRD §8.8):**
+
 ```
 test/fixtures/conversion/
   pdf/
@@ -765,12 +797,14 @@ test("PDF: simple.pdf matches golden fixture", async () => {
 ```
 
 **Fixture update process:**
+
 1. CI fails on mismatch
 2. Developer reviews diff manually
 3. If change is intentional, run `bun test:update-fixtures`
 4. Commit updated `.expected.md` files with explanation
 
 **Acceptance criteria:**
+
 - [ ] All MVP file types have fixtures
 - [ ] Golden tests verify exact output match
 - [ ] Edge case fixtures for empty, corrupt, unicode
@@ -781,6 +815,7 @@ test("PDF: simple.pdf matches golden fixture", async () => {
 ## Acceptance Criteria (Full Epic)
 
 ### Functional Requirements
+
 - [ ] MIME detection correctly identifies all MVP file types
 - [ ] Converters produce canonical Markdown for PDF, DOCX, XLSX, TXT, MD
 - [ ] Canonicalization is deterministic across platforms (NFC normalized)
@@ -789,6 +824,7 @@ test("PDF: simple.pdf matches golden fixture", async () => {
 - [ ] UTF-8 encoding with BOM stripping for plaintext
 
 ### Non-Functional Requirements
+
 - [ ] No Python dependencies
 - [ ] Timeout enforcement via AbortController (best-effort; process isolation is future work)
 - [ ] Size limits: converter validates; EPIC 5 enforces pre-read via stat
@@ -797,6 +833,7 @@ test("PDF: simple.pdf matches golden fixture", async () => {
 - [ ] mirrorHash always computed from canonical markdown (in pipeline)
 
 ### Quality Gates
+
 - [ ] Unit tests for canonicalization, MIME detection, error mapping
 - [ ] Golden fixture tests for all converters
 - [ ] Integration test: end-to-end conversion pipeline
@@ -807,23 +844,25 @@ test("PDF: simple.pdf matches golden fixture", async () => {
 
 ## Success Metrics
 
-| Metric | Target |
-|--------|--------|
-| Conversion success rate (valid files) | >99% |
-| Golden fixture determinism | 100% (no flaky tests) |
-| Timeout compliance | All conversions abort within 2x timeoutMs |
-| Memory efficiency | Peak memory <2x input file size |
+| Metric                                | Target                                    |
+| ------------------------------------- | ----------------------------------------- |
+| Conversion success rate (valid files) | >99%                                      |
+| Golden fixture determinism            | 100% (no flaky tests)                     |
+| Timeout compliance                    | All conversions abort within 2x timeoutMs |
+| Memory efficiency                     | Peak memory <2x input file size           |
 
 ---
 
 ## Dependencies & Prerequisites
 
 **External:**
+
 - `markitdown-ts` npm package (v0.0.8)
 - `officeparser` npm package (v5.2.0)
 - No Python anywhere in the toolchain
 
 **Internal (can be parallel):**
+
 - EPIC 3 (Store layer) - not blocking; converters work standalone
 - EPIC 5 (Indexing) - will consume converter output
 
@@ -831,12 +870,12 @@ test("PDF: simple.pdf matches golden fixture", async () => {
 
 ## Risk Analysis & Mitigation
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| markitdown-ts missing format support | Medium | High | Fall back to UNSUPPORTED, doc in release notes |
-| Timeout not honored by native code | Medium | Medium | Use process-level timeout as backstop |
-| Unicode normalization breaks content | Low | High | Extensive fixture testing, NFC is conservative |
-| Large file OOM | Medium | Medium | Check size before allocating, streaming future |
+| Risk                                 | Likelihood | Impact | Mitigation                                     |
+| ------------------------------------ | ---------- | ------ | ---------------------------------------------- |
+| markitdown-ts missing format support | Medium     | High   | Fall back to UNSUPPORTED, doc in release notes |
+| Timeout not honored by native code   | Medium     | Medium | Use process-level timeout as backstop          |
+| Unicode normalization breaks content | Low        | High   | Extensive fixture testing, NFC is conservative |
+| Large file OOM                       | Medium     | Medium | Check size before allocating, streaming future |
 
 ---
 
@@ -852,6 +891,7 @@ test("PDF: simple.pdf matches golden fixture", async () => {
 ## References
 
 ### Internal
+
 - PRD.md §8 (Converter subsystem specification)
 - PRD.md §8.2 (Converter interfaces)
 - PRD.md §8.3 (Error model)
@@ -863,11 +903,13 @@ test("PDF: simple.pdf matches golden fixture", async () => {
 - src/store/types.ts (Result pattern reference)
 
 ### External
+
 - [markitdown-ts npm](https://www.npmjs.com/package/markitdown-ts)
 - [Bun File I/O](https://bun.sh/docs/runtime/file-io)
 - [BCP-47 Language Tags](https://www.rfc-editor.org/rfc/bcp/bcp47.txt)
 
 ### Research Findings
+
 - markitdown-ts v0.0.8 supports PDF, DOCX, XLSX (PPTX incomplete → officeparser)
 - Use `convertBuffer()` with bytes for determinism (not path-based `convert()`)
 - Use AbortController for timeout enforcement
@@ -921,43 +963,43 @@ erDiagram
 
 ## Task Breakdown
 
-| Task | Effort | Dependencies |
-|------|--------|--------------|
-| T4.1: types.ts + errors.ts | 2h | None |
-| T4.2: mime.ts (detection) | 3h | T4.1 |
-| T4.3: canonicalize.ts | 4h | T4.1 |
-| T4.4: native/markdown.ts | 2h | T4.1 |
-| T4.5: native/plaintext.ts | 2h | T4.1 |
-| T4.6: adapters/markitdownTs | 6h | T4.1, npm install |
-| T4.6b: adapters/officeparser | 3h | T4.1, npm install |
-| T4.7: registry.ts | 2h | T4.4, T4.5, T4.6, T4.6b |
-| T4.7b: pipeline.ts | 2h | T4.3, T4.7 |
-| T4.8: Golden fixtures (create) | 4h | None |
-| T4.9: Unit tests (all) | 4h | T4.1-T4.7b |
-| T4.10: Integration test | 2h | T4.7b, T4.8 |
-| **Total** | ~36h | |
+| Task                           | Effort | Dependencies            |
+| ------------------------------ | ------ | ----------------------- |
+| T4.1: types.ts + errors.ts     | 2h     | None                    |
+| T4.2: mime.ts (detection)      | 3h     | T4.1                    |
+| T4.3: canonicalize.ts          | 4h     | T4.1                    |
+| T4.4: native/markdown.ts       | 2h     | T4.1                    |
+| T4.5: native/plaintext.ts      | 2h     | T4.1                    |
+| T4.6: adapters/markitdownTs    | 6h     | T4.1, npm install       |
+| T4.6b: adapters/officeparser   | 3h     | T4.1, npm install       |
+| T4.7: registry.ts              | 2h     | T4.4, T4.5, T4.6, T4.6b |
+| T4.7b: pipeline.ts             | 2h     | T4.3, T4.7              |
+| T4.8: Golden fixtures (create) | 4h     | None                    |
+| T4.9: Unit tests (all)         | 4h     | T4.1-T4.7b              |
+| T4.10: Integration test        | 2h     | T4.7b, T4.8             |
+| **Total**                      | ~36h   |                         |
 
 ---
 
 ## Open Questions (Answered)
 
-| Question | Answer |
-|----------|--------|
-| MIME sniffing buffer size? | 512 bytes |
-| Extension vs magic bytes priority? | Magic bytes always win |
-| Unicode normalization? | NFC (cross-platform stability) |
-| Default maxBytes? | 100MB |
-| Default timeoutMs? | 60000 (60s) |
-| Timeout mechanism? | AbortController (best-effort); process isolation future work |
-| Empty output handling? | LOSSY warning, metadata-only record |
-| Title fallback? | Derive from filename (no extension) |
-| Language hint validation? | Normalize to lowercase, accept 2-3 letter codes |
-| Fixture update process? | CI fails, manual review, script to regenerate |
-| markitdown-js vs markitdown-ts? | markitdown-ts (more active, no native deps, buffer support) |
-| maxBytes enforcement location? | EPIC 5 stat-based pre-read check (see gno-nqu) |
-| Canonicalization versioning? | Part of converterVersion; all bump together on rule change |
-| Non-UTF8 .txt handling? | UTF-8 decode with replacement (U+FFFD), strip BOM |
-| PPTX support? | Yes, via officeparser (239 stars, 119K downloads) |
-| Where is mirrorHash computed? | pipeline.ts only (after canonicalization) |
-| Where is canonicalization done? | pipeline.ts only (converters return raw markdown) |
-| markitdown-ts bytes or path? | bytes via convertBuffer() for determinism |
+| Question                           | Answer                                                       |
+| ---------------------------------- | ------------------------------------------------------------ |
+| MIME sniffing buffer size?         | 512 bytes                                                    |
+| Extension vs magic bytes priority? | Magic bytes always win                                       |
+| Unicode normalization?             | NFC (cross-platform stability)                               |
+| Default maxBytes?                  | 100MB                                                        |
+| Default timeoutMs?                 | 60000 (60s)                                                  |
+| Timeout mechanism?                 | AbortController (best-effort); process isolation future work |
+| Empty output handling?             | LOSSY warning, metadata-only record                          |
+| Title fallback?                    | Derive from filename (no extension)                          |
+| Language hint validation?          | Normalize to lowercase, accept 2-3 letter codes              |
+| Fixture update process?            | CI fails, manual review, script to regenerate                |
+| markitdown-js vs markitdown-ts?    | markitdown-ts (more active, no native deps, buffer support)  |
+| maxBytes enforcement location?     | EPIC 5 stat-based pre-read check (see gno-nqu)               |
+| Canonicalization versioning?       | Part of converterVersion; all bump together on rule change   |
+| Non-UTF8 .txt handling?            | UTF-8 decode with replacement (U+FFFD), strip BOM            |
+| PPTX support?                      | Yes, via officeparser (239 stars, 119K downloads)            |
+| Where is mirrorHash computed?      | pipeline.ts only (after canonicalization)                    |
+| Where is canonicalization done?    | pipeline.ts only (converters return raw markdown)            |
+| markitdown-ts bytes or path?       | bytes via convertBuffer() for determinism                    |

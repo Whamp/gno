@@ -9,77 +9,77 @@ This document specifies the command-line interface for GNO, a local knowledge in
 
 ### Exit Codes
 
-| Code | Name | Description |
-|------|------|-------------|
-| 0 | SUCCESS | Command completed successfully |
-| 1 | VALIDATION | Validation or usage error (bad args, missing required params) |
-| 2 | RUNTIME | Runtime failure (IO, DB, conversion, model, network) |
+| Code | Name       | Description                                                   |
+| ---- | ---------- | ------------------------------------------------------------- |
+| 0    | SUCCESS    | Command completed successfully                                |
+| 1    | VALIDATION | Validation or usage error (bad args, missing required params) |
+| 2    | RUNTIME    | Runtime failure (IO, DB, conversion, model, network)          |
 
 ### Global Flags
 
 All commands accept these flags:
 
-| Flag | Type | Description |
-|------|------|-------------|
-| `--index <name>` | string | Use alternate index DB name (default: "default") |
-| `--config <path>` | string | Override config file path |
-| `--no-color` | boolean | Disable colored output |
-| `--verbose` | boolean | Enable verbose logging to stderr |
-| `--yes` | boolean | Non-interactive mode: accept safe defaults, never prompt |
+| Flag              | Type    | Description                                              |
+| ----------------- | ------- | -------------------------------------------------------- |
+| `--index <name>`  | string  | Use alternate index DB name (default: "default")         |
+| `--config <path>` | string  | Override config file path                                |
+| `--no-color`      | boolean | Disable colored output                                   |
+| `--verbose`       | boolean | Enable verbose logging to stderr                         |
+| `--yes`           | boolean | Non-interactive mode: accept safe defaults, never prompt |
 
 ### Output Format Flags
 
 Commands that produce structured output support these format flags:
 
-| Flag | Description |
-|------|-------------|
-| `--json` | JSON output (array or object depending on command) |
+| Flag      | Description                                           |
+| --------- | ----------------------------------------------------- |
+| `--json`  | JSON output (array or object depending on command)    |
 | `--files` | Line protocol: `#docid,<score>,gno://collection/path` |
-| `--csv` | Comma-separated values with header row |
-| `--md` | Markdown formatted output |
-| `--xml` | XML formatted output |
+| `--csv`   | Comma-separated values with header row                |
+| `--md`    | Markdown formatted output                             |
+| `--xml`   | XML formatted output                                  |
 
 Default output is human-readable terminal format.
 
 ### Output Format Support Matrix
 
-| Command | --json | --files | --csv | --md | --xml | Default |
-|---------|--------|---------|-------|------|-------|---------|
-| status | yes | no | no | yes | no | terminal |
-| init | no | no | no | no | no | terminal |
-| collection add | no | no | no | no | no | terminal |
-| collection list | yes | no | no | yes | no | terminal |
-| collection remove | no | no | no | no | no | terminal |
-| collection rename | no | no | no | no | no | terminal |
-| update | no | no | no | no | no | terminal |
-| index | no | no | no | no | no | terminal |
-| embed | no | no | no | no | no | terminal |
-| search | yes | yes | yes | yes | yes | terminal |
-| vsearch | yes | yes | yes | yes | yes | terminal |
-| query | yes | yes | yes | yes | yes | terminal |
-| ask | yes | no | no | yes | no | terminal |
-| get | yes | no | no | yes | no | terminal |
-| multi-get | yes | yes | no | yes | no | terminal |
-| ls | yes | yes | no | yes | no | terminal |
-| context add | no | no | no | no | no | terminal |
-| context list | yes | no | no | yes | no | terminal |
-| context check | yes | no | no | yes | no | terminal |
-| context rm | no | no | no | no | no | terminal |
-| models list | yes | no | no | yes | no | terminal |
-| models pull | no | no | no | no | no | terminal |
-| models clear | no | no | no | no | no | terminal |
-| models path | yes | no | no | no | no | terminal |
-| cleanup | no | no | no | no | no | terminal |
-| doctor | yes | no | no | yes | no | terminal |
-| mcp | no | no | no | no | no | stdio |
-| mcp install | yes | no | no | no | no | terminal |
-| mcp uninstall | yes | no | no | no | no | terminal |
-| mcp status | yes | no | no | no | no | terminal |
-| skill install | yes | no | no | no | no | terminal |
-| skill uninstall | yes | no | no | no | no | terminal |
-| skill show | no | no | no | no | no | terminal |
-| skill paths | yes | no | no | no | no | terminal |
-| serve | no | no | no | no | no | terminal |
+| Command           | --json | --files | --csv | --md | --xml | Default  |
+| ----------------- | ------ | ------- | ----- | ---- | ----- | -------- |
+| status            | yes    | no      | no    | yes  | no    | terminal |
+| init              | no     | no      | no    | no   | no    | terminal |
+| collection add    | no     | no      | no    | no   | no    | terminal |
+| collection list   | yes    | no      | no    | yes  | no    | terminal |
+| collection remove | no     | no      | no    | no   | no    | terminal |
+| collection rename | no     | no      | no    | no   | no    | terminal |
+| update            | no     | no      | no    | no   | no    | terminal |
+| index             | no     | no      | no    | no   | no    | terminal |
+| embed             | no     | no      | no    | no   | no    | terminal |
+| search            | yes    | yes     | yes   | yes  | yes   | terminal |
+| vsearch           | yes    | yes     | yes   | yes  | yes   | terminal |
+| query             | yes    | yes     | yes   | yes  | yes   | terminal |
+| ask               | yes    | no      | no    | yes  | no    | terminal |
+| get               | yes    | no      | no    | yes  | no    | terminal |
+| multi-get         | yes    | yes     | no    | yes  | no    | terminal |
+| ls                | yes    | yes     | no    | yes  | no    | terminal |
+| context add       | no     | no      | no    | no   | no    | terminal |
+| context list      | yes    | no      | no    | yes  | no    | terminal |
+| context check     | yes    | no      | no    | yes  | no    | terminal |
+| context rm        | no     | no      | no    | no   | no    | terminal |
+| models list       | yes    | no      | no    | yes  | no    | terminal |
+| models pull       | no     | no      | no    | no   | no    | terminal |
+| models clear      | no     | no      | no    | no   | no    | terminal |
+| models path       | yes    | no      | no    | no   | no    | terminal |
+| cleanup           | no     | no      | no    | no   | no    | terminal |
+| doctor            | yes    | no      | no    | yes  | no    | terminal |
+| mcp               | no     | no      | no    | no   | no    | stdio    |
+| mcp install       | yes    | no      | no    | no   | no    | terminal |
+| mcp uninstall     | yes    | no      | no    | no   | no    | terminal |
+| mcp status        | yes    | no      | no    | no   | no    | terminal |
+| skill install     | yes    | no      | no    | no   | no    | terminal |
+| skill uninstall   | yes    | no      | no    | no   | no    | terminal |
+| skill show        | no     | no      | no    | no   | no    | terminal |
+| skill paths       | yes    | no      | no    | no   | no    | terminal |
+| serve             | no     | no      | no    | no   | no    | terminal |
 
 ---
 
@@ -90,11 +90,13 @@ Default output is human-readable terminal format.
 Display index status and health information.
 
 **Synopsis:**
+
 ```bash
 gno status [--json|--md]
 ```
 
 **Output (JSON):**
+
 ```json
 {
   "indexName": "default",
@@ -112,6 +114,7 @@ gno status [--json|--md]
 ```
 
 **Exit Codes:**
+
 - 0: Success
 - 2: DB not initialized or inaccessible
 
@@ -122,6 +125,7 @@ gno status [--json|--md]
 Initialize GNO configuration and index database. Safe to run repeatedly (idempotent).
 
 **Synopsis:**
+
 ```bash
 gno init [<path>] [--name <name>] [--pattern <glob>] [--include <csv-ext>] [--exclude <csv>] [--update <cmd>] [--tokenizer <type>] [--language <code>] [--yes]
 ```
@@ -133,18 +137,19 @@ gno init [<path>] [--name <name>] [--pattern <glob>] [--include <csv-ext>] [--ex
 
 **Options:**
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `--name` | string | dirname | Collection name (required if path given) |
-| `--pattern` | glob | `**/*` | File matching pattern |
-| `--include` | csv | - | Extension allowlist (e.g., `.md,.pdf`) |
-| `--exclude` | csv | `.git,node_modules` | Exclude patterns |
-| `--update` | string | - | Shell command to run before indexing |
-| `--tokenizer` | string | unicode61 | FTS tokenizer: unicode61, porter, trigram |
-| `--language` | string | - | BCP-47 language hint for collection (e.g., en, de, zh-CN) |
-| `--yes` | boolean | false | Skip prompts, accept defaults |
+| Option        | Type    | Default             | Description                                               |
+| ------------- | ------- | ------------------- | --------------------------------------------------------- |
+| `--name`      | string  | dirname             | Collection name (required if path given)                  |
+| `--pattern`   | glob    | `**/*`              | File matching pattern                                     |
+| `--include`   | csv     | -                   | Extension allowlist (e.g., `.md,.pdf`)                    |
+| `--exclude`   | csv     | `.git,node_modules` | Exclude patterns                                          |
+| `--update`    | string  | -                   | Shell command to run before indexing                      |
+| `--tokenizer` | string  | unicode61           | FTS tokenizer: unicode61, porter, trigram                 |
+| `--language`  | string  | -                   | BCP-47 language hint for collection (e.g., en, de, zh-CN) |
+| `--yes`       | boolean | false               | Skip prompts, accept defaults                             |
 
 **Behavior:**
+
 1. Creates config directory and `index.yml` if missing
 2. Creates data directory and `index-<name>.sqlite` if missing
 3. Runs migrations on DB
@@ -152,11 +157,13 @@ gno init [<path>] [--name <name>] [--pattern <glob>] [--include <csv-ext>] [--ex
 5. Prints resolved paths and next steps
 
 **Exit Codes:**
+
 - 0: Success (or already initialized)
 - 1: Invalid arguments
 - 2: Cannot create directories or DB
 
 **Examples:**
+
 ```bash
 # Initialize with defaults
 gno init
@@ -181,6 +188,7 @@ gno init ~/docs/german --name german --language de
 Add a new collection to the index.
 
 **Synopsis:**
+
 ```bash
 gno collection add <path> --name <name> [--pattern <glob>] [--include <csv-ext>] [--exclude <csv>] [--update <cmd>] [--language <code>]
 ```
@@ -192,21 +200,23 @@ gno collection add <path> --name <name> [--pattern <glob>] [--include <csv-ext>]
 
 **Options:**
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `--name` | string | required | Unique collection identifier |
-| `--pattern` | glob | `**/*` | File matching glob pattern |
-| `--include` | csv | - | Extension allowlist |
-| `--exclude` | csv | `.git,node_modules,.venv,.idea,dist,build` | Exclude patterns |
-| `--update` | string | - | Shell command to run before indexing |
-| `--language` | string | - | BCP-47 language hint (e.g., en, de, zh-CN) |
+| Option       | Type   | Default                                    | Description                                |
+| ------------ | ------ | ------------------------------------------ | ------------------------------------------ |
+| `--name`     | string | required                                   | Unique collection identifier               |
+| `--pattern`  | glob   | `**/*`                                     | File matching glob pattern                 |
+| `--include`  | csv    | -                                          | Extension allowlist                        |
+| `--exclude`  | csv    | `.git,node_modules,.venv,.idea,dist,build` | Exclude patterns                           |
+| `--update`   | string | -                                          | Shell command to run before indexing       |
+| `--language` | string | -                                          | BCP-47 language hint (e.g., en, de, zh-CN) |
 
 **Exit Codes:**
+
 - 0: Success
 - 1: Missing required args, invalid path, duplicate name, or invalid language hint
 - 2: Config write failure
 
 **Examples:**
+
 ```bash
 gno collection add ~/notes --name notes --pattern "**/*.md"
 gno collection add ~/work/docs --name work --pattern "**/*.{md,pdf,docx}"
@@ -219,11 +229,13 @@ gno collection add ~/work/docs --name work --pattern "**/*.{md,pdf,docx}"
 List all configured collections.
 
 **Synopsis:**
+
 ```bash
 gno collection list [--json|--md]
 ```
 
 **Output (JSON):**
+
 ```json
 [
   {
@@ -238,6 +250,7 @@ gno collection list [--json|--md]
 ```
 
 **Exit Codes:**
+
 - 0: Success
 
 ---
@@ -247,6 +260,7 @@ gno collection list [--json|--md]
 Remove a collection from the index.
 
 **Synopsis:**
+
 ```bash
 gno collection remove <name>
 ```
@@ -257,10 +271,12 @@ gno collection remove <name>
 | `<name>` | string | Collection name to remove |
 
 **Behavior:**
+
 - Removes collection from config
 - Marks documents as inactive (does not delete DB rows until `cleanup`)
 
 **Exit Codes:**
+
 - 0: Success
 - 1: Collection not found
 
@@ -271,6 +287,7 @@ gno collection remove <name>
 Rename a collection.
 
 **Synopsis:**
+
 ```bash
 gno collection rename <old> <new>
 ```
@@ -282,6 +299,7 @@ gno collection rename <old> <new>
 | `<new>` | string | New collection name |
 
 **Exit Codes:**
+
 - 0: Success
 - 1: Old name not found or new name already exists
 
@@ -292,6 +310,7 @@ gno collection rename <old> <new>
 Sync files from disk into the index (ingestion without embedding).
 
 **Synopsis:**
+
 ```bash
 gno update [--git-pull]
 ```
@@ -302,6 +321,7 @@ gno update [--git-pull]
 | `--git-pull` | boolean | Run `git pull` in git repositories before scanning |
 
 **Behavior:**
+
 1. For each collection, enumerate files matching patterns
 2. Hash files, detect MIME types
 3. Convert to Markdown mirror
@@ -310,6 +330,7 @@ gno update [--git-pull]
 6. Mark missing files as inactive
 
 **Exit Codes:**
+
 - 0: Success (conversion warnings do not affect exit code)
 - 2: DB failure or critical IO error
 
@@ -320,6 +341,7 @@ gno update [--git-pull]
 Build or update the index end-to-end (update + embed).
 
 **Synopsis:**
+
 ```bash
 gno index [--collection <name>] [--no-embed] [--models-pull] [--git-pull] [--yes]
 ```
@@ -334,15 +356,18 @@ gno index [--collection <name>] [--no-embed] [--models-pull] [--git-pull] [--yes
 | `--yes` | boolean | Accept defaults, no prompts |
 
 **Behavior:**
+
 - Runs `update` then `embed` by default
 - With `--no-embed`, runs `update` only
 
 **Exit Codes:**
+
 - 0: Success
 - 1: Invalid collection name
 - 2: DB or model failure
 
 **Examples:**
+
 ```bash
 # Full index build
 gno index
@@ -361,27 +386,30 @@ gno index --models-pull --yes
 Generate embeddings for chunks without vectors.
 
 **Synopsis:**
+
 ```bash
 gno embed [--force] [--model <uri>] [--batch-size <n>] [--dry-run] [--yes] [--json]
 ```
 
 **Options:**
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `--force` | boolean | false | Re-embed all chunks (ignore existing vectors) |
-| `--model` | string | config | Override embedding model URI |
-| `--batch-size` | integer | 32 | Chunks per batch |
-| `--dry-run` | boolean | false | Show what would be embedded without doing it |
-| `--yes`, `-y` | boolean | false | Skip confirmation prompts |
-| `--json` | boolean | false | Output result as JSON |
+| Option         | Type    | Default | Description                                   |
+| -------------- | ------- | ------- | --------------------------------------------- |
+| `--force`      | boolean | false   | Re-embed all chunks (ignore existing vectors) |
+| `--model`      | string  | config  | Override embedding model URI                  |
+| `--batch-size` | integer | 32      | Chunks per batch                              |
+| `--dry-run`    | boolean | false   | Show what would be embedded without doing it  |
+| `--yes`, `-y`  | boolean | false   | Skip confirmation prompts                     |
+| `--json`       | boolean | false   | Output result as JSON                         |
 
 **Exit Codes:**
+
 - 0: Success
 - 1: User cancelled
 - 2: Model not available or embedding failure
 
 **JSON Output:**
+
 ```json
 {
   "embedded": 1234,
@@ -399,6 +427,7 @@ gno embed [--force] [--model <uri>] [--batch-size <n>] [--dry-run] [--yes] [--js
 BM25 keyword search over indexed documents.
 
 **Synopsis:**
+
 ```bash
 gno search <query> [-n <num>] [--min-score <num>] [-c <collection>] [--full] [--line-numbers] [--lang <bcp47>] [--json|--files|--csv|--md|--xml]
 ```
@@ -410,22 +439,24 @@ gno search <query> [-n <num>] [--min-score <num>] [-c <collection>] [--full] [--
 
 **Options:**
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `-n` | integer | 5 (20 for --json/--files) | Max results |
-| `--min-score` | number | 0 | Minimum score threshold |
-| `-c, --collection` | string | all | Filter to collection |
-| `--full` | boolean | false | Include full mirror content instead of snippet |
-| `--line-numbers` | boolean | false | Include line numbers in output |
-| `--lang` | string | auto | Language filter/hint (BCP-47) |
+| Option             | Type    | Default                   | Description                                    |
+| ------------------ | ------- | ------------------------- | ---------------------------------------------- |
+| `-n`               | integer | 5 (20 for --json/--files) | Max results                                    |
+| `--min-score`      | number  | 0                         | Minimum score threshold                        |
+| `-c, --collection` | string  | all                       | Filter to collection                           |
+| `--full`           | boolean | false                     | Include full mirror content instead of snippet |
+| `--line-numbers`   | boolean | false                     | Include line numbers in output                 |
+| `--lang`           | string  | auto                      | Language filter/hint (BCP-47)                  |
 
 **Scoring:**
 
 Scores are normalized per query to a 0-1 range using min-max scaling:
+
 - `1.0` = best match among returned results
 - `0.0` = worst match among returned results
 
 Important notes:
+
 - Scores are **relative within a single query's result set**, not comparable across different queries
 - `--min-score` filters based on this normalized score (e.g., `--min-score 0.5` keeps top half)
 - Raw SQLite FTS5 BM25 scores vary with corpus size; normalization ensures consistent UX
@@ -435,11 +466,13 @@ Important notes:
 See [Output Schemas](./output-schemas/search-result.schema.json)
 
 **Exit Codes:**
+
 - 0: Success (including zero results)
 - 1: Invalid query or options
 - 2: DB failure
 
 **Examples:**
+
 ```bash
 gno search "termination clause"
 gno search "deploy staging" -n 10 --collection work
@@ -453,6 +486,7 @@ gno search "contract" --json | jq '.[] | .uri'
 Vector semantic search over indexed documents.
 
 **Synopsis:**
+
 ```bash
 gno vsearch <query> [-n <num>] [--min-score <num>] [-c <collection>] [--full] [--line-numbers] [--lang <bcp47>] [--json|--files|--csv|--md|--xml]
 ```
@@ -462,12 +496,14 @@ gno vsearch <query> [-n <num>] [--min-score <num>] [-c <collection>] [--full] [-
 **Scoring:**
 
 Vector similarity scores are normalized to a 0-1 range:
+
 - `1.0` = identical/most similar
 - `0.0` = least similar (within result set)
 
 Cosine distance (0=identical, 2=opposite) is converted: `score = 1 - (distance / 2)`
 
 **Exit Codes:**
+
 - 0: Success
 - 1: Invalid options
 - 2: Vectors not available (suggests `gno index` or `gno embed`)
@@ -479,6 +515,7 @@ Cosine distance (0=identical, 2=opposite) is converted: `score = 1 - (distance /
 Hybrid search combining BM25 and vector retrieval with optional expansion and reranking.
 
 **Synopsis:**
+
 ```bash
 gno query <query> [-n <num>] [--min-score <num>] [-c <collection>] [--full] [--line-numbers] [--lang <bcp47>] [--no-expand] [--no-rerank] [--explain] [--json|--files|--csv|--md|--xml]
 ```
@@ -491,6 +528,7 @@ gno query <query> [-n <num>] [--min-score <num>] [-c <collection>] [--full] [--l
 | `--explain` | boolean | Print retrieval explanation to stderr |
 
 **Explain Output (stderr):**
+
 ```
 [explain] expansion: enabled (3 lexical, 2 semantic variants)
 [explain] bm25: 45 candidates
@@ -501,6 +539,7 @@ gno query <query> [-n <num>] [--min-score <num>] [-c <collection>] [--full] [--l
 ```
 
 **Exit Codes:**
+
 - 0: Success (degrades gracefully if vectors unavailable)
 - 1: Invalid options
 - 2: DB or model failure
@@ -512,28 +551,31 @@ gno query <query> [-n <num>] [--min-score <num>] [-c <collection>] [--full] [--l
 Human-friendly query with citations-first output and optional grounded answer.
 
 **Synopsis:**
+
 ```bash
 gno ask <query> [-n <num>] [-c <collection>] [--lang <bcp47>] [--answer] [--no-answer] [--max-answer-tokens <n>] [--show-sources] [--json|--md]
 ```
 
 **Options:**
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `--answer` | boolean | false | Generate short grounded answer |
-| `--no-answer` | boolean | false | Force retrieval-only output |
-| `--max-answer-tokens` | integer | config | Cap answer generation tokens |
-| `--show-sources` | boolean | false | Show all retrieved sources (not just cited) |
+| Option                | Type    | Default | Description                                 |
+| --------------------- | ------- | ------- | ------------------------------------------- |
+| `--answer`            | boolean | false   | Generate short grounded answer              |
+| `--no-answer`         | boolean | false   | Force retrieval-only output                 |
+| `--max-answer-tokens` | integer | config  | Cap answer generation tokens                |
+| `--show-sources`      | boolean | false   | Show all retrieved sources (not just cited) |
 
 **Output (JSON):**
 See [Output Schemas](./output-schemas/ask.schema.json)
 
 **Exit Codes:**
+
 - 0: Success
 - 1: Invalid options
 - 2: DB or model failure
 
 **Examples:**
+
 ```bash
 gno ask "how do we deploy to staging"
 gno ask "termination clause" --collection work --answer
@@ -546,6 +588,7 @@ gno ask "termination clause" --collection work --answer
 Retrieve a single document by reference.
 
 **Synopsis:**
+
 ```bash
 gno get <ref> [--from <line>] [-l <lines>] [--line-numbers] [--source] [--json|--md]
 ```
@@ -564,6 +607,7 @@ gno get <ref> [--from <line>] [-l <lines>] [--line-numbers] [--source] [--json|-
 | `--source` | boolean | Include source metadata in output |
 
 **Ref Formats:**
+
 - `gno://work/contracts/nda.docx` - Full URI
 - `work/contracts/nda.docx` - Collection-relative path
 - `#a1b2c3d4` - Document ID
@@ -573,11 +617,13 @@ gno get <ref> [--from <line>] [-l <lines>] [--line-numbers] [--source] [--json|-
 See [Output Schemas](./output-schemas/get.schema.json)
 
 **Exit Codes:**
+
 - 0: Success
 - 1: Invalid ref format
 - 2: Document not found
 
 **Examples:**
+
 ```bash
 gno get gno://work/contracts/nda.docx
 gno get "#a1b2c3d4" --line-numbers
@@ -591,6 +637,7 @@ gno get work/doc.md:120 -l 50
 Retrieve multiple documents by pattern or list.
 
 **Synopsis:**
+
 ```bash
 gno multi-get <pattern-or-list> [--max-bytes <n>] [--line-numbers] [--json|--files|--md]
 ```
@@ -602,15 +649,16 @@ gno multi-get <pattern-or-list> [--max-bytes <n>] [--line-numbers] [--json|--fil
 
 **Options:**
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `--max-bytes` | integer | 10240 | Max bytes per document (truncate with warning) |
-| `--line-numbers` | boolean | false | Include line numbers |
+| Option           | Type    | Default | Description                                    |
+| ---------------- | ------- | ------- | ---------------------------------------------- |
+| `--max-bytes`    | integer | 10240   | Max bytes per document (truncate with warning) |
+| `--line-numbers` | boolean | false   | Include line numbers                           |
 
 **Output (JSON):**
 See [Output Schemas](./output-schemas/multi-get.schema.json)
 
 **Exit Codes:**
+
 - 0: Success (partial results if some docs missing)
 - 1: Invalid pattern
 - 2: DB failure
@@ -622,6 +670,7 @@ See [Output Schemas](./output-schemas/multi-get.schema.json)
 List documents in a collection or prefix.
 
 **Synopsis:**
+
 ```bash
 gno ls [<scope>] [--json|--files|--md]
 ```
@@ -632,6 +681,7 @@ gno ls [<scope>] [--json|--files|--md]
 | `<scope>` | string | Collection name or `gno://collection/prefix` (default: all) |
 
 **Output (JSON):**
+
 ```json
 [
   {
@@ -644,6 +694,7 @@ gno ls [<scope>] [--json|--files|--md]
 ```
 
 **Exit Codes:**
+
 - 0: Success
 - 1: Invalid scope
 - 2: DB failure
@@ -655,6 +706,7 @@ gno ls [<scope>] [--json|--files|--md]
 Add context metadata for a scope.
 
 **Synopsis:**
+
 ```bash
 gno context add <scope> "<text>"
 ```
@@ -666,10 +718,12 @@ gno context add <scope> "<text>"
 | `<text>` | string | Context description text |
 
 **Exit Codes:**
+
 - 0: Success
 - 1: Invalid scope format
 
 **Examples:**
+
 ```bash
 gno context add / "Corporate knowledge base"
 gno context add work: "Work documents and contracts"
@@ -683,11 +737,13 @@ gno context add gno://work/contracts "Legal contracts and NDAs"
 List all configured contexts.
 
 **Synopsis:**
+
 ```bash
 gno context list [--json|--md]
 ```
 
 **Output (JSON):**
+
 ```json
 [
   { "scope": "/", "text": "Corporate knowledge base" },
@@ -702,11 +758,13 @@ gno context list [--json|--md]
 Validate context configuration.
 
 **Synopsis:**
+
 ```bash
 gno context check [--json|--md]
 ```
 
 **Output (JSON):**
+
 ```json
 {
   "valid": true,
@@ -722,11 +780,13 @@ gno context check [--json|--md]
 Remove a context.
 
 **Synopsis:**
+
 ```bash
 gno context rm <scope>
 ```
 
 **Exit Codes:**
+
 - 0: Success
 - 1: Scope not found
 
@@ -737,11 +797,13 @@ gno context rm <scope>
 List configured and available models.
 
 **Synopsis:**
+
 ```bash
 gno models list [--json|--md]
 ```
 
 **Output (JSON):**
+
 ```json
 {
   "activePreset": "balanced",
@@ -763,6 +825,7 @@ gno models list [--json|--md]
 Switch active model preset.
 
 **Synopsis:**
+
 ```bash
 gno models use <preset>
 ```
@@ -780,6 +843,7 @@ gno models use <preset>
 | `quality` | Qwen3-4B-Instruct-2507 | ~2.5GB | Best grounded answers |
 
 **Exit Codes:**
+
 - 0: Success
 - 1: Unknown preset
 
@@ -790,6 +854,7 @@ gno models use <preset>
 Download models to local cache.
 
 **Synopsis:**
+
 ```bash
 gno models pull [--all|--embed|--rerank|--gen] [--force]
 ```
@@ -804,10 +869,12 @@ gno models pull [--all|--embed|--rerank|--gen] [--force]
 | `--force` | Re-download even if already cached |
 
 **Behavior:**
+
 - Skips models that are already cached (checksum match) unless `--force` is used
 - Default (no flags): pulls all models
 
 **Exit Codes:**
+
 - 0: Success
 - 2: Download failure
 
@@ -818,6 +885,7 @@ gno models pull [--all|--embed|--rerank|--gen] [--force]
 Remove cached models.
 
 **Synopsis:**
+
 ```bash
 gno models clear [--all|--embed|--rerank|--gen]
 ```
@@ -829,11 +897,13 @@ gno models clear [--all|--embed|--rerank|--gen]
 Print model cache directory.
 
 **Synopsis:**
+
 ```bash
 gno models path [--json]
 ```
 
 **Output:**
+
 ```
 /Users/user/Library/Caches/gno/models
 ```
@@ -845,11 +915,13 @@ gno models path [--json]
 Remove orphaned content, chunks, and vectors not referenced by active documents.
 
 **Synopsis:**
+
 ```bash
 gno cleanup
 ```
 
 **Exit Codes:**
+
 - 0: Success
 - 2: DB failure
 
@@ -860,11 +932,13 @@ gno cleanup
 Diagnose configuration and dependencies.
 
 **Synopsis:**
+
 ```bash
 gno doctor [--json|--md]
 ```
 
 **Output (JSON):**
+
 ```json
 {
   "healthy": true,
@@ -880,6 +954,7 @@ gno doctor [--json|--md]
 ```
 
 **Exit Codes:**
+
 - 0: All checks pass or only warnings
 - 2: Critical checks failed
 
@@ -890,16 +965,19 @@ gno doctor [--json|--md]
 Start MCP server over stdio.
 
 **Synopsis:**
+
 ```bash
 gno mcp
 ```
 
 **Behavior:**
+
 - Starts JSON-RPC 2.0 MCP server on stdin/stdout
 - Keeps DB open for server lifetime
 - See [MCP Specification](./mcp.md) for protocol details
 
 **Exit Codes:**
+
 - 0: Clean shutdown
 - 2: Initialization failure
 
@@ -910,54 +988,56 @@ gno mcp
 Install gno as an MCP server in client configurations.
 
 **Synopsis:**
+
 ```bash
 gno mcp install [--target <target>] [--scope <scope>] [--force] [--dry-run] [--json]
 ```
 
 **Options:**
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `--target` | string | claude-desktop | Target client (see table below) |
-| `--scope` | string | user | Scope: `user` or `project` (project only for some targets) |
-| `--force` | boolean | false | Overwrite existing gno configuration |
-| `--dry-run` | boolean | false | Show what would be done without changes |
+| Option      | Type    | Default        | Description                                                |
+| ----------- | ------- | -------------- | ---------------------------------------------------------- |
+| `--target`  | string  | claude-desktop | Target client (see table below)                            |
+| `--scope`   | string  | user           | Scope: `user` or `project` (project only for some targets) |
+| `--force`   | boolean | false          | Overwrite existing gno configuration                       |
+| `--dry-run` | boolean | false          | Show what would be done without changes                    |
 
 **Targets:**
 
-| Value | Description | Project Scope |
-|-------|-------------|---------------|
-| `claude-desktop` | Claude Desktop app (default) | No |
-| `claude-code` | Claude Code CLI | Yes |
-| `codex` | OpenAI Codex CLI | Yes |
-| `cursor` | Cursor editor | Yes |
-| `zed` | Zed editor | No |
-| `windsurf` | Windsurf IDE | No |
-| `opencode` | OpenCode CLI | Yes |
-| `amp` | Amp (Sourcegraph) | No |
-| `lmstudio` | LM Studio | No |
-| `librechat` | LibreChat | Yes (project only) |
+| Value            | Description                  | Project Scope      |
+| ---------------- | ---------------------------- | ------------------ |
+| `claude-desktop` | Claude Desktop app (default) | No                 |
+| `claude-code`    | Claude Code CLI              | Yes                |
+| `codex`          | OpenAI Codex CLI             | Yes                |
+| `cursor`         | Cursor editor                | Yes                |
+| `zed`            | Zed editor                   | No                 |
+| `windsurf`       | Windsurf IDE                 | No                 |
+| `opencode`       | OpenCode CLI                 | Yes                |
+| `amp`            | Amp (Sourcegraph)            | No                 |
+| `lmstudio`       | LM Studio                    | No                 |
+| `librechat`      | LibreChat                    | Yes (project only) |
 
 **Config Locations:**
 
-| Target | Scope | macOS | Windows | Linux |
-|--------|-------|-------|---------|-------|
-| claude-desktop | user | `~/Library/Application Support/Claude/claude_desktop_config.json` | `%APPDATA%\Claude\claude_desktop_config.json` | `~/.config/Claude/claude_desktop_config.json` |
-| claude-code | user | `~/.claude.json` | `~/.claude.json` | `~/.claude.json` |
-| claude-code | project | `./.mcp.json` | `./.mcp.json` | `./.mcp.json` |
-| codex | user | `~/.codex.json` | `~/.codex.json` | `~/.codex.json` |
-| codex | project | `./.codex/.mcp.json` | `./.codex/.mcp.json` | `./.codex/.mcp.json` |
-| cursor | user | `~/.cursor/mcp.json` | `~/.cursor/mcp.json` | `~/.cursor/mcp.json` |
-| cursor | project | `./.cursor/mcp.json` | `./.cursor/mcp.json` | `./.cursor/mcp.json` |
-| zed | user | `~/.config/zed/settings.json` | N/A | `~/.config/zed/settings.json` |
-| windsurf | user | `~/.codeium/windsurf/mcp_config.json` | `%APPDATA%\Codeium\windsurf\mcp_config.json` | `~/.codeium/windsurf/mcp_config.json` |
-| opencode | user | `~/.config/opencode/config.json` | `~/.config/opencode/config.json` | `~/.config/opencode/config.json` |
-| opencode | project | `./opencode.json` | `./opencode.json` | `./opencode.json` |
-| amp | user | `~/.config/amp/settings.json` | `~/.config/amp/settings.json` | `~/.config/amp/settings.json` |
-| lmstudio | user | `~/.lmstudio/mcp.json` | `~/.lmstudio/mcp.json` | `~/.lmstudio/mcp.json` |
-| librechat | project | `./librechat.yaml` | `./librechat.yaml` | `./librechat.yaml` |
+| Target         | Scope   | macOS                                                             | Windows                                       | Linux                                         |
+| -------------- | ------- | ----------------------------------------------------------------- | --------------------------------------------- | --------------------------------------------- |
+| claude-desktop | user    | `~/Library/Application Support/Claude/claude_desktop_config.json` | `%APPDATA%\Claude\claude_desktop_config.json` | `~/.config/Claude/claude_desktop_config.json` |
+| claude-code    | user    | `~/.claude.json`                                                  | `~/.claude.json`                              | `~/.claude.json`                              |
+| claude-code    | project | `./.mcp.json`                                                     | `./.mcp.json`                                 | `./.mcp.json`                                 |
+| codex          | user    | `~/.codex.json`                                                   | `~/.codex.json`                               | `~/.codex.json`                               |
+| codex          | project | `./.codex/.mcp.json`                                              | `./.codex/.mcp.json`                          | `./.codex/.mcp.json`                          |
+| cursor         | user    | `~/.cursor/mcp.json`                                              | `~/.cursor/mcp.json`                          | `~/.cursor/mcp.json`                          |
+| cursor         | project | `./.cursor/mcp.json`                                              | `./.cursor/mcp.json`                          | `./.cursor/mcp.json`                          |
+| zed            | user    | `~/.config/zed/settings.json`                                     | N/A                                           | `~/.config/zed/settings.json`                 |
+| windsurf       | user    | `~/.codeium/windsurf/mcp_config.json`                             | `%APPDATA%\Codeium\windsurf\mcp_config.json`  | `~/.codeium/windsurf/mcp_config.json`         |
+| opencode       | user    | `~/.config/opencode/config.json`                                  | `~/.config/opencode/config.json`              | `~/.config/opencode/config.json`              |
+| opencode       | project | `./opencode.json`                                                 | `./opencode.json`                             | `./opencode.json`                             |
+| amp            | user    | `~/.config/amp/settings.json`                                     | `~/.config/amp/settings.json`                 | `~/.config/amp/settings.json`                 |
+| lmstudio       | user    | `~/.lmstudio/mcp.json`                                            | `~/.lmstudio/mcp.json`                        | `~/.lmstudio/mcp.json`                        |
+| librechat      | project | `./librechat.yaml`                                                | `./librechat.yaml`                            | `./librechat.yaml`                            |
 
 **Config Formats:**
+
 - Standard JSON (`mcpServers` key): Claude Desktop, Claude Code, Codex, Cursor, Windsurf, LM Studio
 - Standard YAML (`mcpServers` key): LibreChat
 - Zed: `context_servers` key
@@ -965,6 +1045,7 @@ gno mcp install [--target <target>] [--scope <scope>] [--force] [--dry-run] [--j
 - Amp: `amp.mcpServers` key
 
 **Behavior:**
+
 1. Detects bun and gno paths (absolute paths for sandboxed environments)
 2. Reads existing config (creates if missing)
 3. Adds `mcpServers.gno` entry
@@ -972,6 +1053,7 @@ gno mcp install [--target <target>] [--scope <scope>] [--force] [--dry-run] [--j
 5. Writes atomically via temp file + rename
 
 **Output (JSON):**
+
 ```json
 {
   "installed": {
@@ -985,11 +1067,13 @@ gno mcp install [--target <target>] [--scope <scope>] [--force] [--dry-run] [--j
 ```
 
 **Exit Codes:**
+
 - 0: Success
 - 1: Already configured (without --force), invalid scope for target
 - 2: Bun not found, gno not found, IO failure
 
 **Examples:**
+
 ```bash
 # Install for Claude Desktop (default)
 gno mcp install
@@ -1017,18 +1101,20 @@ gno mcp install --dry-run
 Remove gno MCP server from client configurations.
 
 **Synopsis:**
+
 ```bash
 gno mcp uninstall [--target <target>] [--scope <scope>] [--json]
 ```
 
 **Options:**
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| Option     | Type   | Default        | Description   |
+| ---------- | ------ | -------------- | ------------- |
 | `--target` | string | claude-desktop | Target client |
-| `--scope` | string | user | Scope |
+| `--scope`  | string | user           | Scope         |
 
 **Behavior:**
+
 1. Reads existing config
 2. Removes `mcpServers.gno` entry if present
 3. Creates backup before modifying
@@ -1036,6 +1122,7 @@ gno mcp uninstall [--target <target>] [--scope <scope>] [--json]
 5. Preserves other entries
 
 **Output (JSON):**
+
 ```json
 {
   "uninstalled": {
@@ -1048,6 +1135,7 @@ gno mcp uninstall [--target <target>] [--scope <scope>] [--json]
 ```
 
 **Exit Codes:**
+
 - 0: Success (including if not configured)
 - 1: Invalid scope for target
 - 2: IO failure
@@ -1059,16 +1147,17 @@ gno mcp uninstall [--target <target>] [--scope <scope>] [--json]
 Show MCP server installation status across all targets.
 
 **Synopsis:**
+
 ```bash
 gno mcp status [--target <target>] [--scope <scope>] [--json]
 ```
 
 **Options:**
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `--target` | string | all | Filter by target (or `all`) |
-| `--scope` | string | all | Filter by scope (or `all`) |
+| Option     | Type   | Default | Description                 |
+| ---------- | ------ | ------- | --------------------------- |
+| `--target` | string | all     | Filter by target (or `all`) |
+| `--scope`  | string | all     | Filter by scope (or `all`)  |
 
 **Output (Terminal):**
 
@@ -1091,6 +1180,7 @@ MCP Server Status
 ```
 
 **Output (JSON):**
+
 ```json
 {
   "targets": [
@@ -1113,6 +1203,7 @@ MCP Server Status
 ```
 
 **Exit Codes:**
+
 - 0: Success
 - 1: Invalid target or scope
 - 2: IO failure
@@ -1124,25 +1215,28 @@ MCP Server Status
 Install GNO agent skill for Claude Code or Codex.
 
 **Synopsis:**
+
 ```bash
 gno skill install [--scope <project|user>] [--target <claude|codex|all>] [--force] [--json]
 ```
 
 **Options:**
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `--scope` | string | project | `project` (.claude/skills/) or `user` (~/.claude/skills/) |
-| `--target` | string | claude | `claude`, `codex`, or `all` |
-| `--force` | boolean | false | Overwrite existing skill without prompting |
+| Option     | Type    | Default | Description                                               |
+| ---------- | ------- | ------- | --------------------------------------------------------- |
+| `--scope`  | string  | project | `project` (.claude/skills/) or `user` (~/.claude/skills/) |
+| `--target` | string  | claude  | `claude`, `codex`, or `all`                               |
+| `--force`  | boolean | false   | Overwrite existing skill without prompting                |
 
 **Behavior:**
+
 1. Resolves target path based on scope and target
 2. If skill exists and not `--force`/`--yes`: error
 3. Atomically installs skill directory (temp + rename)
 4. Copies SKILL.md and reference files
 
 **Output (JSON):**
+
 ```json
 {
   "installed": [
@@ -1152,11 +1246,13 @@ gno skill install [--scope <project|user>] [--target <claude|codex|all>] [--forc
 ```
 
 **Exit Codes:**
+
 - 0: Success
 - 1: Skill already exists (without --force)
 - 2: IO failure
 
 **Examples:**
+
 ```bash
 # Install to current project for Claude Code
 gno skill install
@@ -1175,6 +1271,7 @@ gno skill install --force
 Remove GNO agent skill.
 
 **Synopsis:**
+
 ```bash
 gno skill uninstall [--scope <project|user>] [--target <claude|codex|all>] [--json]
 ```
@@ -1182,11 +1279,13 @@ gno skill uninstall [--scope <project|user>] [--target <claude|codex|all>] [--js
 **Options:** Same as `skill install` (except `--force`)
 
 **Safety Checks:**
+
 - Validates path ends with `/skills/gno` before removal
 - Rejects paths that don't match expected structure
 - Uses atomic removal with retry for Windows compatibility
 
 **Output (JSON):**
+
 ```json
 {
   "uninstalled": [
@@ -1196,6 +1295,7 @@ gno skill uninstall [--scope <project|user>] [--target <claude|codex|all>] [--js
 ```
 
 **Exit Codes:**
+
 - 0: Success
 - 1: Skill not found
 - 2: IO failure or safety check failed
@@ -1207,26 +1307,30 @@ gno skill uninstall [--scope <project|user>] [--target <claude|codex|all>] [--js
 Preview skill files without installing.
 
 **Synopsis:**
+
 ```bash
 gno skill show [--file <name>] [--all]
 ```
 
 **Options:**
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `--file` | string | SKILL.md | File to show: SKILL.md, cli-reference.md, mcp-reference.md, examples.md |
-| `--all` | boolean | false | Show all files with separators |
+| Option   | Type    | Default  | Description                                                             |
+| -------- | ------- | -------- | ----------------------------------------------------------------------- |
+| `--file` | string  | SKILL.md | File to show: SKILL.md, cli-reference.md, mcp-reference.md, examples.md |
+| `--all`  | boolean | false    | Show all files with separators                                          |
 
 **Behavior:**
+
 - Outputs file content to stdout
 - Lists available files at end
 
 **Exit Codes:**
+
 - 0: Success
 - 1: Invalid file name
 
 **Examples:**
+
 ```bash
 gno skill show
 gno skill show --file cli-reference.md
@@ -1240,6 +1344,7 @@ gno skill show --all
 Show resolved skill installation paths.
 
 **Synopsis:**
+
 ```bash
 gno skill paths [--scope <project|user>] [--target <claude|codex|all>] [--json]
 ```
@@ -1247,6 +1352,7 @@ gno skill paths [--scope <project|user>] [--target <claude|codex|all>] [--json]
 **Options:** Same as `skill install`
 
 **Output (JSON):**
+
 ```json
 {
   "paths": [
@@ -1257,6 +1363,7 @@ gno skill paths [--scope <project|user>] [--target <claude|codex|all>] [--json]
 ```
 
 **Exit Codes:**
+
 - 0: Success
 
 ---
@@ -1266,27 +1373,31 @@ gno skill paths [--scope <project|user>] [--target <claude|codex|all>] [--json]
 Start web UI server for visual search and browse.
 
 **Synopsis:**
+
 ```bash
 gno serve [--port <num>]
 ```
 
 **Options:**
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `-p, --port` | number | 3000 | Port to listen on |
+| Option       | Type   | Default | Description       |
+| ------------ | ------ | ------- | ----------------- |
+| `-p, --port` | number | 3000    | Port to listen on |
 
 **Behavior:**
+
 - Opens database once at startup (not per-request)
 - Closes database on SIGINT/SIGTERM
 - Sets CSP header: `default-src 'self'; script-src 'self'`
 - Health check at `/api/health` returns `{ok:true}`
 
 **Exit Codes:**
+
 - 0: Server stopped gracefully
 - 2: Server failed to start (DB error, port in use)
 
 **Examples:**
+
 ```bash
 gno serve
 gno serve --port 8080
@@ -1314,15 +1425,15 @@ Error codes match exit codes: `VALIDATION` (exit 1), `RUNTIME` (exit 2).
 
 ## Environment Variables
 
-| Variable | Description |
-|----------|-------------|
-| `GNO_CONFIG_DIR` | Override config directory |
-| `GNO_DATA_DIR` | Override data directory (DB location) |
-| `GNO_CACHE_DIR` | Override cache directory (models) |
-| `NO_COLOR` | Disable colored output (standard) |
+| Variable                   | Description                                      |
+| -------------------------- | ------------------------------------------------ |
+| `GNO_CONFIG_DIR`           | Override config directory                        |
+| `GNO_DATA_DIR`             | Override data directory (DB location)            |
+| `GNO_CACHE_DIR`            | Override cache directory (models)                |
+| `NO_COLOR`                 | Disable colored output (standard)                |
 | `GNO_SKILLS_HOME_OVERRIDE` | Override home dir for skill user scope (testing) |
-| `CLAUDE_SKILLS_DIR` | Override Claude skills directory |
-| `CODEX_SKILLS_DIR` | Override Codex skills directory |
+| `CLAUDE_SKILLS_DIR`        | Override Claude skills directory                 |
+| `CODEX_SKILLS_DIR`         | Override Codex skills directory                  |
 
 ---
 

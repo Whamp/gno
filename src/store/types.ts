@@ -5,7 +5,7 @@
  * @module src/store/types
  */
 
-import type { Collection, Context, FtsTokenizer } from '../config/types';
+import type { Collection, Context, FtsTokenizer } from "../config/types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Error Types
@@ -13,24 +13,24 @@ import type { Collection, Context, FtsTokenizer } from '../config/types';
 
 /** Store error codes */
 export type StoreErrorCode =
-  | 'NOT_FOUND'
-  | 'ALREADY_EXISTS'
-  | 'CONSTRAINT_VIOLATION'
-  | 'MIGRATION_FAILED'
-  | 'CONNECTION_FAILED'
-  | 'EXTENSION_LOAD_FAILED'
-  | 'QUERY_FAILED'
-  | 'TRANSACTION_FAILED'
-  | 'INVALID_INPUT'
-  | 'IO_ERROR'
-  | 'INTERNAL'
+  | "NOT_FOUND"
+  | "ALREADY_EXISTS"
+  | "CONSTRAINT_VIOLATION"
+  | "MIGRATION_FAILED"
+  | "CONNECTION_FAILED"
+  | "EXTENSION_LOAD_FAILED"
+  | "QUERY_FAILED"
+  | "TRANSACTION_FAILED"
+  | "INVALID_INPUT"
+  | "IO_ERROR"
+  | "INTERNAL"
   // Vector-specific error codes (EPIC 7)
-  | 'VECTOR_WRITE_FAILED'
-  | 'VECTOR_DELETE_FAILED'
-  | 'VEC_SEARCH_UNAVAILABLE'
-  | 'VEC_SEARCH_FAILED'
-  | 'VEC_REBUILD_FAILED'
-  | 'VEC_SYNC_FAILED';
+  | "VECTOR_WRITE_FAILED"
+  | "VECTOR_DELETE_FAILED"
+  | "VEC_SEARCH_UNAVAILABLE"
+  | "VEC_SEARCH_FAILED"
+  | "VEC_REBUILD_FAILED"
+  | "VEC_SYNC_FAILED";
 
 /** Store error with structured details */
 export interface StoreError {
@@ -77,7 +77,7 @@ export interface CollectionRow {
 
 /** Context row from DB (mirrors config) */
 export interface ContextRow {
-  scopeType: 'global' | 'collection' | 'prefix';
+  scopeType: "global" | "collection" | "prefix";
   scopeKey: string;
   text: string;
   syncedAt: string;

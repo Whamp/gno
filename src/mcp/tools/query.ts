@@ -4,25 +4,27 @@
  * @module src/mcp/tools/query
  */
 
-import { join as pathJoin } from 'node:path';
-import { parseUri } from '../../app/constants';
-import { createNonTtyProgressRenderer } from '../../cli/progress';
-import { LlmAdapter } from '../../llm/nodeLlamaCpp/adapter';
-import { resolveDownloadPolicy } from '../../llm/policy';
-import { getActivePreset } from '../../llm/registry';
+import { join as pathJoin } from "node:path";
+
 import type {
   EmbeddingPort,
   GenerationPort,
   RerankPort,
-} from '../../llm/types';
-import { type HybridSearchDeps, searchHybrid } from '../../pipeline/hybrid';
-import type { SearchResult, SearchResults } from '../../pipeline/types';
+} from "../../llm/types";
+import type { SearchResult, SearchResults } from "../../pipeline/types";
+import type { ToolContext } from "../server";
+
+import { parseUri } from "../../app/constants";
+import { createNonTtyProgressRenderer } from "../../cli/progress";
+import { LlmAdapter } from "../../llm/nodeLlamaCpp/adapter";
+import { resolveDownloadPolicy } from "../../llm/policy";
+import { getActivePreset } from "../../llm/registry";
+import { type HybridSearchDeps, searchHybrid } from "../../pipeline/hybrid";
 import {
   createVectorIndexPort,
   type VectorIndexPort,
-} from '../../store/vector';
-import type { ToolContext } from '../server';
-import { runTool, type ToolResult } from './index';
+} from "../../store/vector";
+import { runTool, type ToolResult } from "./index";
 
 interface QueryInput {
   query: string;
@@ -75,22 +77,22 @@ function formatSearchResults(data: SearchResults): string {
   }
 
   const lines: string[] = [];
-  const mode = data.meta.mode === 'bm25_only' ? 'BM25 only' : 'hybrid';
+  const mode = data.meta.mode === "bm25_only" ? "BM25 only" : "hybrid";
   const flags: string[] = [];
   if (data.meta.expanded) {
-    flags.push('expanded');
+    flags.push("expanded");
   }
   if (data.meta.reranked) {
-    flags.push('reranked');
+    flags.push("reranked");
   }
   if (data.meta.vectorsUsed) {
-    flags.push('vectors');
+    flags.push("vectors");
   }
 
   lines.push(
-    `Found ${data.results.length} results for "${data.meta.query}" (${mode}${flags.length > 0 ? `, ${flags.join(', ')}` : ''}):`
+    `Found ${data.results.length} results for "${data.meta.query}" (${mode}${flags.length > 0 ? `, ${flags.join(", ")}` : ""}):`
   );
-  lines.push('');
+  lines.push("");
 
   for (const r of data.results) {
     lines.push(`[${r.docid}] ${r.uri} (score: ${r.score.toFixed(3)})`);
@@ -98,13 +100,13 @@ function formatSearchResults(data: SearchResults): string {
       lines.push(`  Title: ${r.title}`);
     }
     if (r.snippet) {
-      const snippetPreview = r.snippet.slice(0, 200).replace(/\n/g, ' ');
-      lines.push(`  ${snippetPreview}${r.snippet.length > 200 ? '...' : ''}`);
+      const snippetPreview = r.snippet.slice(0, 200).replace(/\n/g, " ");
+      lines.push(`  ${snippetPreview}${r.snippet.length > 200 ? "..." : ""}`);
     }
-    lines.push('');
+    lines.push("");
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**
@@ -116,8 +118,8 @@ export function handleQuery(
 ): Promise<ToolResult> {
   return runTool(
     ctx,
-    'gno_query',
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: query with validation, hybrid search, and result formatting
+    "gno_query",
+    // oxlint-disable-next-line max-lines-per-function -- query with validation and result formatting
     async () => {
       // Validate collection exists if specified
       if (args.collection) {
@@ -145,7 +147,7 @@ export function handleQuery(
         // Create embedding port (for vector search) - optional
         const embedResult = await llm.createEmbeddingPort(preset.embed, {
           policy,
-          onProgress: (progress) => downloadProgress('embed', progress),
+          onProgress: (progress) => downloadProgress("embed", progress),
         });
         if (embedResult.ok) {
           embedPort = embedResult.value;
@@ -177,7 +179,7 @@ export function handleQuery(
         if (!noExpand) {
           const genResult = await llm.createGenerationPort(preset.gen, {
             policy,
-            onProgress: (progress) => downloadProgress('gen', progress),
+            onProgress: (progress) => downloadProgress("gen", progress),
           });
           if (genResult.ok) {
             genPort = genResult.value;
@@ -188,7 +190,7 @@ export function handleQuery(
         if (!noRerank) {
           const rerankResult = await llm.createRerankPort(preset.rerank, {
             policy,
-            onProgress: (progress) => downloadProgress('rerank', progress),
+            onProgress: (progress) => downloadProgress("rerank", progress),
           });
           if (rerankResult.ok) {
             rerankPort = rerankResult.value;

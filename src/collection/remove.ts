@@ -5,9 +5,10 @@
  * @module src/collection/remove
  */
 
-import { getCollectionFromScope } from '../config';
-import type { Config } from '../config/types';
-import type { CollectionResult, RemoveCollectionInput } from './types';
+import type { Config } from "../config/types";
+import type { CollectionResult, RemoveCollectionInput } from "./types";
+
+import { getCollectionFromScope } from "../config";
 
 /**
  * Remove a collection from config.
@@ -27,7 +28,7 @@ export function removeCollection(
   if (!collection) {
     return {
       ok: false,
-      code: 'NOT_FOUND',
+      code: "NOT_FOUND",
       message: `Collection "${collectionName}" not found`,
     };
   }
@@ -39,10 +40,10 @@ export function removeCollection(
   });
 
   if (referencingContexts.length > 0) {
-    const scopes = referencingContexts.map((ctx) => ctx.scopeKey).join(', ');
+    const scopes = referencingContexts.map((ctx) => ctx.scopeKey).join(", ");
     return {
       ok: false,
-      code: 'HAS_REFERENCES',
+      code: "HAS_REFERENCES",
       message: `Collection "${collectionName}" is referenced by contexts: ${scopes}. Remove the contexts first.`,
     };
   }

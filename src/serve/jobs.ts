@@ -5,12 +5,12 @@
  * @module src/serve/jobs
  */
 
-import type { SyncResult } from '../ingestion';
+import type { SyncResult } from "../ingestion";
 
 // Job expiration: 1 hour
 const JOB_EXPIRATION_MS = 60 * 60 * 1000;
 
-export type JobType = 'add' | 'sync' | 'embed';
+export type JobType = "add" | "sync" | "embed";
 
 export interface JobProgress {
   current: number;
@@ -21,7 +21,7 @@ export interface JobProgress {
 export interface JobStatus {
   id: string;
   type: JobType;
-  status: 'running' | 'completed' | 'failed';
+  status: "running" | "completed" | "failed";
   createdAt: number;
   progress?: JobProgress;
   result?: SyncResult;
@@ -53,7 +53,7 @@ const jobs = new Map<string, JobStatus>();
 function cleanupExpiredJobs(now = Date.now()): void {
   for (const [id, job] of jobs) {
     // Never expire running jobs - only completed/failed
-    if (job.status === 'running') {
+    if (job.status === "running") {
       continue;
     }
     if (now - job.createdAt > JOB_EXPIRATION_MS) {
@@ -93,7 +93,7 @@ export function startJob(
   const jobStatus: JobStatus = {
     id: jobId,
     type,
-    status: 'running',
+    status: "running",
     createdAt: Date.now(),
   };
   jobs.set(jobId, jobStatus);
@@ -106,14 +106,14 @@ export function startJob(
     .then((result) => {
       const job = jobs.get(jobId);
       if (job) {
-        job.status = 'completed';
+        job.status = "completed";
         job.result = result;
       }
     })
     .catch((e) => {
       const job = jobs.get(jobId);
       if (job) {
-        job.status = 'failed';
+        job.status = "failed";
         job.error = e instanceof Error ? e.message : String(e);
       }
     })

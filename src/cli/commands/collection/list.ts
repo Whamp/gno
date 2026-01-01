@@ -2,10 +2,11 @@
  * gno collection list - List all collections
  */
 
-import type { Collection } from '../../../config';
-import { loadConfig } from '../../../config';
-import { bold, cyan, dim } from '../../colors';
-import { CliError } from '../../errors';
+import type { Collection } from "../../../config";
+
+import { loadConfig } from "../../../config";
+import { bold, cyan, dim } from "../../colors";
+import { CliError } from "../../errors";
 
 /**
  * Strip ANSI escape sequences and control characters from string.
@@ -13,8 +14,8 @@ import { CliError } from '../../errors';
  */
 function sanitize(input: string): string {
   // Strip ANSI escape sequences
-  // biome-ignore lint/suspicious/noControlCharactersInRegex: intentional for sanitization
-  return input.replace(/\x1b\[[0-9;]*m/g, '').replace(/[\x00-\x1f\x7f]/g, '');
+  // oxlint-disable-next-line no-control-regex -- intentional for sanitization
+  return input.replace(/\x1b\[[0-9;]*m/g, "").replace(/[\x00-\x1f\x7f]/g, "");
 }
 
 interface ListOptions {
@@ -23,38 +24,38 @@ interface ListOptions {
 }
 
 function formatMarkdown(collections: Collection[]): string {
-  const lines: string[] = ['# Collections', ''];
+  const lines: string[] = ["# Collections", ""];
   if (collections.length === 0) {
-    lines.push('No collections configured.');
-    return lines.join('\n');
+    lines.push("No collections configured.");
+    return lines.join("\n");
   }
 
   for (const coll of collections) {
-    lines.push(`## ${coll.name}`, '');
+    lines.push(`## ${coll.name}`, "");
     lines.push(`- **Path:** ${coll.path}`);
     lines.push(`- **Pattern:** ${coll.pattern}`);
     if (coll.include.length > 0) {
-      lines.push(`- **Include:** ${coll.include.join(', ')}`);
+      lines.push(`- **Include:** ${coll.include.join(", ")}`);
     }
     if (coll.exclude.length > 0) {
-      lines.push(`- **Exclude:** ${coll.exclude.join(', ')}`);
+      lines.push(`- **Exclude:** ${coll.exclude.join(", ")}`);
     }
     if (coll.updateCmd) {
       lines.push(`- **Update Command:** \`${coll.updateCmd}\``);
     }
-    lines.push('');
+    lines.push("");
   }
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 function formatTerminal(collections: Collection[]): string {
   if (collections.length === 0) {
-    return dim('No collections configured.');
+    return dim("No collections configured.");
   }
 
   const lines: string[] = [
-    `${bold('Collections')} ${dim(`(${collections.length})`)}`,
-    '',
+    `${bold("Collections")} ${dim(`(${collections.length})`)}`,
+    "",
   ];
   for (const coll of collections) {
     // Sanitize all user-controlled values to prevent terminal injection
@@ -66,20 +67,20 @@ function formatTerminal(collections: Collection[]): string {
     const updateCmd = coll.updateCmd ? sanitize(coll.updateCmd) : undefined;
 
     lines.push(`  ${cyan(bold(name))}`);
-    lines.push(`    ${dim('Path:')}    ${path}`);
-    lines.push(`    ${dim('Pattern:')} ${pattern}`);
+    lines.push(`    ${dim("Path:")}    ${path}`);
+    lines.push(`    ${dim("Pattern:")} ${pattern}`);
     if (include.length > 0) {
-      lines.push(`    ${dim('Include:')} ${include.join(', ')}`);
+      lines.push(`    ${dim("Include:")} ${include.join(", ")}`);
     }
     if (exclude.length > 0) {
-      lines.push(`    ${dim('Exclude:')} ${dim(exclude.join(', '))}`);
+      lines.push(`    ${dim("Exclude:")} ${dim(exclude.join(", "))}`);
     }
     if (updateCmd) {
-      lines.push(`    ${dim('Update:')}  ${updateCmd}`);
+      lines.push(`    ${dim("Update:")}  ${updateCmd}`);
     }
-    lines.push('');
+    lines.push("");
   }
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 export async function collectionList(options: ListOptions): Promise<void> {
@@ -87,7 +88,7 @@ export async function collectionList(options: ListOptions): Promise<void> {
   const result = await loadConfig();
   if (!result.ok) {
     throw new CliError(
-      'RUNTIME',
+      "RUNTIME",
       `Failed to load config: ${result.error.message}`
     );
   }

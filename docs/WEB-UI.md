@@ -17,12 +17,12 @@ gno serve
 
 The GNO Web UI provides a graphical interface to your local knowledge index. Everything runs on your machine—no cloud, no accounts, no data leaving your network.
 
-| Page | Purpose |
-|:-----|:--------|
-| **Dashboard** | Index stats, collections, quick navigation |
-| **Search** | BM25, vector, or hybrid search with mode selector |
-| **Browse** | Paginated document list, filter by collection |
-| **Ask** | AI-powered Q&A with citations |
+| Page          | Purpose                                           |
+| :------------ | :------------------------------------------------ |
+| **Dashboard** | Index stats, collections, quick navigation        |
+| **Search**    | BM25, vector, or hybrid search with mode selector |
+| **Browse**    | Paginated document list, filter by collection     |
+| **Ask**       | AI-powered Q&A with citations                     |
 
 ---
 
@@ -49,10 +49,10 @@ Navigate to `http://localhost:3000`. The dashboard shows:
 
 Click **Search** or press `/`. Choose your mode:
 
-| Mode | Description |
-|:-----|:------------|
-| BM25 | Exact keyword matching |
-| Vector | Semantic similarity |
+| Mode   | Description                |
+| :----- | :------------------------- |
+| BM25   | Exact keyword matching     |
+| Vector | Semantic similarity        |
 | Hybrid | Best of both (recommended) |
 
 ### 4. Ask Questions
@@ -73,11 +73,11 @@ Switch between model presets without restarting:
 2. Choose: **Slim** (fast), **Balanced** (default), or **Quality** (best answers)
 3. GNO reloads models automatically
 
-| Preset | Disk | Best For |
-|:-------|:-----|:---------|
-| Slim | ~1GB | Quick searches, limited resources |
-| Balanced | ~2GB | General use |
-| Quality | ~2.5GB | Best answer quality |
+| Preset   | Disk   | Best For                          |
+| :------- | :----- | :-------------------------------- |
+| Slim     | ~1GB   | Quick searches, limited resources |
+| Balanced | ~2GB   | General use                       |
+| Quality  | ~2.5GB | Best answer quality               |
 
 ### Model Download
 
@@ -128,18 +128,18 @@ The Ask page provides RAG-powered Q&A:
 gno serve [options]
 ```
 
-| Flag | Description | Default |
-|:-----|:------------|:--------|
-| `-p, --port <num>` | Port to listen on | 3000 |
-| `--index <name>` | Use named index | default |
+| Flag               | Description       | Default |
+| :----------------- | :---------------- | :------ |
+| `-p, --port <num>` | Port to listen on | 3000    |
+| `--index <name>`   | Use named index   | default |
 
 ### Environment Variables
 
-| Variable | Description |
-|:---------|:------------|
-| `NODE_ENV=production` | Disable HMR, stricter CSP |
-| `GNO_VERBOSE=1` | Enable debug logging |
-| `HF_HUB_OFFLINE=1` | Offline mode: use cached models only |
+| Variable                 | Description                                              |
+| :----------------------- | :------------------------------------------------------- |
+| `NODE_ENV=production`    | Disable HMR, stricter CSP                                |
+| `GNO_VERBOSE=1`          | Enable debug logging                                     |
+| `HF_HUB_OFFLINE=1`       | Offline mode: use cached models only                     |
 | `GNO_NO_AUTO_DOWNLOAD=1` | Disable auto-download (allow explicit `gno models pull`) |
 
 Models auto-download on first use. Use offline variables in air-gapped environments.
@@ -150,16 +150,17 @@ Models auto-download on first use. Use offline variables in air-gapped environme
 
 The Web UI is designed for local use only:
 
-| Protection | Description |
-|:-----------|:------------|
-| **Loopback only** | Binds to `127.0.0.1`, not accessible from network |
-| **CSP headers** | Strict Content-Security-Policy on all responses |
-| **CORS protection** | Cross-origin requests blocked |
-| **No external resources** | No CDN fonts, scripts, or tracking |
+| Protection                | Description                                       |
+| :------------------------ | :------------------------------------------------ |
+| **Loopback only**         | Binds to `127.0.0.1`, not accessible from network |
+| **CSP headers**           | Strict Content-Security-Policy on all responses   |
+| **CORS protection**       | Cross-origin requests blocked                     |
+| **No external resources** | No CDN fonts, scripts, or tracking                |
 
 > **Warning**: Do not expose `gno serve` to the internet. It has no authentication.
 
 > **Pro tip**: Want remote access to your second brain? Since GNO binds to localhost only, use a tunnel:
+>
 > - [Tailscale Serve](https://tailscale.com/kb/1312/serve) — Expose to your Tailnet (private, your devices only)
 > - [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) — Free tier, add Cloudflare Access for auth
 > - [ngrok](https://ngrok.com/) — Quick setup, supports basic auth

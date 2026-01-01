@@ -3,23 +3,24 @@
  * @module test/ingestion/walker.test
  */
 
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from "bun:test";
 // node:path - Bun has no path manipulation module
-import { resolve } from 'node:path';
-import { FileWalker } from '../../src/ingestion/walker';
+import { resolve } from "node:path";
 
-const FIXTURES_ROOT = resolve(import.meta.dir, '../fixtures/walker');
+import { FileWalker } from "../../src/ingestion/walker";
+
+const FIXTURES_ROOT = resolve(import.meta.dir, "../fixtures/walker");
 
 /** ISO date string prefix regex */
 const ISO_DATE_PREFIX_REGEX = /^\d{4}-\d{2}-\d{2}T/;
 
-describe('FileWalker', () => {
+describe("FileWalker", () => {
   const walker = new FileWalker();
 
-  test('walks all files with ** pattern', async () => {
+  test("walks all files with ** pattern", async () => {
     const { entries, skipped } = await walker.walk({
       root: FIXTURES_ROOT,
-      pattern: '**/*',
+      pattern: "**/*",
       include: [],
       exclude: [],
       maxBytes: 10_000_000,
@@ -30,50 +31,50 @@ describe('FileWalker', () => {
     expect(skipped.length).toBe(0);
   });
 
-  test('filters by include extensions', async () => {
+  test("filters by include extensions", async () => {
     const { entries } = await walker.walk({
       root: FIXTURES_ROOT,
-      pattern: '**/*',
-      include: ['.md'],
-      exclude: ['.git', 'node_modules'],
+      pattern: "**/*",
+      include: [".md"],
+      exclude: [".git", "node_modules"],
       maxBytes: 10_000_000,
     });
 
     // Should only find .md files
     for (const entry of entries) {
-      expect(entry.relPath.endsWith('.md')).toBe(true);
+      expect(entry.relPath.endsWith(".md")).toBe(true);
     }
     expect(entries.length).toBeGreaterThanOrEqual(2); // readme.md, guide.md, large.md
   });
 
-  test('excludes directories', async () => {
+  test("excludes directories", async () => {
     const { entries } = await walker.walk({
       root: FIXTURES_ROOT,
-      pattern: '**/*',
+      pattern: "**/*",
       include: [],
-      exclude: ['.git', 'node_modules'],
+      exclude: [".git", "node_modules"],
       maxBytes: 10_000_000,
     });
 
     // Should not include files from excluded dirs
     for (const entry of entries) {
-      expect(entry.relPath).not.toContain('.git');
-      expect(entry.relPath).not.toContain('node_modules');
+      expect(entry.relPath).not.toContain(".git");
+      expect(entry.relPath).not.toContain("node_modules");
     }
   });
 
-  test('skips files exceeding maxBytes', async () => {
+  test("skips files exceeding maxBytes", async () => {
     const { entries, skipped } = await walker.walk({
       root: FIXTURES_ROOT,
-      pattern: '**/*',
-      include: ['.md'],
-      exclude: ['.git', 'node_modules'],
+      pattern: "**/*",
+      include: [".md"],
+      exclude: [".git", "node_modules"],
       maxBytes: 100, // Very small limit
     });
 
     // large.md should be skipped
     expect(skipped.length).toBeGreaterThan(0);
-    expect(skipped.some((s) => s.reason === 'TOO_LARGE')).toBe(true);
+    expect(skipped.some((s) => s.reason === "TOO_LARGE")).toBe(true);
 
     // Entries should only contain files <= 100 bytes
     for (const entry of entries) {
@@ -81,12 +82,12 @@ describe('FileWalker', () => {
     }
   });
 
-  test('returns sorted entries by relPath', async () => {
+  test("returns sorted entries by relPath", async () => {
     const { entries } = await walker.walk({
       root: FIXTURES_ROOT,
-      pattern: '**/*',
+      pattern: "**/*",
       include: [],
-      exclude: ['.git', 'node_modules'],
+      exclude: [".git", "node_modules"],
       maxBytes: 10_000_000,
     });
 
@@ -95,26 +96,26 @@ describe('FileWalker', () => {
     expect(paths).toEqual(sorted);
   });
 
-  test('normalizes paths to POSIX format', async () => {
+  test("normalizes paths to POSIX format", async () => {
     const { entries } = await walker.walk({
       root: FIXTURES_ROOT,
-      pattern: '**/*',
+      pattern: "**/*",
       include: [],
-      exclude: ['.git', 'node_modules'],
+      exclude: [".git", "node_modules"],
       maxBytes: 10_000_000,
     });
 
     for (const entry of entries) {
-      expect(entry.relPath).not.toContain('\\');
+      expect(entry.relPath).not.toContain("\\");
     }
   });
 
-  test('includes mtime as ISO string', async () => {
+  test("includes mtime as ISO string", async () => {
     const { entries } = await walker.walk({
       root: FIXTURES_ROOT,
-      pattern: '**/*',
-      include: ['.md'],
-      exclude: ['.git', 'node_modules'],
+      pattern: "**/*",
+      include: [".md"],
+      exclude: [".git", "node_modules"],
       maxBytes: 10_000_000,
     });
 

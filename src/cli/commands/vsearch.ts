@@ -5,20 +5,21 @@
  * @module src/cli/commands/vsearch
  */
 
-import { LlmAdapter } from '../../llm/nodeLlamaCpp/adapter';
-import { getActivePreset } from '../../llm/registry';
-import { formatQueryForEmbedding } from '../../pipeline/contextual';
-import type { SearchOptions, SearchResults } from '../../pipeline/types';
+import type { SearchOptions, SearchResults } from "../../pipeline/types";
+
+import { LlmAdapter } from "../../llm/nodeLlamaCpp/adapter";
+import { getActivePreset } from "../../llm/registry";
+import { formatQueryForEmbedding } from "../../pipeline/contextual";
 import {
   searchVectorWithEmbedding,
   type VectorSearchDeps,
-} from '../../pipeline/vsearch';
-import { createVectorIndexPort } from '../../store/vector';
+} from "../../pipeline/vsearch";
+import { createVectorIndexPort } from "../../store/vector";
 import {
   type FormatOptions,
   formatSearchResults,
-} from '../format/search-results';
-import { initStore } from './shared';
+} from "../format/search-results";
+import { initStore } from "./shared";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -147,23 +148,23 @@ export async function vsearch(
  */
 function getFormatType(
   options: VsearchCommandOptions
-): FormatOptions['format'] {
+): FormatOptions["format"] {
   if (options.json) {
-    return 'json';
+    return "json";
   }
   if (options.files) {
-    return 'files';
+    return "files";
   }
   if (options.csv) {
-    return 'csv';
+    return "csv";
   }
   if (options.md) {
-    return 'md';
+    return "md";
   }
   if (options.xml) {
-    return 'xml';
+    return "xml";
   }
-  return 'terminal';
+  return "terminal";
 }
 
 /**
@@ -176,7 +177,7 @@ export function formatVsearch(
   if (!result.success) {
     return options.json
       ? JSON.stringify({
-          error: { code: 'QUERY_FAILED', message: result.error },
+          error: { code: "QUERY_FAILED", message: result.error },
         })
       : `Error: ${result.error}`;
   }

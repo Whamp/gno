@@ -5,7 +5,7 @@
  * @module src/store
  */
 
-export type { Migration } from './migrations';
+export type { Migration } from "./migrations";
 // Migrations
 export {
   getDbFtsTokenizer,
@@ -13,10 +13,10 @@ export {
   migrations,
   needsFtsRebuild,
   runMigrations,
-} from './migrations';
+} from "./migrations";
 
 // SQLite adapter
-export { SqliteAdapter } from './sqlite';
+export { SqliteAdapter } from "./sqlite";
 // Types and interfaces
 export type {
   ChunkInput,
@@ -37,5 +37,5 @@ export type {
   StoreErrorCode,
   StorePort,
   StoreResult,
-} from './types';
-export { err, ok } from './types';
+} from "./types";
+export { err, ok } from "./types";

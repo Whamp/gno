@@ -4,7 +4,7 @@
  * @module src/cli/commands/mcp
  */
 
-export { type InstallOptions, installMcp } from './install.js';
+export { type InstallOptions, installMcp } from "./install.js";
 export {
   buildMcpServerEntry,
   findBunPath,
@@ -19,6 +19,6 @@ export {
   resolveAllMcpPaths,
   resolveMcpConfigPath,
   TARGETS_WITH_PROJECT_SCOPE,
-} from './paths.js';
-export { type StatusOptions, statusMcp } from './status.js';
-export { type UninstallOptions, uninstallMcp } from './uninstall.js';
+} from "./paths.js";
+export { type StatusOptions, statusMcp } from "./status.js";
+export { type UninstallOptions, uninstallMcp } from "./uninstall.js";

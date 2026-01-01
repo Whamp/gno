@@ -4,22 +4,25 @@
  * @module src/mcp/tools
  */
 
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { z } from 'zod';
-import type { ToolContext } from '../server';
-import { handleGet } from './get';
-import { handleMultiGet } from './multi-get';
-import { handleQuery } from './query';
-import { handleSearch } from './search';
-import { handleStatus } from './status';
-import { handleVsearch } from './vsearch';
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+
+import { z } from "zod";
+
+import type { ToolContext } from "../server";
+
+import { handleGet } from "./get";
+import { handleMultiGet } from "./multi-get";
+import { handleQuery } from "./query";
+import { handleSearch } from "./search";
+import { handleStatus } from "./status";
+import { handleVsearch } from "./vsearch";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared Input Schemas
 // ─────────────────────────────────────────────────────────────────────────────
 
 const searchInputSchema = z.object({
-  query: z.string().min(1, 'Query cannot be empty'),
+  query: z.string().min(1, "Query cannot be empty"),
   collection: z.string().optional(),
   limit: z.number().int().min(1).max(100).default(5),
   minScore: z.number().min(0).max(1).optional(),
@@ -27,7 +30,7 @@ const searchInputSchema = z.object({
 });
 
 const vsearchInputSchema = z.object({
-  query: z.string().min(1, 'Query cannot be empty'),
+  query: z.string().min(1, "Query cannot be empty"),
   collection: z.string().optional(),
   limit: z.number().int().min(1).max(100).default(5),
   minScore: z.number().min(0).max(1).optional(),
@@ -35,7 +38,7 @@ const vsearchInputSchema = z.object({
 });
 
 const queryInputSchema = z.object({
-  query: z.string().min(1, 'Query cannot be empty'),
+  query: z.string().min(1, "Query cannot be empty"),
   collection: z.string().optional(),
   limit: z.number().int().min(1).max(100).default(5),
   minScore: z.number().min(0).max(1).optional(),
@@ -47,7 +50,7 @@ const queryInputSchema = z.object({
 });
 
 const getInputSchema = z.object({
-  ref: z.string().min(1, 'Reference cannot be empty'),
+  ref: z.string().min(1, "Reference cannot be empty"),
   fromLine: z.number().int().min(1).optional(),
   lineCount: z.number().int().min(1).optional(),
   lineNumbers: z.boolean().default(true),
@@ -68,7 +71,7 @@ const statusInputSchema = z.object({});
 
 export interface ToolResult {
   [x: string]: unknown;
-  content: Array<{ type: 'text'; text: string }>;
+  content: Array<{ type: "text"; text: string }>;
   structuredContent?: { [x: string]: unknown };
   isError?: boolean;
 }
@@ -87,7 +90,7 @@ export async function runTool<T>(
   if (ctx.isShuttingDown()) {
     return {
       isError: true,
-      content: [{ type: 'text', text: 'Error: Server is shutting down' }],
+      content: [{ type: "text", text: "Error: Server is shutting down" }],
     };
   }
 
@@ -96,7 +99,7 @@ export async function runTool<T>(
   try {
     const data = await fn();
     return {
-      content: [{ type: 'text', text: formatText(data) }],
+      content: [{ type: "text", text: formatText(data) }],
       structuredContent: data as { [x: string]: unknown },
     };
   } catch (e) {
@@ -105,7 +108,7 @@ export async function runTool<T>(
     console.error(`[MCP] ${name} error:`, message);
     return {
       isError: true,
-      content: [{ type: 'text', text: `Error: ${message}` }],
+      content: [{ type: "text", text: `Error: ${message}` }],
     };
   } finally {
     release();
@@ -119,43 +122,43 @@ export async function runTool<T>(
 export function registerTools(server: McpServer, ctx: ToolContext): void {
   // Tool IDs use underscores (MCP pattern: ^[a-zA-Z0-9_-]{1,64}$)
   server.tool(
-    'gno_search',
-    'BM25 full-text search across indexed documents',
+    "gno_search",
+    "BM25 full-text search across indexed documents",
     searchInputSchema.shape,
     (args) => handleSearch(args, ctx)
   );
 
   server.tool(
-    'gno_vsearch',
-    'Vector/semantic similarity search',
+    "gno_vsearch",
+    "Vector/semantic similarity search",
     vsearchInputSchema.shape,
     (args) => handleVsearch(args, ctx)
   );
 
   server.tool(
-    'gno_query',
-    'Hybrid search with optional expansion and reranking',
+    "gno_query",
+    "Hybrid search with optional expansion and reranking",
     queryInputSchema.shape,
     (args) => handleQuery(args, ctx)
   );
 
   server.tool(
-    'gno_get',
-    'Retrieve a single document by URI, docid, or collection/path',
+    "gno_get",
+    "Retrieve a single document by URI, docid, or collection/path",
     getInputSchema.shape,
     (args) => handleGet(args, ctx)
   );
 
   server.tool(
-    'gno_multi_get',
-    'Retrieve multiple documents by refs or glob pattern',
+    "gno_multi_get",
+    "Retrieve multiple documents by refs or glob pattern",
     multiGetInputSchema.shape,
     (args) => handleMultiGet(args, ctx)
   );
 
   server.tool(
-    'gno_status',
-    'Get index status and health information',
+    "gno_status",
+    "Get index status and health information",
     statusInputSchema.shape,
     (args) => handleStatus(args, ctx)
   );

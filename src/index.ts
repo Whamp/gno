@@ -6,8 +6,8 @@
  * @module src/index
  */
 
-import { runCli } from './cli/run';
-import { resetModelManager } from './llm/nodeLlamaCpp/lifecycle';
+import { runCli } from "./cli/run";
+import { resetModelManager } from "./llm/nodeLlamaCpp/lifecycle";
 
 /**
  * Cleanup models and exit.
@@ -21,8 +21,8 @@ async function cleanupAndExit(code: number): Promise<never> {
 }
 
 // SIGINT handler for graceful shutdown
-process.on('SIGINT', () => {
-  process.stderr.write('\nInterrupted\n');
+process.on("SIGINT", () => {
+  process.stderr.write("\nInterrupted\n");
   cleanupAndExit(130).catch(() => {
     // Ignore cleanup errors on exit
   });

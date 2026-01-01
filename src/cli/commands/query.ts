@@ -5,26 +5,27 @@
  * @module src/cli/commands/query
  */
 
-import { LlmAdapter } from '../../llm/nodeLlamaCpp/adapter';
-import { resolveDownloadPolicy } from '../../llm/policy';
-import { getActivePreset } from '../../llm/registry';
 import type {
   EmbeddingPort,
   GenerationPort,
   RerankPort,
-} from '../../llm/types';
-import { type HybridSearchDeps, searchHybrid } from '../../pipeline/hybrid';
-import type { HybridSearchOptions, SearchResults } from '../../pipeline/types';
+} from "../../llm/types";
+import type { HybridSearchOptions, SearchResults } from "../../pipeline/types";
+
+import { LlmAdapter } from "../../llm/nodeLlamaCpp/adapter";
+import { resolveDownloadPolicy } from "../../llm/policy";
+import { getActivePreset } from "../../llm/registry";
+import { type HybridSearchDeps, searchHybrid } from "../../pipeline/hybrid";
 import {
   createVectorIndexPort,
   type VectorIndexPort,
-} from '../../store/vector';
-import { getGlobals } from '../program';
+} from "../../store/vector";
+import { getGlobals } from "../program";
 import {
   createProgressRenderer,
   createThrottledProgressRenderer,
-} from '../progress';
-import { initStore } from './shared';
+} from "../progress";
+import { initStore } from "./shared";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -52,7 +53,7 @@ export type QueryCommandOptions = HybridSearchOptions & {
 };
 
 export interface QueryFormatOptions {
-  format: 'terminal' | 'json' | 'files' | 'csv' | 'md' | 'xml';
+  format: "terminal" | "json" | "files" | "csv" | "md" | "xml";
   full?: boolean;
   lineNumbers?: boolean;
 }
@@ -68,7 +69,7 @@ export type QueryResult =
 /**
  * Execute gno query command.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: CLI orchestration with multiple output formats
+// oxlint-disable-next-line max-lines-per-function -- CLI orchestration with multiple output formats
 export async function query(
   queryText: string,
   options: QueryCommandOptions = {}
@@ -113,7 +114,7 @@ export async function query(
     const embedResult = await llm.createEmbeddingPort(embedUri, {
       policy,
       onProgress: downloadProgress
-        ? (progress) => downloadProgress('embed', progress)
+        ? (progress) => downloadProgress("embed", progress)
         : undefined,
     });
     if (embedResult.ok) {
@@ -126,7 +127,7 @@ export async function query(
       const genResult = await llm.createGenerationPort(genUri, {
         policy,
         onProgress: downloadProgress
-          ? (progress) => downloadProgress('gen', progress)
+          ? (progress) => downloadProgress("gen", progress)
           : undefined,
       });
       if (genResult.ok) {
@@ -140,7 +141,7 @@ export async function query(
       const rerankResult = await llm.createRerankPort(rerankUri, {
         policy,
         onProgress: downloadProgress
-          ? (progress) => downloadProgress('rerank', progress)
+          ? (progress) => downloadProgress("rerank", progress)
           : undefined,
       });
       if (rerankResult.ok) {
@@ -150,7 +151,7 @@ export async function query(
 
     // Clear progress line if shown
     if (showProgress && downloadProgress) {
-      process.stderr.write('\n');
+      process.stderr.write("\n");
     }
 
     // Create vector index (optional)
@@ -223,7 +224,7 @@ function outputExplainToStderr(data: SearchResults): void {
   const {
     formatExplain,
     formatResultExplain,
-  } = require('../../pipeline/explain');
+  } = require("../../pipeline/explain");
   process.stderr.write(`${formatExplain(explain.lines)}\n`);
   process.stderr.write(`${formatResultExplain(explain.results)}\n`);
 }
@@ -237,9 +238,9 @@ export function formatQuery(
   options: QueryFormatOptions
 ): string {
   if (!result.success) {
-    return options.format === 'json'
+    return options.format === "json"
       ? JSON.stringify({
-          error: { code: 'QUERY_FAILED', message: result.error },
+          error: { code: "QUERY_FAILED", message: result.error },
         })
       : `Error: ${result.error}`;
   }
@@ -249,7 +250,7 @@ export function formatQuery(
 
   // Use shared formatter for consistent output
   // Dynamic import to keep module loading fast
-  const { formatSearchResults } = require('../format/search-results');
+  const { formatSearchResults } = require("../format/search-results");
   return formatSearchResults(result.data, {
     format: options.format,
     full: options.full,

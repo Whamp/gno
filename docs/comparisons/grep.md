@@ -6,33 +6,33 @@ grep and ripgrep are excellent for exact pattern matching in code. GNO adds sema
 
 ## Quick Summary
 
-| Aspect | GNO | grep/rg |
-|--------|-----|---------|
-| **Best for** | Knowledge base, documents | Code search, exact patterns |
-| **Unique strength** | Find concepts, not just strings | Fast regex, pipeline-friendly |
-| **Learning curve** | Minutes | Minutes (regex mastery takes longer) |
+| Aspect              | GNO                             | grep/rg                              |
+| ------------------- | ------------------------------- | ------------------------------------ |
+| **Best for**        | Knowledge base, documents       | Code search, exact patterns          |
+| **Unique strength** | Find concepts, not just strings | Fast regex, pipeline-friendly        |
+| **Learning curve**  | Minutes                         | Minutes (regex mastery takes longer) |
 
 ## Feature Comparison
 
-| Feature | GNO | grep/rg |
-|---------|-----|---------|
-| **Search Type** | Semantic + keyword | Keyword/regex only |
-| **"Find concept"** | ✓ Vector similarity | ✗ Must know exact terms |
-| **PDF/DOCX** | ✓ Native | ✗ Text only |
-| **Ranking** | Relevance-scored | Line matches |
-| **AI Integration** | MCP, Skills, RAG | Manual piping |
-| **Index** | Persistent, incremental | None (scan every time) |
-| **Speed (large corpus)** | Fast (indexed) | Slow (full scan) |
-| **Regex** | Basic patterns | Full regex power |
-| **Pipeline** | JSON output | Native stdin/stdout |
+| Feature                  | GNO                     | grep/rg                 |
+| ------------------------ | ----------------------- | ----------------------- |
+| **Search Type**          | Semantic + keyword      | Keyword/regex only      |
+| **"Find concept"**       | ✓ Vector similarity     | ✗ Must know exact terms |
+| **PDF/DOCX**             | ✓ Native                | ✗ Text only             |
+| **Ranking**              | Relevance-scored        | Line matches            |
+| **AI Integration**       | MCP, Skills, RAG        | Manual piping           |
+| **Index**                | Persistent, incremental | None (scan every time)  |
+| **Speed (large corpus)** | Fast (indexed)          | Slow (full scan)        |
+| **Regex**                | Basic patterns          | Full regex power        |
+| **Pipeline**             | JSON output             | Native stdin/stdout     |
 
 | **REST API** | ✓ `gno serve` | ✗ |
 | **Web UI** | ✓ `gno serve` | ✗ |
 
 ### Planned Features
 
-| Feature | GNO | grep/rg |
-|---------|-----|---------|
+| Feature            | GNO                  | grep/rg    |
+| ------------------ | -------------------- | ---------- |
 | **Tab Completion** | 🔜 Shell integration | ✓ Built-in |
 
 ## The Key Difference

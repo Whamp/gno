@@ -1,12 +1,13 @@
-import { ArrowLeft, FileText, Search as SearchIcon, Zap } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { Loader } from '../components/ai-elements/loader';
-import { Badge } from '../components/ui/badge';
-import { Button } from '../components/ui/button';
-import { ButtonGroup } from '../components/ui/button-group';
-import { Card, CardContent } from '../components/ui/card';
-import { Input } from '../components/ui/input';
-import { apiFetch } from '../hooks/use-api';
+import { ArrowLeft, FileText, Search as SearchIcon, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { Loader } from "../components/ai-elements/loader";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { ButtonGroup } from "../components/ui/button-group";
+import { Card, CardContent } from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { apiFetch } from "../hooks/use-api";
 
 /**
  * Render snippet with <mark> tags as highlighted spans.
@@ -18,7 +19,7 @@ function renderSnippet(snippet: string): React.ReactNode {
   let key = 0;
 
   while (remaining.length > 0) {
-    const markStart = remaining.indexOf('<mark>');
+    const markStart = remaining.indexOf("<mark>");
     if (markStart === -1) {
       parts.push(remaining);
       break;
@@ -28,7 +29,7 @@ function renderSnippet(snippet: string): React.ReactNode {
       parts.push(remaining.slice(0, markStart));
     }
 
-    const markEnd = remaining.indexOf('</mark>', markStart);
+    const markEnd = remaining.indexOf("</mark>", markStart);
     if (markEnd === -1) {
       parts.push(remaining.slice(markStart));
       break;
@@ -84,13 +85,13 @@ interface Capabilities {
   answer: boolean;
 }
 
-type SearchMode = 'bm25' | 'hybrid';
+type SearchMode = "bm25" | "hybrid";
 
 export default function Search({ navigate }: PageProps) {
-  const [query, setQuery] = useState('');
-  const [mode, setMode] = useState<SearchMode>('bm25');
+  const [query, setQuery] = useState("");
+  const [mode, setMode] = useState<SearchMode>("bm25");
   const [results, setResults] = useState<SearchResult[]>([]);
-  const [meta, setMeta] = useState<SearchResponse['meta'] | null>(null);
+  const [meta, setMeta] = useState<SearchResponse["meta"] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
@@ -99,16 +100,16 @@ export default function Search({ navigate }: PageProps) {
   // Fetch capabilities on mount
   useEffect(() => {
     async function fetchCapabilities() {
-      const { data } = await apiFetch<Capabilities>('/api/capabilities');
+      const { data } = await apiFetch<Capabilities>("/api/capabilities");
       if (data) {
         setCapabilities(data);
         // Auto-select hybrid if available
         if (data.hybrid) {
-          setMode('hybrid');
+          setMode("hybrid");
         }
       }
     }
-    fetchCapabilities();
+    void fetchCapabilities();
   }, []);
 
   const handleSearch = async (e: React.FormEvent) => {
@@ -122,10 +123,10 @@ export default function Search({ navigate }: PageProps) {
     setSearched(true);
 
     // Use /api/query for hybrid, /api/search for bm25
-    const endpoint = mode === 'hybrid' ? '/api/query' : '/api/search';
+    const endpoint = mode === "hybrid" ? "/api/query" : "/api/search";
 
     const { data, error } = await apiFetch<SearchResponse>(endpoint, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({ query, limit: 20 }),
     });
 
@@ -178,7 +179,7 @@ export default function Search({ navigate }: PageProps) {
               size="sm"
               type="submit"
             >
-              {loading ? <Loader size={16} /> : 'Search'}
+              {loading ? <Loader size={16} /> : "Search"}
             </Button>
           </div>
 
@@ -188,42 +189,42 @@ export default function Search({ navigate }: PageProps) {
             <ButtonGroup>
               <Button
                 className={
-                  mode === 'bm25'
-                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                    : ''
+                  mode === "bm25"
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                    : ""
                 }
-                onClick={() => setMode('bm25')}
+                onClick={() => setMode("bm25")}
                 size="sm"
                 type="button"
-                variant={mode === 'bm25' ? 'default' : 'outline'}
+                variant={mode === "bm25" ? "default" : "outline"}
               >
                 BM25
               </Button>
               <Button
                 className={
-                  mode === 'hybrid'
-                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                    : ''
+                  mode === "hybrid"
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                    : ""
                 }
                 disabled={!hybridAvailable}
-                onClick={() => setMode('hybrid')}
+                onClick={() => setMode("hybrid")}
                 size="sm"
                 title={
                   hybridAvailable
-                    ? 'Hybrid search with vector + reranking'
-                    : 'Hybrid search not available (no embedding model)'
+                    ? "Hybrid search with vector + reranking"
+                    : "Hybrid search not available (no embedding model)"
                 }
                 type="button"
-                variant={mode === 'hybrid' ? 'default' : 'outline'}
+                variant={mode === "hybrid" ? "default" : "outline"}
               >
                 <Zap className="mr-1 size-3" />
                 Hybrid
               </Button>
             </ButtonGroup>
             <span className="text-muted-foreground/70 text-xs">
-              {mode === 'bm25'
-                ? 'Keyword-based full-text search'
-                : 'BM25 + vector + query expansion + reranking'}
+              {mode === "bm25"
+                ? "Keyword-based full-text search"
+                : "BM25 + vector + query expansion + reranking"}
             </span>
           </div>
         </form>
@@ -259,7 +260,7 @@ export default function Search({ navigate }: PageProps) {
           <div className="space-y-4">
             <div className="mb-6 flex items-center justify-between">
               <p className="text-muted-foreground text-sm">
-                {results.length} result{results.length !== 1 ? 's' : ''}
+                {results.length} result{results.length !== 1 ? "s" : ""}
               </p>
               {meta && (
                 <div className="flex items-center gap-2">
@@ -302,7 +303,7 @@ export default function Search({ navigate }: PageProps) {
                 <CardContent className="py-4">
                   <div className="mb-2 flex items-start justify-between gap-4">
                     <h3 className="font-medium text-primary underline-offset-2 group-hover:underline">
-                      {r.title || r.uri.split('/').pop()}
+                      {r.title || r.uri.split("/").pop()}
                     </h3>
                     <Badge
                       className="shrink-0 font-mono text-xs"

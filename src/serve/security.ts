@@ -19,7 +19,7 @@
  * Cross-origin browser requests must originate from localhost/127.0.0.1.
  */
 export function validateOrigin(req: Request, port: number): boolean {
-  const origin = req.headers.get('Origin');
+  const origin = req.headers.get("Origin");
   // Same-origin requests (browser fetch, curl) have no Origin header
   if (!origin) {
     return true;
@@ -48,7 +48,7 @@ export function validateToken(req: Request): boolean {
     return false;
   }
 
-  const token = req.headers.get('X-GNO-Token');
+  const token = req.headers.get("X-GNO-Token");
   return token === expectedToken;
 }
 
@@ -64,7 +64,7 @@ export function isRequestAllowed(req: Request, port: number): boolean {
   const method = req.method.toUpperCase();
 
   // Safe methods - no CSRF protection needed
-  if (method === 'GET' || method === 'HEAD' || method === 'OPTIONS') {
+  if (method === "GET" || method === "HEAD" || method === "OPTIONS") {
     return true;
   }
 
@@ -78,7 +78,7 @@ export function isRequestAllowed(req: Request, port: number): boolean {
  */
 export function forbiddenResponse(): Response {
   return Response.json(
-    { error: { code: 'CSRF_VIOLATION', message: 'Forbidden' } },
+    { error: { code: "CSRF_VIOLATION", message: "Forbidden" } },
     { status: 403 }
   );
 }

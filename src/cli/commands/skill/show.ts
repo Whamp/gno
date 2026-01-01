@@ -4,10 +4,11 @@
  * @module src/cli/commands/skill/show
  */
 
-import { readdir } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { CliError } from '../../errors.js';
+import { readdir } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { CliError } from "../../errors.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Source Path Resolution
@@ -15,7 +16,7 @@ import { CliError } from '../../errors.js';
 
 function getSkillSourceDir(): string {
   const __dirname = dirname(fileURLToPath(import.meta.url));
-  return join(__dirname, '../../../../assets/skill');
+  return join(__dirname, "../../../../assets/skill");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -27,7 +28,7 @@ export interface ShowOptions {
   all?: boolean;
 }
 
-const DEFAULT_FILE = 'SKILL.md';
+const DEFAULT_FILE = "SKILL.md";
 
 /**
  * Show skill file content.
@@ -40,10 +41,10 @@ export async function showSkill(opts: ShowOptions = {}): Promise<void> {
   try {
     files = await readdir(sourceDir);
   } catch {
-    throw new CliError('RUNTIME', `Skill files not found at ${sourceDir}`);
+    throw new CliError("RUNTIME", `Skill files not found at ${sourceDir}`);
   }
 
-  const mdFiles = files.filter((f) => f.endsWith('.md')).sort();
+  const mdFiles = files.filter((f) => f.endsWith(".md")).sort();
 
   if (opts.all) {
     // Show all files with separators
@@ -51,7 +52,7 @@ export async function showSkill(opts: ShowOptions = {}): Promise<void> {
       process.stdout.write(`--- ${file} ---\n`);
       const content = await Bun.file(join(sourceDir, file)).text();
       process.stdout.write(`${content}\n`);
-      process.stdout.write('\n');
+      process.stdout.write("\n");
     }
   } else {
     // Show single file
@@ -59,8 +60,8 @@ export async function showSkill(opts: ShowOptions = {}): Promise<void> {
 
     if (!mdFiles.includes(fileName)) {
       throw new CliError(
-        'VALIDATION',
-        `Unknown file: ${fileName}. Available: ${mdFiles.join(', ')}`
+        "VALIDATION",
+        `Unknown file: ${fileName}. Available: ${mdFiles.join(", ")}`
       );
     }
 
@@ -69,5 +70,5 @@ export async function showSkill(opts: ShowOptions = {}): Promise<void> {
   }
 
   // Always list available files at end
-  process.stdout.write(`\nFiles: ${mdFiles.join(', ')}\n`);
+  process.stdout.write(`\nFiles: ${mdFiles.join(", ")}\n`);
 }

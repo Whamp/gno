@@ -8,6 +8,6 @@ export {
   createVectorIndexPort,
   decodeEmbedding,
   encodeEmbedding,
-} from './sqlite-vec';
-export { createVectorStatsPort } from './stats';
-export * from './types';
+} from "./sqlite-vec";
+export { createVectorStatsPort } from "./stats";
+export * from "./types";

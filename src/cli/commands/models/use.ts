@@ -5,9 +5,9 @@
  * @module src/cli/commands/models/use
  */
 
-import { createDefaultConfig, loadConfig } from '../../../config';
-import { saveConfig } from '../../../config/saver';
-import { getPreset, listPresets } from '../../../llm/registry';
+import { createDefaultConfig, loadConfig } from "../../../config";
+import { saveConfig } from "../../../config/saver";
+import { getPreset, listPresets } from "../../../llm/registry";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -42,7 +42,7 @@ export async function modelsUse(
   if (!preset) {
     const available = listPresets(config)
       .map((p) => p.id)
-      .join(', ');
+      .join(", ");
     return {
       success: false,
       error: `Unknown preset: ${presetId}. Available: ${available}`,

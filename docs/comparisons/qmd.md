@@ -6,38 +6,38 @@ Both tools provide semantic search for local documents with AI-powered features.
 
 ## Quick Summary
 
-| Aspect | GNO | QMD |
-|--------|-----|-----|
-| **Best for** | Multi-format knowledge bases | Markdown-only collections |
-| **Unique strength** | Web UI, REST API, RAG answers | Shopify founder's tool |
-| **Language support** | 30+ languages | English-focused |
+| Aspect               | GNO                           | QMD                       |
+| -------------------- | ----------------------------- | ------------------------- |
+| **Best for**         | Multi-format knowledge bases  | Markdown-only collections |
+| **Unique strength**  | Web UI, REST API, RAG answers | Shopify founder's tool    |
+| **Language support** | 30+ languages                 | English-focused           |
 
 ## Feature Comparison
 
-| Feature | GNO | QMD |
-|---------|-----|-----|
-| **File Formats** | MD, PDF, DOCX, XLSX, PPTX, TXT | Markdown only |
-| **Search Modes** | BM25, Vector, Hybrid | BM25, Vector, Hybrid |
-| **Query Expansion** | ✓ LLM-powered | ✓ LLM-powered |
-| **Reranking** | ✓ Cross-encoder | ✓ Cross-encoder |
-| **HyDE** | ✓ | ✓ |
-| **AI Answers (RAG)** | ✓ `gno ask --answer` | ✗ |
-| **Web UI** | ✓ `gno serve` | ✗ |
-| **REST API** | ✓ `gno serve` | ✗ |
-| **Languages** | 30+ (auto-detect) | English-focused |
-| **MCP Install CLI** | ✓ 10+ targets | ✗ Manual config |
-| **Skills** | ✓ Claude Code, Codex, OpenCode | ✗ |
-| **Model Presets** | slim/balanced/quality | Single config |
-| **Incremental Index** | ✓ SHA-256 tracking | ✓ |
-| **Collection Contexts** | ✓ Semantic hints | ✓ |
-| **Output Formats** | JSON, CSV, MD, XML, files | JSON, CSV, MD, XML |
+| Feature                 | GNO                            | QMD                  |
+| ----------------------- | ------------------------------ | -------------------- |
+| **File Formats**        | MD, PDF, DOCX, XLSX, PPTX, TXT | Markdown only        |
+| **Search Modes**        | BM25, Vector, Hybrid           | BM25, Vector, Hybrid |
+| **Query Expansion**     | ✓ LLM-powered                  | ✓ LLM-powered        |
+| **Reranking**           | ✓ Cross-encoder                | ✓ Cross-encoder      |
+| **HyDE**                | ✓                              | ✓                    |
+| **AI Answers (RAG)**    | ✓ `gno ask --answer`           | ✗                    |
+| **Web UI**              | ✓ `gno serve`                  | ✗                    |
+| **REST API**            | ✓ `gno serve`                  | ✗                    |
+| **Languages**           | 30+ (auto-detect)              | English-focused      |
+| **MCP Install CLI**     | ✓ 10+ targets                  | ✗ Manual config      |
+| **Skills**              | ✓ Claude Code, Codex, OpenCode | ✗                    |
+| **Model Presets**       | slim/balanced/quality          | Single config        |
+| **Incremental Index**   | ✓ SHA-256 tracking             | ✓                    |
+| **Collection Contexts** | ✓ Semantic hints               | ✓                    |
+| **Output Formats**      | JSON, CSV, MD, XML, files      | JSON, CSV, MD, XML   |
 
 ### Planned Features
 
-| Feature | GNO | QMD |
-|---------|-----|-----|
-| **Raycast Extension** | 🔜 macOS native GUI | ✗ |
-| **Tab Completion** | 🔜 Shell integration | ✗ |
+| Feature               | GNO                  | QMD |
+| --------------------- | -------------------- | --- |
+| **Raycast Extension** | 🔜 macOS native GUI  | ✗   |
+| **Tab Completion**    | 🔜 Shell integration | ✗   |
 
 ## Key Differentiators
 

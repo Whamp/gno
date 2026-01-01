@@ -69,16 +69,17 @@ For manual configuration or unsupported clients, add to the client's MCP config:
 
 ### Config Locations
 
-| Client | Path |
-|--------|------|
+| Client                 | Path                                                              |
+| ---------------------- | ----------------------------------------------------------------- |
 | Claude Desktop (macOS) | `~/Library/Application Support/Claude/claude_desktop_config.json` |
-| Claude Code (user) | `~/.claude.json` |
-| Claude Code (project) | `./.mcp.json` |
-| Codex (user) | `~/.codex.json` |
+| Claude Code (user)     | `~/.claude.json`                                                  |
+| Claude Code (project)  | `./.mcp.json`                                                     |
+| Codex (user)           | `~/.codex.json`                                                   |
 
 ### Cursor
 
 Configure in Cursor's MCP settings with the command:
+
 ```
 gno mcp
 ```
@@ -87,14 +88,14 @@ gno mcp
 
 Once connected, your AI assistant can:
 
-| Tool | Description |
-|------|-------------|
-| `gno_search` | BM25 keyword search |
-| `gno_vsearch` | Vector similarity search |
-| `gno_query` | Hybrid search |
-| `gno_get` | Retrieve document content |
-| `gno_multi_get` | Batch document retrieval |
-| `gno_status` | Check index status |
+| Tool            | Description               |
+| --------------- | ------------------------- |
+| `gno_search`    | BM25 keyword search       |
+| `gno_vsearch`   | Vector similarity search  |
+| `gno_query`     | Hybrid search             |
+| `gno_get`       | Retrieve document content |
+| `gno_multi_get` | Batch document retrieval  |
+| `gno_status`    | Check index status        |
 
 ## Example Prompts
 

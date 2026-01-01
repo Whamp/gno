@@ -4,4 +4,4 @@
  * @module src/store/sqlite
  */
 
-export { SqliteAdapter } from './adapter';
+export { SqliteAdapter } from "./adapter";

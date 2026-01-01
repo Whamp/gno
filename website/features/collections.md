@@ -21,6 +21,7 @@ commands:
 ## What Are Collections?
 
 Collections are named groups of documents from specific directories. They let you:
+
 - Organize different types of content
 - Search within specific scopes
 - Apply different patterns per source

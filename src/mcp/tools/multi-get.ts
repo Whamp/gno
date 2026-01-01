@@ -4,12 +4,14 @@
  * @module src/mcp/tools/multi-get
  */
 
-import { join as pathJoin } from 'node:path';
-import { parseUri } from '../../app/constants';
-import { parseRef } from '../../cli/commands/ref-parser';
-import type { DocumentRow, StorePort } from '../../store/types';
-import type { ToolContext } from '../server';
-import { runTool, type ToolResult } from './index';
+import { join as pathJoin } from "node:path";
+
+import type { DocumentRow, StorePort } from "../../store/types";
+import type { ToolContext } from "../server";
+
+import { parseUri } from "../../app/constants";
+import { parseRef } from "../../cli/commands/ref-parser";
+import { runTool, type ToolResult } from "./index";
 
 interface MultiGetInput {
   refs?: string[];
@@ -55,20 +57,20 @@ async function lookupDocument(
   store: StorePort,
   parsed: ReturnType<typeof parseRef>
 ): Promise<DocumentRow | null> {
-  if ('error' in parsed) {
+  if ("error" in parsed) {
     return null;
   }
 
   switch (parsed.type) {
-    case 'docid': {
+    case "docid": {
       const result = await store.getDocumentByDocid(parsed.value);
       return result.ok ? result.value : null;
     }
-    case 'uri': {
+    case "uri": {
       const result = await store.getDocumentByUri(parsed.value);
       return result.ok ? result.value : null;
     }
-    case 'collPath': {
+    case "collPath": {
       if (!(parsed.collection && parsed.relPath)) {
         return null;
       }
@@ -92,7 +94,7 @@ function formatMultiGetResponse(data: MultiGetResponse): string {
   if (data.meta.skipped > 0) {
     lines.push(`Skipped: ${data.meta.skipped}`);
   }
-  lines.push('');
+  lines.push("");
 
   for (const doc of data.documents) {
     lines.push(`=== ${doc.uri} ===`);
@@ -100,21 +102,21 @@ function formatMultiGetResponse(data: MultiGetResponse): string {
       lines.push(`Title: ${doc.title}`);
     }
     lines.push(
-      `Lines: ${doc.totalLines}${doc.truncated ? ' (truncated)' : ''}`
+      `Lines: ${doc.totalLines}${doc.truncated ? " (truncated)" : ""}`
     );
-    lines.push('');
+    lines.push("");
     lines.push(doc.content);
-    lines.push('');
+    lines.push("");
   }
 
   if (data.skipped.length > 0) {
-    lines.push('--- Skipped ---');
+    lines.push("--- Skipped ---");
     for (const s of data.skipped) {
       lines.push(`${s.ref}: ${s.reason}`);
     }
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**
@@ -126,15 +128,15 @@ export function handleMultiGet(
 ): Promise<ToolResult> {
   return runTool(
     ctx,
-    'gno_multi_get',
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: multi-get with pattern expansion and batch retrieval
+    "gno_multi_get",
+    // oxlint-disable-next-line max-lines-per-function -- multi-get with pattern expansion and batch retrieval
     async () => {
       // Validate input
       if (!(args.refs || args.pattern)) {
-        throw new Error('Either refs or pattern must be provided');
+        throw new Error("Either refs or pattern must be provided");
       }
       if (args.refs && args.pattern) {
-        throw new Error('Cannot specify both refs and pattern');
+        throw new Error("Cannot specify both refs and pattern");
       }
 
       const maxBytes = args.maxBytes ?? DEFAULT_MAX_BYTES;
@@ -154,9 +156,9 @@ export function handleMultiGet(
         // Safe glob-like pattern matching: escape regex metacharacters first
         const pattern = args.pattern;
         // Escape all regex metacharacters except * and ?
-        const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+        const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&");
         // Then convert glob wildcards to regex
-        const regexPattern = escaped.replace(/\*/g, '.*').replace(/\?/g, '.');
+        const regexPattern = escaped.replace(/\*/g, ".*").replace(/\?/g, ".");
         const regex = new RegExp(`^${regexPattern}$`);
 
         refs = listResult.value
@@ -167,19 +169,19 @@ export function handleMultiGet(
       // Process each reference
       for (const ref of refs) {
         const parsed = parseRef(ref);
-        if ('error' in parsed) {
+        if ("error" in parsed) {
           skipped.push({ ref, reason: parsed.error });
           continue;
         }
 
         const doc = await lookupDocument(ctx.store, parsed);
         if (!doc) {
-          skipped.push({ ref, reason: 'Not found' });
+          skipped.push({ ref, reason: "Not found" });
           continue;
         }
 
         if (!doc.mirrorHash) {
-          skipped.push({ ref, reason: 'No indexed content' });
+          skipped.push({ ref, reason: "No indexed content" });
           continue;
         }
 
@@ -190,30 +192,30 @@ export function handleMultiGet(
           continue;
         }
 
-        let content = contentResult.value ?? '';
+        let content = contentResult.value ?? "";
         let truncated = false;
 
         // Apply maxBytes truncation (actual UTF-8 bytes, not characters)
-        const contentBuffer = Buffer.from(content, 'utf8');
+        const contentBuffer = Buffer.from(content, "utf8");
         if (contentBuffer.length > maxBytes) {
           // Truncate by bytes, then decode safely (may cut mid-codepoint)
           const truncatedBuffer = contentBuffer.subarray(0, maxBytes);
           // Decode with replacement char for incomplete sequences
-          content = truncatedBuffer.toString('utf8');
+          content = truncatedBuffer.toString("utf8");
           // Remove potential trailing replacement char from cut codepoint
-          if (content.endsWith('\uFFFD')) {
+          if (content.endsWith("\uFFFD")) {
             content = content.slice(0, -1);
           }
           truncated = true;
         }
 
-        const contentLines = content.split('\n');
+        const contentLines = content.split("\n");
 
         // Apply line numbers (defaults to true per spec)
         if (args.lineNumbers !== false) {
           content = contentLines
             .map((line, i) => `${i + 1}: ${line}`)
-            .join('\n');
+            .join("\n");
         }
 
         // Build absPath
@@ -233,7 +235,7 @@ export function handleMultiGet(
           uri: doc.uri,
           title: doc.title ?? undefined,
           content,
-          totalLines: (contentResult.value ?? '').split('\n').length,
+          totalLines: (contentResult.value ?? "").split("\n").length,
           truncated,
           source: {
             absPath,

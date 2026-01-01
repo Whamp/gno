@@ -5,18 +5,19 @@ import {
   MessageSquare,
   Search,
   Sparkles,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { PresetSelector } from '../components/preset-selector';
-import { Badge } from '../components/ui/badge';
-import { Button } from '../components/ui/button';
+} from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { PresetSelector } from "../components/preset-selector";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
-} from '../components/ui/card';
-import { apiFetch } from '../hooks/use-api';
+} from "../components/ui/card";
+import { apiFetch } from "../hooks/use-api";
 
 interface PageProps {
   navigate: (to: string | number) => void;
@@ -42,7 +43,7 @@ export default function Dashboard({ navigate }: PageProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    apiFetch<StatusData>('/api/status').then(({ data, error }) => {
+    void apiFetch<StatusData>("/api/status").then(({ data, error }) => {
       if (error) {
         setError(error);
       } else {
@@ -77,7 +78,7 @@ export default function Dashboard({ navigate }: PageProps) {
         <nav className="mb-10 flex gap-4">
           <Button
             className="gap-2"
-            onClick={() => navigate('/search')}
+            onClick={() => navigate("/search")}
             size="lg"
           >
             <Search className="size-4" />
@@ -85,7 +86,7 @@ export default function Dashboard({ navigate }: PageProps) {
           </Button>
           <Button
             className="gap-2"
-            onClick={() => navigate('/ask')}
+            onClick={() => navigate("/ask")}
             size="lg"
             variant="secondary"
           >
@@ -94,7 +95,7 @@ export default function Dashboard({ navigate }: PageProps) {
           </Button>
           <Button
             className="gap-2"
-            onClick={() => navigate('/browse')}
+            onClick={() => navigate("/browse")}
             size="lg"
             variant="outline"
           >
@@ -148,9 +149,9 @@ export default function Dashboard({ navigate }: PageProps) {
               <CardContent>
                 <Badge
                   className="px-3 py-1 text-lg"
-                  variant={status.healthy ? 'default' : 'secondary'}
+                  variant={status.healthy ? "default" : "secondary"}
                 >
-                  {status.healthy ? '● Healthy' : '○ Degraded'}
+                  {status.healthy ? "● Healthy" : "○ Degraded"}
                 </Badge>
               </CardContent>
             </Card>

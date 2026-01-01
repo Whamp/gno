@@ -5,9 +5,9 @@
  * @module src/pipeline/answer
  */
 
-import type { GenerationPort } from '../llm/types';
-import type { StorePort } from '../store/types';
-import type { Citation, SearchResult } from './types';
+import type { GenerationPort } from "../llm/types";
+import type { StorePort } from "../store/types";
+import type { Citation, SearchResult } from "./types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -98,10 +98,10 @@ export function renumberAnswerCitations(
   const replaced = answer.replace(re, (_match, numStr: string) => {
     const oldNum = Number(numStr);
     const newNum = mapping.get(oldNum);
-    return newNum !== undefined ? `[${newNum}]` : '';
+    return newNum !== undefined ? `[${newNum}]` : "";
   });
 
-  return replaced.replace(/ {2,}/g, ' ').trim();
+  return replaced.replace(/ {2,}/g, " ").trim();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -125,7 +125,7 @@ export interface AnswerGenerationDeps {
  * When store is provided, fetches full document content for better context.
  * Falls back to snippets if store unavailable or content fetch fails.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sequential content processing with fallbacks
+// oxlint-disable-next-line max-lines-per-function -- sequential content processing with fallbacks
 export async function generateGroundedAnswer(
   deps: AnswerGenerationDeps,
   query: string,
@@ -180,9 +180,9 @@ export async function generateGroundedAnswer(
     return null;
   }
 
-  const prompt = ANSWER_PROMPT.replace('{query}', query).replace(
-    '{context}',
-    contextParts.join('\n\n')
+  const prompt = ANSWER_PROMPT.replace("{query}", query).replace(
+    "{context}",
+    contextParts.join("\n\n")
   );
 
   const result = await genPort.generate(prompt, {

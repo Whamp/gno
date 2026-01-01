@@ -5,11 +5,12 @@
  * @module src/cli/commands/shared
  */
 
-import { getIndexDbPath } from '../../app/constants';
-import { getConfigPaths, isInitialized, loadConfig } from '../../config';
-import type { Collection, Config } from '../../config/types';
-import type { SyncResult } from '../../ingestion';
-import { SqliteAdapter } from '../../store/sqlite/adapter';
+import type { Collection, Config } from "../../config/types";
+import type { SyncResult } from "../../ingestion";
+
+import { getIndexDbPath } from "../../app/constants";
+import { getConfigPaths, isInitialized, loadConfig } from "../../config";
+import { SqliteAdapter } from "../../store/sqlite/adapter";
 
 /**
  * Result of CLI store initialization.
@@ -49,7 +50,7 @@ export async function initStore(
   // Check if initialized
   const initialized = await isInitialized(options.configPath);
   if (!initialized) {
-    return { ok: false, error: 'GNO not initialized. Run: gno init' };
+    return { ok: false, error: "GNO not initialized. Run: gno init" };
   }
 
   // Load config
@@ -74,12 +75,12 @@ export async function initStore(
   if (collections.length === 0) {
     return {
       ok: false,
-      error: 'No collections configured. Run: gno collection add <path>',
+      error: "No collections configured. Run: gno collection add <path>",
     };
   }
 
   // Ensure data directory exists (may have been deleted by reset)
-  const { ensureDirectories } = await import('../../config');
+  const { ensureDirectories } = await import("../../config");
   await ensureDirectories();
 
   // Open database (honor indexName option)
@@ -143,12 +144,12 @@ export function formatSyncResultLines(
     }
   }
 
-  lines.push('');
+  lines.push("");
   lines.push(
     `Total: ${syncResult.totalFilesAdded} added, ${syncResult.totalFilesUpdated} updated` +
       (syncResult.totalFilesErrored > 0
         ? `, ${syncResult.totalFilesErrored} errors`
-        : '')
+        : "")
   );
   lines.push(`Duration: ${syncResult.totalDurationMs}ms`);
 

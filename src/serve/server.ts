@@ -6,13 +6,14 @@
  * @module src/serve/server
  */
 
-import { getIndexDbPath } from '../app/constants';
-import { getConfigPaths, isInitialized, loadConfig } from '../config';
-import { SqliteAdapter } from '../store/sqlite/adapter';
-import { createServerContext, disposeServerContext } from './context';
+import type { ContextHolder } from "./routes/api";
+
+import { getIndexDbPath } from "../app/constants";
+import { getConfigPaths, isInitialized, loadConfig } from "../config";
+import { SqliteAdapter } from "../store/sqlite/adapter";
+import { createServerContext, disposeServerContext } from "./context";
 // HTML import - Bun handles bundling TSX/CSS automatically via routes
-import homepage from './public/index.html';
-import type { ContextHolder } from './routes/api';
+import homepage from "./public/index.html";
 import {
   handleAsk,
   handleCapabilities,
@@ -33,8 +34,8 @@ import {
   handleSetPreset,
   handleStatus,
   handleSync,
-} from './routes/api';
-import { forbiddenResponse, isRequestAllowed } from './security';
+} from "./routes/api";
+import { forbiddenResponse, isRequestAllowed } from "./security";
 
 export interface ServeOptions {
   /** Port to listen on (default: 3000) */
@@ -78,7 +79,7 @@ function getCspHeader(isDev: boolean): string {
     base.push("connect-src 'self'");
   }
 
-  return base.join('; ');
+  return base.join("; ");
 }
 
 /**
@@ -86,11 +87,11 @@ function getCspHeader(isDev: boolean): string {
  */
 function withSecurityHeaders(response: Response, isDev: boolean): Response {
   const headers = new Headers(response.headers);
-  headers.set('Content-Security-Policy', getCspHeader(isDev));
-  headers.set('X-Content-Type-Options', 'nosniff');
-  headers.set('X-Frame-Options', 'DENY');
-  headers.set('Referrer-Policy', 'no-referrer');
-  headers.set('Cross-Origin-Resource-Policy', 'same-origin');
+  headers.set("Content-Security-Policy", getCspHeader(isDev));
+  headers.set("X-Content-Type-Options", "nosniff");
+  headers.set("X-Frame-Options", "DENY");
+  headers.set("Referrer-Policy", "no-referrer");
+  headers.set("Cross-Origin-Resource-Policy", "same-origin");
 
   return new Response(response.body, {
     status: response.status,
@@ -107,12 +108,12 @@ export async function startServer(
   options: ServeOptions = {}
 ): Promise<ServeResult> {
   const port = options.port ?? 3000;
-  const isDev = process.env.NODE_ENV !== 'production';
+  const isDev = process.env.NODE_ENV !== "production";
 
   // Check initialization
   const initialized = await isInitialized(options.configPath);
   if (!initialized) {
-    return { success: false, error: 'GNO not initialized. Run: gno init' };
+    return { success: false, error: "GNO not initialized. Run: gno init" };
   }
 
   // Load config
@@ -159,21 +160,21 @@ export async function startServer(
 
   // Graceful shutdown handler
   const shutdown = async () => {
-    console.log('\nShutting down...');
+    console.log("\nShutting down...");
     await disposeServerContext(ctxHolder.current);
     await store.close();
     shutdownController.abort();
   };
 
-  process.once('SIGINT', shutdown);
-  process.once('SIGTERM', shutdown);
+  process.once("SIGINT", shutdown);
+  process.once("SIGTERM", shutdown);
 
   // Start server with try/catch for port-in-use etc.
   let server: ReturnType<typeof Bun.serve>;
   try {
     server = Bun.serve({
       port,
-      hostname: '127.0.0.1', // Loopback only - no LAN exposure
+      hostname: "127.0.0.1", // Loopback only - no LAN exposure
 
       // Enable development mode for HMR and console logging
       development: isDev,
@@ -181,21 +182,21 @@ export async function startServer(
       // Static routes - Bun handles HTML bundling and /_bun/* assets automatically
       routes: {
         // SPA routes - all serve the same React app
-        '/': homepage,
-        '/search': homepage,
-        '/browse': homepage,
-        '/doc': homepage,
-        '/ask': homepage,
+        "/": homepage,
+        "/search": homepage,
+        "/browse": homepage,
+        "/doc": homepage,
+        "/ask": homepage,
 
         // API routes with CSRF protection wrapper
-        '/api/health': {
+        "/api/health": {
           GET: () => withSecurityHeaders(handleHealth(), isDev),
         },
-        '/api/status': {
+        "/api/status": {
           GET: async () =>
             withSecurityHeaders(await handleStatus(store), isDev),
         },
-        '/api/collections': {
+        "/api/collections": {
           GET: async () =>
             withSecurityHeaders(await handleCollections(store), isDev),
           POST: async (req: Request) => {
@@ -208,7 +209,7 @@ export async function startServer(
             );
           },
         },
-        '/api/sync': {
+        "/api/sync": {
           POST: async (req: Request) => {
             if (!isRequestAllowed(req, port)) {
               return withSecurityHeaders(forbiddenResponse(), isDev);
@@ -219,7 +220,7 @@ export async function startServer(
             );
           },
         },
-        '/api/docs': {
+        "/api/docs": {
           GET: async (req: Request) => {
             const url = new URL(req.url);
             return withSecurityHeaders(await handleDocs(store, url), isDev);
@@ -234,28 +235,28 @@ export async function startServer(
             );
           },
         },
-        '/api/docs/:id/deactivate': {
+        "/api/docs/:id/deactivate": {
           POST: async (req: Request) => {
             if (!isRequestAllowed(req, port)) {
               return withSecurityHeaders(forbiddenResponse(), isDev);
             }
             const url = new URL(req.url);
             // Extract id from /api/docs/:id/deactivate
-            const parts = url.pathname.split('/');
-            const id = decodeURIComponent(parts[3] || '');
+            const parts = url.pathname.split("/");
+            const id = decodeURIComponent(parts[3] || "");
             return withSecurityHeaders(
               await handleDeactivateDoc(store, id),
               isDev
             );
           },
         },
-        '/api/doc': {
+        "/api/doc": {
           GET: async (req: Request) => {
             const url = new URL(req.url);
             return withSecurityHeaders(await handleDoc(store, url), isDev);
           },
         },
-        '/api/search': {
+        "/api/search": {
           POST: async (req: Request) => {
             if (!isRequestAllowed(req, port)) {
               return withSecurityHeaders(forbiddenResponse(), isDev);
@@ -263,7 +264,7 @@ export async function startServer(
             return withSecurityHeaders(await handleSearch(store, req), isDev);
           },
         },
-        '/api/query': {
+        "/api/query": {
           POST: async (req: Request) => {
             if (!isRequestAllowed(req, port)) {
               return withSecurityHeaders(forbiddenResponse(), isDev);
@@ -274,7 +275,7 @@ export async function startServer(
             );
           },
         },
-        '/api/ask': {
+        "/api/ask": {
           POST: async (req: Request) => {
             if (!isRequestAllowed(req, port)) {
               return withSecurityHeaders(forbiddenResponse(), isDev);
@@ -285,11 +286,11 @@ export async function startServer(
             );
           },
         },
-        '/api/capabilities': {
+        "/api/capabilities": {
           GET: () =>
             withSecurityHeaders(handleCapabilities(ctxHolder.current), isDev),
         },
-        '/api/presets': {
+        "/api/presets": {
           GET: () =>
             withSecurityHeaders(handlePresets(ctxHolder.current), isDev),
           POST: async (req: Request) => {
@@ -302,10 +303,10 @@ export async function startServer(
             );
           },
         },
-        '/api/models/status': {
+        "/api/models/status": {
           GET: () => withSecurityHeaders(handleModelStatus(), isDev),
         },
-        '/api/models/pull': {
+        "/api/models/pull": {
           POST: (req: Request) => {
             if (!isRequestAllowed(req, port)) {
               return withSecurityHeaders(forbiddenResponse(), isDev);
@@ -313,21 +314,21 @@ export async function startServer(
             return withSecurityHeaders(handleModelPull(ctxHolder), isDev);
           },
         },
-        '/api/jobs/:id': {
+        "/api/jobs/:id": {
           GET: (req: Request) => {
             const url = new URL(req.url);
-            const id = decodeURIComponent(url.pathname.split('/').pop() || '');
+            const id = decodeURIComponent(url.pathname.split("/").pop() || "");
             return withSecurityHeaders(handleJob(id), isDev);
           },
         },
-        '/api/collections/:name': {
+        "/api/collections/:name": {
           DELETE: async (req: Request) => {
             if (!isRequestAllowed(req, port)) {
               return withSecurityHeaders(forbiddenResponse(), isDev);
             }
             const url = new URL(req.url);
             const name = decodeURIComponent(
-              url.pathname.split('/').pop() || ''
+              url.pathname.split("/").pop() || ""
             );
             return withSecurityHeaders(
               await handleDeleteCollection(ctxHolder, store, name),
@@ -346,15 +347,15 @@ export async function startServer(
   }
 
   console.log(`GNO server running at http://localhost:${server.port}`);
-  console.log('Press Ctrl+C to stop');
+  console.log("Press Ctrl+C to stop");
 
   // Block until shutdown signal
   await new Promise<void>((resolve) => {
-    shutdownController.signal.addEventListener('abort', () => resolve(), {
+    shutdownController.signal.addEventListener("abort", () => resolve(), {
       once: true,
     });
   });
 
-  server.stop(true);
+  await server.stop(true);
   return { success: true };
 }

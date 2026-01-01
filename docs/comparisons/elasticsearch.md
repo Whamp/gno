@@ -6,35 +6,35 @@ Elasticsearch is an enterprise-grade distributed search engine. GNO is a local-f
 
 ## Quick Summary
 
-| Aspect | GNO | Elasticsearch |
-|--------|-----|---------------|
-| **Best for** | Personal/team knowledge | Enterprise search |
+| Aspect              | GNO                        | Elasticsearch         |
+| ------------------- | -------------------------- | --------------------- |
+| **Best for**        | Personal/team knowledge    | Enterprise search     |
 | **Unique strength** | Zero-config, privacy-first | Massive scale, Kibana |
-| **Setup time** | 1 minute | Hours to days |
+| **Setup time**      | 1 minute                   | Hours to days         |
 
 ## Feature Comparison
 
-| Feature | GNO | Elasticsearch |
-|---------|-----|---------------|
-| **Deployment** | Local CLI, zero config | Server, cluster management |
-| **Privacy** | 100% local, offline | Network service |
-| **Setup Time** | `bun install -g @gmickel/gno` | Hours/days |
-| **Vector Search** | Built-in (sqlite-vec) | Plugin or version 8+ |
-| **AI Answers** | ✓ Local LLM integration | ✗ (needs external LLM) |
-| **Resource Usage** | ~500MB RAM | GB+ RAM |
-| **Scaling** | Single machine | Distributed clusters |
-| **Cost** | Free | License fees at scale |
-| **Query DSL** | Simple CLI flags | Complex JSON DSL |
-| **Aggregations** | Basic | Powerful analytics |
+| Feature            | GNO                           | Elasticsearch              |
+| ------------------ | ----------------------------- | -------------------------- |
+| **Deployment**     | Local CLI, zero config        | Server, cluster management |
+| **Privacy**        | 100% local, offline           | Network service            |
+| **Setup Time**     | `bun install -g @gmickel/gno` | Hours/days                 |
+| **Vector Search**  | Built-in (sqlite-vec)         | Plugin or version 8+       |
+| **AI Answers**     | ✓ Local LLM integration       | ✗ (needs external LLM)     |
+| **Resource Usage** | ~500MB RAM                    | GB+ RAM                    |
+| **Scaling**        | Single machine                | Distributed clusters       |
+| **Cost**           | Free                          | License fees at scale      |
+| **Query DSL**      | Simple CLI flags              | Complex JSON DSL           |
+| **Aggregations**   | Basic                         | Powerful analytics         |
 
 | **REST API** | ✓ `gno serve` | ✓ Native |
 | **Web UI** | ✓ `gno serve` | ✓ Kibana |
 
 ### Planned Features
 
-| Feature | GNO | Elasticsearch |
-|---------|-----|---------------|
-| **Raycast Extension** | 🔜 macOS native | ✗ |
+| Feature               | GNO             | Elasticsearch |
+| --------------------- | --------------- | ------------- |
+| **Raycast Extension** | 🔜 macOS native | ✗             |
 
 ## The Key Difference
 
@@ -130,13 +130,13 @@ gno query "budget projections"
 
 ## Resource Comparison
 
-| Resource | GNO | Elasticsearch (minimal) |
-|----------|-----|-------------------------|
-| RAM | ~500MB | 2GB+ (4GB+ recommended) |
-| Disk | Index size ~1x docs | Index size 1.5-2x docs |
-| CPU | Low (mostly idle) | Moderate (always running) |
-| Network | None (local) | Required for clients |
-| Maintenance | None | Regular ops work |
+| Resource    | GNO                 | Elasticsearch (minimal)   |
+| ----------- | ------------------- | ------------------------- |
+| RAM         | ~500MB              | 2GB+ (4GB+ recommended)   |
+| Disk        | Index size ~1x docs | Index size 1.5-2x docs    |
+| CPU         | Low (mostly idle)   | Moderate (always running) |
+| Network     | None (local)        | Required for clients      |
+| Maintenance | None                | Regular ops work          |
 
 ## Migration Considerations
 
@@ -161,12 +161,12 @@ If you outgrow GNO (millions of documents, multi-user requirements, complex anal
 
 ## Different Tools for Different Jobs
 
-| Use Case | Recommendation |
-|----------|----------------|
-| Personal notes | GNO |
-| Team docs (<10 people) | GNO |
-| Developer second brain | GNO |
-| E-commerce product search | Elasticsearch |
-| Log analytics | Elasticsearch |
-| Enterprise document search | Elasticsearch |
-| Privacy-critical documents | GNO |
+| Use Case                   | Recommendation |
+| -------------------------- | -------------- |
+| Personal notes             | GNO            |
+| Team docs (<10 people)     | GNO            |
+| Developer second brain     | GNO            |
+| E-commerce product search  | Elasticsearch  |
+| Log analytics              | Elasticsearch  |
+| Enterprise document search | Elasticsearch  |
+| Privacy-critical documents | GNO            |

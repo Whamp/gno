@@ -54,17 +54,17 @@ Always use JSON with consistent structure:
 
 Use appropriate status codes:
 
-| Code | Meaning | When to Use |
-|------|---------|-------------|
-| 200 | OK | Successful GET, PUT, PATCH |
-| 201 | Created | Successful POST |
-| 204 | No Content | Successful DELETE |
-| 400 | Bad Request | Validation errors |
-| 401 | Unauthorized | Missing or invalid auth |
-| 403 | Forbidden | Valid auth, insufficient permissions |
-| 404 | Not Found | Resource doesn't exist |
-| 429 | Too Many Requests | Rate limit exceeded |
-| 500 | Internal Error | Server-side failures |
+| Code | Meaning           | When to Use                          |
+| ---- | ----------------- | ------------------------------------ |
+| 200  | OK                | Successful GET, PUT, PATCH           |
+| 201  | Created           | Successful POST                      |
+| 204  | No Content        | Successful DELETE                    |
+| 400  | Bad Request       | Validation errors                    |
+| 401  | Unauthorized      | Missing or invalid auth              |
+| 403  | Forbidden         | Valid auth, insufficient permissions |
+| 404  | Not Found         | Resource doesn't exist               |
+| 429  | Too Many Requests | Rate limit exceeded                  |
+| 500  | Internal Error    | Server-side failures                 |
 
 ## Versioning
 

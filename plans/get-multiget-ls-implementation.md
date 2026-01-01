@@ -10,6 +10,7 @@
 ## Overview
 
 Implement three retrieval commands for the GNO CLI:
+
 1. `gno get <ref>` - Retrieve single document by reference
 2. `gno multi-get <refs...>` - Retrieve multiple documents
 3. `gno ls [scope]` - List indexed documents
@@ -22,16 +23,16 @@ All specs defined in `spec/cli.md`, schemas in `spec/output-schemas/`.
 
 ### Existing Infrastructure
 
-| Component | Location | Purpose |
-|-----------|----------|---------|
-| Store adapter | `src/store/sqlite/adapter.ts` | `getDocumentByDocid`, `getDocumentByUri`, `getDocument`, `listDocuments`, `getContent` |
-| Command pattern | `src/cli/commands/search.ts` | Reference for result types, formatters |
-| Shared init | `src/cli/commands/shared.ts` | `initStore()` for DB access |
-| Format helpers | `src/cli/format/search-results.ts` | `addLineNumbers`, `escapeCsv`, `escapeXml` |
-| CLI stubs | `src/cli/program.ts:558-600` | `wireRetrievalCommands()` stubs |
-| Schemas | `spec/output-schemas/get.schema.json`, `multi-get.schema.json` | JSON output contracts |
-| Error handling | `src/cli/errors.ts` | `CliError` class for VALIDATION/RUNTIME exits |
-| CLI runner | `src/cli/run.ts` | Centralized exit code handling, JSON error envelopes |
+| Component       | Location                                                       | Purpose                                                                                |
+| --------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Store adapter   | `src/store/sqlite/adapter.ts`                                  | `getDocumentByDocid`, `getDocumentByUri`, `getDocument`, `listDocuments`, `getContent` |
+| Command pattern | `src/cli/commands/search.ts`                                   | Reference for result types, formatters                                                 |
+| Shared init     | `src/cli/commands/shared.ts`                                   | `initStore()` for DB access                                                            |
+| Format helpers  | `src/cli/format/search-results.ts`                             | `addLineNumbers`, `escapeCsv`, `escapeXml`                                             |
+| CLI stubs       | `src/cli/program.ts:558-600`                                   | `wireRetrievalCommands()` stubs                                                        |
+| Schemas         | `spec/output-schemas/get.schema.json`, `multi-get.schema.json` | JSON output contracts                                                                  |
+| Error handling  | `src/cli/errors.ts`                                            | `CliError` class for VALIDATION/RUNTIME exits                                          |
+| CLI runner      | `src/cli/run.ts`                                               | Centralized exit code handling, JSON error envelopes                                   |
 
 ### Key Design Decisions
 
@@ -51,6 +52,7 @@ All specs defined in `spec/cli.md`, schemas in `spec/output-schemas/`.
 ## Acceptance Criteria
 
 ### gno get
+
 - [ ] Retrieve document by `gno://collection/path`
 - [ ] Retrieve document by `collection/path`
 - [ ] Retrieve document by `#docid`
@@ -63,6 +65,7 @@ All specs defined in `spec/cli.md`, schemas in `spec/output-schemas/`.
 - [ ] Exit 2 for document not found or mirror unavailable
 
 ### gno multi-get
+
 - [ ] Accept space-separated refs
 - [ ] Accept comma-separated refs
 - [ ] Support glob patterns (`work/*.md`) via `minimatch`
@@ -74,6 +77,7 @@ All specs defined in `spec/cli.md`, schemas in `spec/output-schemas/`.
 - [ ] Exit 0 even with partial failures
 
 ### gno ls
+
 - [ ] List all documents when no scope
 - [ ] Filter by collection name
 - [ ] Filter by URI prefix (`gno://work/contracts`)
@@ -174,7 +178,7 @@ export function isGlobPattern(ref: string): boolean {
 
 **File:** `src/cli/commands/get.ts` (new)
 
-```ts
+````ts
 // get.ts - follows search.ts pattern
 
 import { CliError } from '../errors';
@@ -367,13 +371,13 @@ function addLineNumbers(text: string, startLine: number): string {
     .map((line, i) => `${startLine + i}: ${line}`)
     .join('\n');
 }
-```
+````
 
 ### Phase 3: gno multi-get Command
 
 **File:** `src/cli/commands/multi-get.ts` (new)
 
-```ts
+````ts
 // multi-get.ts
 
 import { minimatch } from 'minimatch';
@@ -637,7 +641,7 @@ export function formatMultiGet(
   lines.push(`${data.meta.returned}/${data.meta.requested} documents retrieved`);
   return lines.join('\n');
 }
-```
+````
 
 ### Phase 4: gno ls Command
 
@@ -864,13 +868,16 @@ export { ls, formatLs } from './ls';
 ### Phase 7: Tests
 
 **Update existing schema tests** instead of creating duplicates:
+
 - `test/spec/schemas/get.test.ts` - extend with more cases
 - `test/spec/schemas/multi-get.test.ts` - extend with more cases
 
 **Update stub tests:**
+
 - Remove "not yet implemented" assertions from `test/cli/smoke.test.ts`
 
 **Add CLI smoke tests:**
+
 - `test/cli/get.test.ts` (new)
 - `test/cli/multi-get.test.ts` (new)
 - `test/cli/ls.test.ts` (new)
@@ -946,22 +953,23 @@ describe('gno get', () => {
 
 ## File Summary
 
-| File | Action | Purpose |
-|------|--------|---------|
-| `src/cli/commands/ref-parser.ts` | create | Pure ref parsing (no store access) |
-| `src/cli/commands/get.ts` | create | get command + formatter |
-| `src/cli/commands/multi-get.ts` | create | multi-get command + formatter + glob expansion |
-| `src/cli/commands/ls.ts` | create | ls command + formatter |
-| `src/cli/commands/index.ts` | update | Export new commands |
-| `src/cli/program.ts` | update | Wire commands using CliError pattern |
-| `test/cli/get.test.ts` | create | get CLI smoke tests |
-| `test/cli/multi-get.test.ts` | create | multi-get CLI smoke tests |
-| `test/cli/ls.test.ts` | create | ls CLI smoke tests |
-| `test/spec/schemas/get.test.ts` | update | Extend schema validation |
-| `test/spec/schemas/multi-get.test.ts` | update | Extend schema validation |
-| `test/cli/smoke.test.ts` | update | Remove stub assertions |
+| File                                  | Action | Purpose                                        |
+| ------------------------------------- | ------ | ---------------------------------------------- |
+| `src/cli/commands/ref-parser.ts`      | create | Pure ref parsing (no store access)             |
+| `src/cli/commands/get.ts`             | create | get command + formatter                        |
+| `src/cli/commands/multi-get.ts`       | create | multi-get command + formatter + glob expansion |
+| `src/cli/commands/ls.ts`              | create | ls command + formatter                         |
+| `src/cli/commands/index.ts`           | update | Export new commands                            |
+| `src/cli/program.ts`                  | update | Wire commands using CliError pattern           |
+| `test/cli/get.test.ts`                | create | get CLI smoke tests                            |
+| `test/cli/multi-get.test.ts`          | create | multi-get CLI smoke tests                      |
+| `test/cli/ls.test.ts`                 | create | ls CLI smoke tests                             |
+| `test/spec/schemas/get.test.ts`       | update | Extend schema validation                       |
+| `test/spec/schemas/multi-get.test.ts` | update | Extend schema validation                       |
+| `test/cli/smoke.test.ts`              | update | Remove stub assertions                         |
 
 **Removed from plan (YAGNI):**
+
 - ~~`src/cli/format/get-result.ts`~~ (inline in command)
 - ~~`src/cli/format/multi-get-result.ts`~~ (inline in command)
 - ~~`src/cli/format/ls-result.ts`~~ (inline in command)
@@ -974,15 +982,15 @@ describe('gno get', () => {
 
 ### Ref Parsing
 
-| Input | Type | Resolution |
-|-------|------|------------|
-| `#a1b2c3d4` | docid | `getDocumentByDocid('#a1b2c3d4')` |
-| `#a1b2c3:50` | error | Docid refs cannot have :line suffix |
-| `gno://work/doc.md` | uri | `getDocumentByUri('gno://work/doc.md')` |
-| `gno://work/doc.md:120` | uri+line | Parse line=120, strip suffix |
-| `work/doc.md` | collPath | `getDocument('work', 'doc.md')` |
-| `work/doc.md:50` | collPath+line | Parse line=50 |
-| `invalid` | error | Invalid ref format (missing /) |
+| Input                   | Type          | Resolution                              |
+| ----------------------- | ------------- | --------------------------------------- |
+| `#a1b2c3d4`             | docid         | `getDocumentByDocid('#a1b2c3d4')`       |
+| `#a1b2c3:50`            | error         | Docid refs cannot have :line suffix     |
+| `gno://work/doc.md`     | uri           | `getDocumentByUri('gno://work/doc.md')` |
+| `gno://work/doc.md:120` | uri+line      | Parse line=120, strip suffix            |
+| `work/doc.md`           | collPath      | `getDocument('work', 'doc.md')`         |
+| `work/doc.md:50`        | collPath+line | Parse line=50                           |
+| `invalid`               | error         | Invalid ref format (missing /)          |
 
 ### ls Scope Validation
 
@@ -1002,12 +1010,12 @@ describe('gno get', () => {
 
 ### Document States
 
-| State | Behavior |
-|-------|----------|
-| doc not found | Exit 2 "Document not found" |
-| doc inactive | Exit 2 "Document not found" |
+| State           | Behavior                                               |
+| --------------- | ------------------------------------------------------ |
+| doc not found   | Exit 2 "Document not found"                            |
+| doc inactive    | Exit 2 "Document not found"                            |
 | mirrorHash null | Exit 2 "Mirror content unavailable (conversion error)" |
-| content missing | Exit 2 "Mirror content unavailable" |
+| content missing | Exit 2 "Mirror content unavailable"                    |
 
 ### Line Range Validation & Edge Cases
 
@@ -1049,10 +1057,10 @@ content = accumulated.trimEnd();
 
 ### Multi-get Skipped Reasons
 
-| Reason | When |
-|--------|------|
-| `not_found` | Doc doesn't exist, is inactive, or ref parse failed |
-| `conversion_error` | mirrorHash null or content missing |
+| Reason             | When                                                |
+| ------------------ | --------------------------------------------------- |
+| `not_found`        | Doc doesn't exist, is inactive, or ref parse failed |
+| `conversion_error` | mirrorHash null or content missing                  |
 
 **Note:** `exceeds_maxBytes` is reserved in the schema but never emitted by CLI - we always truncate and include. Future consumers (MCP tools) may use it for different semantics.
 

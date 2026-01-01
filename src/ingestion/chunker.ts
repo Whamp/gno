@@ -5,9 +5,10 @@
  * @module src/ingestion/chunker
  */
 
-import { defaultLanguageDetector } from './language';
-import type { ChunkerPort, ChunkOutput, ChunkParams } from './types';
-import { DEFAULT_CHUNK_PARAMS } from './types';
+import type { ChunkerPort, ChunkOutput, ChunkParams } from "./types";
+
+import { defaultLanguageDetector } from "./language";
+import { DEFAULT_CHUNK_PARAMS } from "./types";
 
 /** Approximate chars per token (conservative estimate) */
 const CHARS_PER_TOKEN = 4;
@@ -36,7 +37,7 @@ interface LineIndex {
 function buildLineIndex(text: string): LineIndex {
   const newlines: number[] = [];
   for (let i = 0; i < text.length; i += 1) {
-    if (text[i] === '\n') {
+    if (text[i] === "\n") {
       newlines.push(i);
     }
   }
@@ -100,7 +101,7 @@ function findBreakPoint(
   const windowText = text.slice(start, end);
 
   // Look for paragraph break (double newline) - prefer last one
-  const paraBreak = windowText.lastIndexOf('\n\n');
+  const paraBreak = windowText.lastIndexOf("\n\n");
   if (paraBreak !== -1) {
     return start + paraBreak + 2;
   }
@@ -118,7 +119,7 @@ function findBreakPoint(
     }
 
     // Only consider matches that would give us a break point before or near target
-    const whitespace = match[1] ?? '';
+    const whitespace = match[1] ?? "";
     const breakPos = start + match.index + 1 + whitespace.length;
     if (breakPos <= target + windowSize) {
       lastSentenceMatch = match;
@@ -127,18 +128,18 @@ function findBreakPoint(
 
   if (lastSentenceMatch) {
     // Break after the punctuation and whitespace, before the capital
-    const whitespace = lastSentenceMatch[1] ?? '';
+    const whitespace = lastSentenceMatch[1] ?? "";
     return start + lastSentenceMatch.index + 1 + whitespace.length;
   }
 
   // Look for single newline
-  const lineBreak = windowText.lastIndexOf('\n');
+  const lineBreak = windowText.lastIndexOf("\n");
   if (lineBreak !== -1) {
     return start + lineBreak + 1;
   }
 
   // Look for word boundary
-  const wordBoundary = windowText.lastIndexOf(' ');
+  const wordBoundary = windowText.lastIndexOf(" ");
   if (wordBoundary !== -1) {
     return start + wordBoundary + 1;
   }

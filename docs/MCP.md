@@ -18,11 +18,13 @@ MCP (Model Context Protocol) allows AI assistants to access external tools and r
 GNO's MCP tools are **retrieval-only by design**. Unlike the CLI's `gno ask` command (which runs a local LLM to synthesize answers), MCP tools return search results and document content without LLM processing.
 
 **Why?** Claude, Codex, and other AI agents use much more powerful models. Having GNO call a separate (likely smaller) LLM to synthesize answers would be:
+
 - Slower (extra LLM call)
 - Lower quality (local models < Claude/GPT-4)
 - Redundant (the client LLM can synthesize directly)
 
 **Intended workflow:**
+
 1. Client LLM uses `gno_query` to retrieve relevant documents
 2. Client LLM synthesizes the answer from retrieved context
 3. Result: Best retrieval (GNO) + best synthesis (Claude/Codex)
@@ -63,18 +65,18 @@ gno mcp uninstall --target X    # Remove GNO from a target
 
 ## Supported Clients
 
-| Client | Install Command | Scope |
-|--------|-----------------|-------|
-| Claude Desktop | `gno mcp install` | User |
-| Claude Code | `gno mcp install --target claude-code` | User, Project |
-| Cursor | `gno mcp install --target cursor` | User, Project |
-| Zed | `gno mcp install --target zed` | User |
-| Windsurf | `gno mcp install --target windsurf` | User |
-| OpenCode | `gno mcp install --target opencode` | User, Project |
-| Amp | `gno mcp install --target amp` | User |
-| LM Studio | `gno mcp install --target lmstudio` | User |
-| LibreChat | `gno mcp install --target librechat` | Project |
-| Codex | `gno mcp install --target codex` | User, Project |
+| Client         | Install Command                        | Scope         |
+| -------------- | -------------------------------------- | ------------- |
+| Claude Desktop | `gno mcp install`                      | User          |
+| Claude Code    | `gno mcp install --target claude-code` | User, Project |
+| Cursor         | `gno mcp install --target cursor`      | User, Project |
+| Zed            | `gno mcp install --target zed`         | User          |
+| Windsurf       | `gno mcp install --target windsurf`    | User          |
+| OpenCode       | `gno mcp install --target opencode`    | User, Project |
+| Amp            | `gno mcp install --target amp`         | User          |
+| LM Studio      | `gno mcp install --target lmstudio`    | User          |
+| LibreChat      | `gno mcp install --target librechat`   | Project       |
+| Codex          | `gno mcp install --target codex`       | User, Project |
 
 **Note**: Warp terminal requires manual UI configuration. See [Warp MCP docs](https://docs.warp.dev/knowledge-and-collaboration/mcp).
 
@@ -238,11 +240,13 @@ Query: "database optimization"
 ```
 
 **Search modes** (via parameters):
+
 - **Default**: Skip expansion, with reranking (~2-3s)
 - `fast: true`: Skip both expansion and reranking (~0.7s)
 - `thorough: true`: Full pipeline with expansion (~5-8s)
 
 **Agent retry strategy**: Use default mode first. If no relevant results:
+
 1. Rephrase the query (free, often effective)
 2. Then try `thorough: true` for better recall
 
@@ -278,6 +282,7 @@ gno://work/src/main.ts
 ```
 
 Resource format:
+
 - `gno://<collection>/<relative-path>`
 
 ## Usage Patterns
@@ -309,11 +314,11 @@ The assistant uses `gno_get` with the docid from search results.
 
 Configure MCP server behavior with environment variables:
 
-| Variable | Effect |
-|----------|--------|
-| `HF_HUB_OFFLINE=1` | Offline mode: use cached models only, fail if missing |
+| Variable                 | Effect                                                     |
+| ------------------------ | ---------------------------------------------------------- |
+| `HF_HUB_OFFLINE=1`       | Offline mode: use cached models only, fail if missing      |
 | `GNO_NO_AUTO_DOWNLOAD=1` | Disable auto-download but allow explicit `gno models pull` |
-| `GNO_VERBOSE=1` | Enable verbose logging |
+| `GNO_VERBOSE=1`          | Enable verbose logging                                     |
 
 Models auto-download on first use. Use these variables in CI/air-gapped environments.
 

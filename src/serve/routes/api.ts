@@ -5,27 +5,28 @@
  * @module src/serve/routes/api
  */
 
-import { modelsPull } from '../../cli/commands/models/pull';
-import { addCollection, removeCollection } from '../../collection';
-import type { Config, ModelPreset } from '../../config/types';
-import { defaultSyncService, type SyncResult } from '../../ingestion';
-import { getModelConfig, getPreset, listPresets } from '../../llm/registry';
+import type { Config, ModelPreset } from "../../config/types";
+import type { AskResult, Citation, SearchOptions } from "../../pipeline/types";
+import type { SqliteAdapter } from "../../store/sqlite/adapter";
+
+import { modelsPull } from "../../cli/commands/models/pull";
+import { addCollection, removeCollection } from "../../collection";
+import { defaultSyncService, type SyncResult } from "../../ingestion";
+import { getModelConfig, getPreset, listPresets } from "../../llm/registry";
 import {
   generateGroundedAnswer,
   processAnswerResult,
-} from '../../pipeline/answer';
-import { searchHybrid } from '../../pipeline/hybrid';
-import { searchBm25 } from '../../pipeline/search';
-import type { AskResult, Citation, SearchOptions } from '../../pipeline/types';
-import type { SqliteAdapter } from '../../store/sqlite/adapter';
-import { applyConfigChange } from '../config-sync';
+} from "../../pipeline/answer";
+import { searchHybrid } from "../../pipeline/hybrid";
+import { searchBm25 } from "../../pipeline/search";
+import { applyConfigChange } from "../config-sync";
 import {
   downloadState,
   reloadServerContext,
   resetDownloadState,
   type ServerContext,
-} from '../context';
-import { getJobStatus, startJob } from '../jobs';
+} from "../context";
+import { getJobStatus, startJob } from "../jobs";
 
 /** Mutable context holder for hot-reloading presets */
 export interface ContextHolder {
@@ -122,7 +123,7 @@ export function handleHealth(): Response {
 export async function handleStatus(store: SqliteAdapter): Promise<Response> {
   const result = await store.getStatus();
   if (!result.ok) {
-    return errorResponse('RUNTIME', result.error.message, 500);
+    return errorResponse("RUNTIME", result.error.message, 500);
   }
 
   const s = result.value;
@@ -154,7 +155,7 @@ export async function handleCollections(
 ): Promise<Response> {
   const result = await store.getCollections();
   if (!result.ok) {
-    return errorResponse('RUNTIME', result.error.message, 500);
+    return errorResponse("RUNTIME", result.error.message, 500);
   }
 
   return jsonResponse(
@@ -178,42 +179,42 @@ export async function handleCreateCollection(
   try {
     body = (await req.json()) as CreateCollectionRequestBody;
   } catch {
-    return errorResponse('VALIDATION', 'Invalid JSON body');
+    return errorResponse("VALIDATION", "Invalid JSON body");
   }
 
   // Validate required fields
-  if (!body.path || typeof body.path !== 'string') {
-    return errorResponse('VALIDATION', 'Missing or invalid path');
+  if (!body.path || typeof body.path !== "string") {
+    return errorResponse("VALIDATION", "Missing or invalid path");
   }
 
   // Validate optional fields have correct types
-  if (body.name !== undefined && typeof body.name !== 'string') {
-    return errorResponse('VALIDATION', 'name must be a string');
+  if (body.name !== undefined && typeof body.name !== "string") {
+    return errorResponse("VALIDATION", "name must be a string");
   }
-  if (body.pattern !== undefined && typeof body.pattern !== 'string') {
-    return errorResponse('VALIDATION', 'pattern must be a string');
+  if (body.pattern !== undefined && typeof body.pattern !== "string") {
+    return errorResponse("VALIDATION", "pattern must be a string");
   }
   if (
     body.include !== undefined &&
-    typeof body.include !== 'string' &&
+    typeof body.include !== "string" &&
     !Array.isArray(body.include)
   ) {
-    return errorResponse('VALIDATION', 'include must be a string or array');
+    return errorResponse("VALIDATION", "include must be a string or array");
   }
   if (
     body.exclude !== undefined &&
-    typeof body.exclude !== 'string' &&
+    typeof body.exclude !== "string" &&
     !Array.isArray(body.exclude)
   ) {
-    return errorResponse('VALIDATION', 'exclude must be a string or array');
+    return errorResponse("VALIDATION", "exclude must be a string or array");
   }
-  if (body.gitPull !== undefined && typeof body.gitPull !== 'boolean') {
-    return errorResponse('VALIDATION', 'gitPull must be a boolean');
+  if (body.gitPull !== undefined && typeof body.gitPull !== "boolean") {
+    return errorResponse("VALIDATION", "gitPull must be a boolean");
   }
 
   // Derive name from path if not provided
-  const { basename } = await import('node:path'); // no bun equivalent
-  const name = body.name || basename(body.path);
+  const path = await import("node:path"); // no bun equivalent
+  const name = body.name || path.basename(body.path);
 
   // Persist config and sync to DB (mutation happens inside with fresh config)
   const syncResult = await applyConfigChange(ctxHolder, store, async (cfg) => {
@@ -243,9 +244,9 @@ export async function handleCreateCollection(
   // Find the newly added collection from config
   const collection = syncResult.config.collections.find((c) => c.name === name);
   if (!collection) {
-    return errorResponse('RUNTIME', 'Collection not found after add', 500);
+    return errorResponse("RUNTIME", "Collection not found after add", 500);
   }
-  const jobResult = startJob('add', async (): Promise<SyncResult> => {
+  const jobResult = startJob("add", async (): Promise<SyncResult> => {
     const result = await defaultSyncService.syncCollection(collection, store, {
       gitPull: body.gitPull,
       runUpdateCmd: true,
@@ -262,7 +263,7 @@ export async function handleCreateCollection(
   });
 
   if (!jobResult.ok) {
-    return errorResponse('CONFLICT', jobResult.error, 409);
+    return errorResponse("CONFLICT", jobResult.error, 409);
   }
 
   return jsonResponse(
@@ -312,7 +313,7 @@ export async function handleDeleteCollection(
   return jsonResponse({
     success: true,
     collection: name,
-    note: 'Collection removed from config. Indexed documents remain in DB.',
+    note: "Collection removed from config. Indexed documents remain in DB.",
   });
 }
 
@@ -332,15 +333,15 @@ export async function handleSync(
       body = JSON.parse(text) as SyncRequestBody;
     }
   } catch {
-    return errorResponse('VALIDATION', 'Invalid JSON body');
+    return errorResponse("VALIDATION", "Invalid JSON body");
   }
 
   // Validate optional fields
-  if (body.collection !== undefined && typeof body.collection !== 'string') {
-    return errorResponse('VALIDATION', 'collection must be a string');
+  if (body.collection !== undefined && typeof body.collection !== "string") {
+    return errorResponse("VALIDATION", "collection must be a string");
   }
-  if (body.gitPull !== undefined && typeof body.gitPull !== 'boolean') {
-    return errorResponse('VALIDATION', 'gitPull must be a boolean');
+  if (body.gitPull !== undefined && typeof body.gitPull !== "boolean") {
+    return errorResponse("VALIDATION", "gitPull must be a boolean");
   }
 
   // Get collections to sync (case-insensitive matching)
@@ -353,18 +354,18 @@ export async function handleSync(
 
   if (body.collection && collections.length === 0) {
     return errorResponse(
-      'NOT_FOUND',
+      "NOT_FOUND",
       `Collection not found: ${body.collection}`,
       404
     );
   }
 
   if (collections.length === 0) {
-    return errorResponse('VALIDATION', 'No collections to sync');
+    return errorResponse("VALIDATION", "No collections to sync");
   }
 
   // Start background sync job
-  const jobResult = startJob('sync', async (): Promise<SyncResult> => {
+  const jobResult = startJob("sync", async (): Promise<SyncResult> => {
     return await defaultSyncService.syncAll(collections, store, {
       gitPull: body.gitPull,
       runUpdateCmd: true,
@@ -372,7 +373,7 @@ export async function handleSync(
   });
 
   if (!jobResult.ok) {
-    return errorResponse('CONFLICT', jobResult.error, 409);
+    return errorResponse("CONFLICT", jobResult.error, 409);
   }
 
   return jsonResponse({ jobId: jobResult.jobId }, 202);
@@ -387,25 +388,25 @@ export async function handleDocs(
   store: SqliteAdapter,
   url: URL
 ): Promise<Response> {
-  const collection = url.searchParams.get('collection') || undefined;
+  const collection = url.searchParams.get("collection") || undefined;
 
   // Validate limit: positive integer, max 100
-  const limitParam = Number(url.searchParams.get('limit'));
+  const limitParam = Number(url.searchParams.get("limit"));
   if (
-    url.searchParams.has('limit') &&
+    url.searchParams.has("limit") &&
     (Number.isNaN(limitParam) || limitParam < 1)
   ) {
-    return errorResponse('VALIDATION', 'limit must be a positive integer');
+    return errorResponse("VALIDATION", "limit must be a positive integer");
   }
   const limit = Math.min(limitParam || 20, 100);
 
   // Validate offset: non-negative integer
-  const offsetParam = Number(url.searchParams.get('offset'));
+  const offsetParam = Number(url.searchParams.get("offset"));
   if (
-    url.searchParams.has('offset') &&
+    url.searchParams.has("offset") &&
     (Number.isNaN(offsetParam) || offsetParam < 0)
   ) {
-    return errorResponse('VALIDATION', 'offset must be a non-negative integer');
+    return errorResponse("VALIDATION", "offset must be a non-negative integer");
   }
   const offset = offsetParam || 0;
 
@@ -416,7 +417,7 @@ export async function handleDocs(
   });
 
   if (!result.ok) {
-    return errorResponse('RUNTIME', result.error.message, 500);
+    return errorResponse("RUNTIME", result.error.message, 500);
   }
 
   const { documents, total } = result.value;
@@ -447,17 +448,17 @@ export async function handleDoc(
   store: SqliteAdapter,
   url: URL
 ): Promise<Response> {
-  const uri = url.searchParams.get('uri');
+  const uri = url.searchParams.get("uri");
   if (!uri) {
-    return errorResponse('VALIDATION', 'Missing uri parameter');
+    return errorResponse("VALIDATION", "Missing uri parameter");
   }
 
   const docResult = await store.getDocumentByUri(uri);
   if (!docResult.ok) {
-    return errorResponse('RUNTIME', docResult.error.message, 500);
+    return errorResponse("RUNTIME", docResult.error.message, 500);
   }
   if (!docResult.value) {
-    return errorResponse('NOT_FOUND', 'Document not found', 404);
+    return errorResponse("NOT_FOUND", "Document not found", 404);
   }
 
   const doc = docResult.value;
@@ -498,10 +499,10 @@ export async function handleDeactivateDoc(
   // Get document to verify it exists and get collection/relPath
   const docResult = await store.getDocumentByDocid(docId);
   if (!docResult.ok) {
-    return errorResponse('RUNTIME', docResult.error.message, 500);
+    return errorResponse("RUNTIME", docResult.error.message, 500);
   }
   if (!docResult.value) {
-    return errorResponse('NOT_FOUND', 'Document not found', 404);
+    return errorResponse("NOT_FOUND", "Document not found", 404);
   }
 
   const doc = docResult.value;
@@ -509,14 +510,14 @@ export async function handleDeactivateDoc(
   // Mark as inactive
   const result = await store.markInactive(doc.collection, [doc.relPath]);
   if (!result.ok) {
-    return errorResponse('RUNTIME', result.error.message, 500);
+    return errorResponse("RUNTIME", result.error.message, 500);
   }
 
   return jsonResponse({
     success: true,
     docId: doc.docid,
     path: doc.uri,
-    warning: 'File still exists on disk. Will be re-indexed unless excluded.',
+    warning: "File still exists on disk. Will be re-indexed unless excluded.",
   });
 }
 
@@ -527,18 +528,18 @@ export async function handleDeactivateDoc(
 async function validateRelPath(
   relPath: string
 ): Promise<{ error: string } | { fullPath: string; normalizedPath: string }> {
-  const { normalize, isAbsolute } = await import('node:path');
-  if (isAbsolute(relPath)) {
-    return { error: 'relPath must be relative' };
+  const nodePath = await import("node:path");
+  if (nodePath.isAbsolute(relPath)) {
+    return { error: "relPath must be relative" };
   }
-  if (relPath.includes('\0')) {
-    return { error: 'relPath contains invalid characters' };
+  if (relPath.includes("\0")) {
+    return { error: "relPath contains invalid characters" };
   }
-  const normalizedPath = normalize(relPath);
-  if (normalizedPath.startsWith('..')) {
-    return { error: 'relPath cannot escape collection root' };
+  const normalizedPath = nodePath.normalize(relPath);
+  if (normalizedPath.startsWith("..")) {
+    return { error: "relPath cannot escape collection root" };
   }
-  return { fullPath: '', normalizedPath };
+  return { fullPath: "", normalizedPath };
 }
 
 /**
@@ -555,21 +556,21 @@ export async function handleCreateDoc(
   try {
     body = (await req.json()) as CreateDocRequestBody;
   } catch {
-    return errorResponse('VALIDATION', 'Invalid JSON body');
+    return errorResponse("VALIDATION", "Invalid JSON body");
   }
 
   // Validate required fields with type checks
-  if (!body.collection || typeof body.collection !== 'string') {
-    return errorResponse('VALIDATION', 'Missing or invalid collection');
+  if (!body.collection || typeof body.collection !== "string") {
+    return errorResponse("VALIDATION", "Missing or invalid collection");
   }
-  if (!body.relPath || typeof body.relPath !== 'string') {
-    return errorResponse('VALIDATION', 'Missing or invalid relPath');
+  if (!body.relPath || typeof body.relPath !== "string") {
+    return errorResponse("VALIDATION", "Missing or invalid relPath");
   }
-  if (!body.content || typeof body.content !== 'string') {
-    return errorResponse('VALIDATION', 'Missing or invalid content');
+  if (!body.content || typeof body.content !== "string") {
+    return errorResponse("VALIDATION", "Missing or invalid content");
   }
-  if (body.overwrite !== undefined && typeof body.overwrite !== 'boolean') {
-    return errorResponse('VALIDATION', 'overwrite must be a boolean');
+  if (body.overwrite !== undefined && typeof body.overwrite !== "boolean") {
+    return errorResponse("VALIDATION", "overwrite must be a boolean");
   }
 
   // Find collection (case-insensitive)
@@ -579,7 +580,7 @@ export async function handleCreateDoc(
   );
   if (!collection) {
     return errorResponse(
-      'NOT_FOUND',
+      "NOT_FOUND",
       `Collection not found: ${body.collection}`,
       404
     );
@@ -587,27 +588,30 @@ export async function handleCreateDoc(
 
   // Validate relPath - no path traversal
   const pathValidation = await validateRelPath(body.relPath);
-  if ('error' in pathValidation) {
-    return errorResponse('VALIDATION', pathValidation.error);
+  if ("error" in pathValidation) {
+    return errorResponse("VALIDATION", pathValidation.error);
   }
 
-  const { join, dirname } = await import('node:path'); // no bun equivalent
-  const fullPath = join(collection.path, pathValidation.normalizedPath);
+  const nodePath = await import("node:path"); // no bun equivalent
+  const fullPath = nodePath.join(
+    collection.path,
+    pathValidation.normalizedPath
+  );
 
   try {
     // Check if file already exists
     const file = Bun.file(fullPath);
     if ((await file.exists()) && !body.overwrite) {
       return errorResponse(
-        'CONFLICT',
-        'File already exists. Set overwrite=true to replace.',
+        "CONFLICT",
+        "File already exists. Set overwrite=true to replace.",
         409
       );
     }
 
     // Ensure parent directory exists
-    const parentDir = dirname(fullPath);
-    const { mkdir, rename, unlink } = await import('node:fs/promises'); // structure ops need fs
+    const parentDir = nodePath.dirname(fullPath);
+    const { mkdir, rename, unlink } = await import("node:fs/promises"); // structure ops need fs
     await mkdir(parentDir, { recursive: true });
 
     // Write file atomically (temp file + rename)
@@ -624,11 +628,11 @@ export async function handleCreateDoc(
     }
 
     // Build proper file:// URI using node:url
-    const { pathToFileURL } = await import('node:url');
+    const { pathToFileURL } = await import("node:url");
     const fileUri = pathToFileURL(fullPath).href;
 
     // Run sync via job system (non-blocking)
-    const jobResult = startJob('sync', async (): Promise<SyncResult> => {
+    const jobResult = startJob("sync", async (): Promise<SyncResult> => {
       const result = await defaultSyncService.syncCollection(
         collection,
         store,
@@ -651,14 +655,14 @@ export async function handleCreateDoc(
         path: fullPath,
         jobId: jobResult.ok ? jobResult.jobId : null,
         note: jobResult.ok
-          ? 'File created. Sync job started - poll /api/jobs/:id for status.'
-          : 'File created. Sync skipped (another job running).',
+          ? "File created. Sync job started - poll /api/jobs/:id for status."
+          : "File created. Sync skipped (another job running).",
       },
       202
     );
   } catch (e) {
     return errorResponse(
-      'RUNTIME',
+      "RUNTIME",
       `Failed to create document: ${e instanceof Error ? e.message : String(e)}`,
       500
     );
@@ -678,36 +682,36 @@ export async function handleSearch(
   try {
     body = (await req.json()) as SearchRequestBody;
   } catch {
-    return errorResponse('VALIDATION', 'Invalid JSON body');
+    return errorResponse("VALIDATION", "Invalid JSON body");
   }
 
-  if (!body.query || typeof body.query !== 'string') {
-    return errorResponse('VALIDATION', 'Missing or invalid query');
+  if (!body.query || typeof body.query !== "string") {
+    return errorResponse("VALIDATION", "Missing or invalid query");
   }
 
   const query = body.query.trim();
   if (!query) {
-    return errorResponse('VALIDATION', 'Query cannot be empty');
+    return errorResponse("VALIDATION", "Query cannot be empty");
   }
 
   // Validate limit: positive integer
   if (
     body.limit !== undefined &&
-    (typeof body.limit !== 'number' || body.limit < 1)
+    (typeof body.limit !== "number" || body.limit < 1)
   ) {
-    return errorResponse('VALIDATION', 'limit must be a positive integer');
+    return errorResponse("VALIDATION", "limit must be a positive integer");
   }
 
   // Validate minScore: number between 0 and 1
   if (
     body.minScore !== undefined &&
-    (typeof body.minScore !== 'number' ||
+    (typeof body.minScore !== "number" ||
       body.minScore < 0 ||
       body.minScore > 1)
   ) {
     return errorResponse(
-      'VALIDATION',
-      'minScore must be a number between 0 and 1'
+      "VALIDATION",
+      "minScore must be a number between 0 and 1"
     );
   }
 
@@ -721,7 +725,7 @@ export async function handleSearch(
   const result = await searchBm25(store, query, options);
 
   if (!result.ok) {
-    return errorResponse('RUNTIME', result.error.message, 500);
+    return errorResponse("RUNTIME", result.error.message, 500);
   }
 
   return jsonResponse(result.value);
@@ -740,36 +744,36 @@ export async function handleQuery(
   try {
     body = (await req.json()) as QueryRequestBody;
   } catch {
-    return errorResponse('VALIDATION', 'Invalid JSON body');
+    return errorResponse("VALIDATION", "Invalid JSON body");
   }
 
-  if (!body.query || typeof body.query !== 'string') {
-    return errorResponse('VALIDATION', 'Missing or invalid query');
+  if (!body.query || typeof body.query !== "string") {
+    return errorResponse("VALIDATION", "Missing or invalid query");
   }
 
   const query = body.query.trim();
   if (!query) {
-    return errorResponse('VALIDATION', 'Query cannot be empty');
+    return errorResponse("VALIDATION", "Query cannot be empty");
   }
 
   // Validate limit
   if (
     body.limit !== undefined &&
-    (typeof body.limit !== 'number' || body.limit < 1)
+    (typeof body.limit !== "number" || body.limit < 1)
   ) {
-    return errorResponse('VALIDATION', 'limit must be a positive integer');
+    return errorResponse("VALIDATION", "limit must be a positive integer");
   }
 
   // Validate minScore
   if (
     body.minScore !== undefined &&
-    (typeof body.minScore !== 'number' ||
+    (typeof body.minScore !== "number" ||
       body.minScore < 0 ||
       body.minScore > 1)
   ) {
     return errorResponse(
-      'VALIDATION',
-      'minScore must be a number between 0 and 1'
+      "VALIDATION",
+      "minScore must be a number between 0 and 1"
     );
   }
 
@@ -794,7 +798,7 @@ export async function handleQuery(
   );
 
   if (!result.ok) {
-    return errorResponse('RUNTIME', result.error.message, 500);
+    return errorResponse("RUNTIME", result.error.message, 500);
   }
 
   return jsonResponse(result.value);
@@ -813,23 +817,23 @@ export async function handleAsk(
   try {
     body = (await req.json()) as AskRequestBody;
   } catch {
-    return errorResponse('VALIDATION', 'Invalid JSON body');
+    return errorResponse("VALIDATION", "Invalid JSON body");
   }
 
-  if (!body.query || typeof body.query !== 'string') {
-    return errorResponse('VALIDATION', 'Missing or invalid query');
+  if (!body.query || typeof body.query !== "string") {
+    return errorResponse("VALIDATION", "Missing or invalid query");
   }
 
   const query = body.query.trim();
   if (!query) {
-    return errorResponse('VALIDATION', 'Query cannot be empty');
+    return errorResponse("VALIDATION", "Query cannot be empty");
   }
 
   // Check if answer generation is available
   if (!ctx.capabilities.answer) {
     return errorResponse(
-      'UNAVAILABLE',
-      'Answer generation not available. No generation model loaded.',
+      "UNAVAILABLE",
+      "Answer generation not available. No generation model loaded.",
       503
     );
   }
@@ -855,7 +859,7 @@ export async function handleAsk(
   );
 
   if (!searchResult.ok) {
-    return errorResponse('RUNTIME', searchResult.error.message, 500);
+    return errorResponse("RUNTIME", searchResult.error.message, 500);
   }
 
   const results = searchResult.value.results;
@@ -884,8 +888,8 @@ export async function handleAsk(
 
   const askResult: AskResult = {
     query,
-    mode: searchResult.value.meta.vectorsUsed ? 'hybrid' : 'bm25_only',
-    queryLanguage: searchResult.value.meta.queryLanguage ?? 'und',
+    mode: searchResult.value.meta.vectorsUsed ? "hybrid" : "bm25_only",
+    queryLanguage: searchResult.value.meta.queryLanguage ?? "und",
     answer,
     citations,
     results,
@@ -963,17 +967,17 @@ export async function handleSetPreset(
   try {
     body = (await req.json()) as SetPresetRequestBody;
   } catch {
-    return errorResponse('VALIDATION', 'Invalid JSON body');
+    return errorResponse("VALIDATION", "Invalid JSON body");
   }
 
-  if (!body.presetId || typeof body.presetId !== 'string') {
-    return errorResponse('VALIDATION', 'Missing or invalid presetId');
+  if (!body.presetId || typeof body.presetId !== "string") {
+    return errorResponse("VALIDATION", "Missing or invalid presetId");
   }
 
   // Validate preset exists
   const preset = getPreset(ctxHolder.config, body.presetId);
   if (!preset) {
-    return errorResponse('NOT_FOUND', `Unknown preset: ${body.presetId}`, 404);
+    return errorResponse("NOT_FOUND", `Unknown preset: ${body.presetId}`, 404);
   }
 
   // Update config with new active preset (use getModelConfig to get defaults)
@@ -994,7 +998,7 @@ export async function handleSetPreset(
     ctxHolder.config = newConfig;
   } catch (e) {
     return errorResponse(
-      'RUNTIME',
+      "RUNTIME",
       `Failed to reload context: ${e instanceof Error ? e.message : String(e)}`,
       500
     );
@@ -1034,7 +1038,7 @@ export function handleModelStatus(): Response {
 export function handleModelPull(ctxHolder: ContextHolder): Response {
   // Don't start if already downloading
   if (downloadState.active) {
-    return errorResponse('CONFLICT', 'Download already in progress', 409);
+    return errorResponse("CONFLICT", "Download already in progress", 409);
   }
 
   // Reset and start
@@ -1062,21 +1066,21 @@ export function handleModelPull(ctxHolder: ContextHolder): Response {
         } else {
           downloadState.failed.push({
             type: r.type,
-            error: r.error ?? 'Unknown error',
+            error: r.error ?? "Unknown error",
           });
         }
       }
 
       // Reload context to pick up new models
-      console.log('Models downloaded, reloading context...');
+      console.log("Models downloaded, reloading context...");
       try {
         ctxHolder.current = await reloadServerContext(
           ctxHolder.current,
           ctxHolder.config
         );
-        console.log('Context reloaded');
+        console.log("Context reloaded");
       } catch (e) {
-        console.error('Failed to reload context:', e);
+        console.error("Failed to reload context:", e);
       }
 
       downloadState.active = false;
@@ -1084,17 +1088,17 @@ export function handleModelPull(ctxHolder: ContextHolder): Response {
       downloadState.progress = null;
     })
     .catch((e) => {
-      console.error('Model download failed:', e);
+      console.error("Model download failed:", e);
       downloadState.active = false;
       downloadState.failed.push({
-        type: downloadState.currentType ?? 'embed',
+        type: downloadState.currentType ?? "embed",
         error: e instanceof Error ? e.message : String(e),
       });
     });
 
   return jsonResponse({
     started: true,
-    message: 'Download started. Poll /api/models/status for progress.',
+    message: "Download started. Poll /api/models/status for progress.",
   });
 }
 
@@ -1109,7 +1113,7 @@ export function handleModelPull(ctxHolder: ContextHolder): Response {
 export function handleJob(jobId: string): Response {
   const status = getJobStatus(jobId);
   if (!status) {
-    return errorResponse('NOT_FOUND', 'Job not found or expired', 404);
+    return errorResponse("NOT_FOUND", "Job not found or expired", 404);
   }
   return jsonResponse(status);
 }
@@ -1123,7 +1127,7 @@ export function handleJob(jobId: string): Response {
  * Returns null if the path is not an API route.
  * Note: Currently unused since we use routes object in Bun.serve().
  */
-// biome-ignore lint/suspicious/useAwait: handlers are async, kept for potential future use
+// oxlint-disable-next-line typescript-eslint/require-await -- handlers are async, kept for future use
 export async function routeApi(
   store: SqliteAdapter,
   req: Request,
@@ -1132,63 +1136,63 @@ export async function routeApi(
   const path = url.pathname;
 
   // CSRF protection: validate Origin for non-GET requests
-  if (req.method !== 'GET' && req.method !== 'HEAD') {
-    const origin = req.headers.get('origin');
-    const secFetchSite = req.headers.get('sec-fetch-site');
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    const origin = req.headers.get("origin");
+    const secFetchSite = req.headers.get("sec-fetch-site");
 
     // Reject cross-origin requests (allow same-origin or no origin for curl)
     if (origin) {
       const originUrl = new URL(origin);
       if (
-        originUrl.hostname !== '127.0.0.1' &&
-        originUrl.hostname !== 'localhost'
+        originUrl.hostname !== "127.0.0.1" &&
+        originUrl.hostname !== "localhost"
       ) {
         return errorResponse(
-          'FORBIDDEN',
-          'Cross-origin requests not allowed',
+          "FORBIDDEN",
+          "Cross-origin requests not allowed",
           403
         );
       }
     } else if (
       secFetchSite &&
-      secFetchSite !== 'same-origin' &&
-      secFetchSite !== 'none'
+      secFetchSite !== "same-origin" &&
+      secFetchSite !== "none"
     ) {
       return errorResponse(
-        'FORBIDDEN',
-        'Cross-origin requests not allowed',
+        "FORBIDDEN",
+        "Cross-origin requests not allowed",
         403
       );
     }
   }
 
-  if (path === '/api/health') {
+  if (path === "/api/health") {
     return handleHealth();
   }
 
-  if (path === '/api/status') {
+  if (path === "/api/status") {
     return handleStatus(store);
   }
 
-  if (path === '/api/collections') {
+  if (path === "/api/collections") {
     return handleCollections(store);
   }
 
-  if (path === '/api/docs') {
+  if (path === "/api/docs") {
     return handleDocs(store, url);
   }
 
-  if (path === '/api/doc') {
+  if (path === "/api/doc") {
     return handleDoc(store, url);
   }
 
-  if (path === '/api/search' && req.method === 'POST') {
+  if (path === "/api/search" && req.method === "POST") {
     return handleSearch(store, req);
   }
 
   // Unknown API route
-  if (path.startsWith('/api/')) {
-    return errorResponse('NOT_FOUND', `Unknown API endpoint: ${path}`, 404);
+  if (path.startsWith("/api/")) {
+    return errorResponse("NOT_FOUND", `Unknown API endpoint: ${path}`, 404);
   }
 
   return null;

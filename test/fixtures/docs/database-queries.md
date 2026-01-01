@@ -76,7 +76,7 @@ CREATE INDEX idx_active_users ON users(email) WHERE active = true;
 ## Query Optimization Tips
 
 1. Use EXPLAIN ANALYZE to understand query plans
-2. Avoid SELECT * in production code
+2. Avoid SELECT \* in production code
 3. Limit result sets with pagination
 4. Cache frequently accessed data
 5. Consider read replicas for heavy read workloads

@@ -6,7 +6,7 @@
  * @module src/cli/commands/context/rm
  */
 
-import { loadConfig, saveConfig } from '../../../config';
+import { loadConfig, saveConfig } from "../../../config";
 
 /**
  * Exit codes

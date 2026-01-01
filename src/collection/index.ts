@@ -5,8 +5,8 @@
  * @module src/collection
  */
 
-export { addCollection } from './add';
-export { removeCollection } from './remove';
+export { addCollection } from "./add";
+export { removeCollection } from "./remove";
 export type {
   AddCollectionInput,
   CollectionError,
@@ -14,4 +14,4 @@ export type {
   CollectionSuccess,
   RemoveCollectionInput,
   RenameCollectionInput,
-} from './types';
+} from "./types";

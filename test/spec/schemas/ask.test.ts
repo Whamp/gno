@@ -1,18 +1,19 @@
-import { beforeAll, describe, expect, test } from 'bun:test';
-import { assertInvalid, assertValid, loadSchema } from './validator';
+import { beforeAll, describe, expect, test } from "bun:test";
 
-describe('ask schema', () => {
+import { assertInvalid, assertValid, loadSchema } from "./validator";
+
+describe("ask schema", () => {
   let schema: object;
 
   beforeAll(async () => {
-    schema = await loadSchema('ask');
+    schema = await loadSchema("ask");
   });
 
-  describe('valid inputs', () => {
-    test('validates minimal ask response', () => {
+  describe("valid inputs", () => {
+    test("validates minimal ask response", () => {
       const response = {
-        query: 'how to deploy',
-        mode: 'hybrid',
+        query: "how to deploy",
+        mode: "hybrid",
         results: [],
         meta: {
           expanded: true,
@@ -23,31 +24,31 @@ describe('ask schema', () => {
       expect(assertValid(response, schema)).toBe(true);
     });
 
-    test('validates ask response with answer', () => {
+    test("validates ask response with answer", () => {
       const response = {
-        query: 'what is the termination clause',
-        mode: 'hybrid',
-        queryLanguage: 'en',
+        query: "what is the termination clause",
+        mode: "hybrid",
+        queryLanguage: "en",
         answer:
-          'The termination clause allows either party to end the agreement with 30 days notice.',
+          "The termination clause allows either party to end the agreement with 30 days notice.",
         citations: [
           {
-            docid: '#abc123',
-            uri: 'gno://work/contracts/nda.docx',
+            docid: "#abc123",
+            uri: "gno://work/contracts/nda.docx",
             startLine: 120,
             endLine: 125,
           },
         ],
         results: [
           {
-            docid: '#abc123',
+            docid: "#abc123",
             score: 0.92,
-            uri: 'gno://work/contracts/nda.docx',
-            snippet: 'Either party may terminate this agreement...',
+            uri: "gno://work/contracts/nda.docx",
+            snippet: "Either party may terminate this agreement...",
             source: {
-              relPath: 'contracts/nda.docx',
-              mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-              ext: '.docx',
+              relPath: "contracts/nda.docx",
+              mime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              ext: ".docx",
             },
           },
         ],
@@ -62,10 +63,10 @@ describe('ask schema', () => {
       expect(assertValid(response, schema)).toBe(true);
     });
 
-    test('validates bm25_only mode', () => {
+    test("validates bm25_only mode", () => {
       const response = {
-        query: 'contract',
-        mode: 'bm25_only',
+        query: "contract",
+        mode: "bm25_only",
         results: [],
         meta: {
           expanded: false,
@@ -76,20 +77,20 @@ describe('ask schema', () => {
       expect(assertValid(response, schema)).toBe(true);
     });
 
-    test('validates response without answer (no generation)', () => {
+    test("validates response without answer (no generation)", () => {
       const response = {
-        query: 'deployment process',
-        mode: 'hybrid',
+        query: "deployment process",
+        mode: "hybrid",
         results: [
           {
-            docid: '#def456',
+            docid: "#def456",
             score: 0.85,
-            uri: 'gno://work/runbooks/deploy.md',
-            snippet: 'To deploy to staging...',
+            uri: "gno://work/runbooks/deploy.md",
+            snippet: "To deploy to staging...",
             source: {
-              relPath: 'runbooks/deploy.md',
-              mime: 'text/markdown',
-              ext: '.md',
+              relPath: "runbooks/deploy.md",
+              mime: "text/markdown",
+              ext: ".md",
             },
           },
         ],
@@ -104,10 +105,10 @@ describe('ask schema', () => {
     });
   });
 
-  describe('invalid inputs', () => {
-    test('rejects missing query', () => {
+  describe("invalid inputs", () => {
+    test("rejects missing query", () => {
       const response = {
-        mode: 'hybrid',
+        mode: "hybrid",
         results: [],
         meta: {
           expanded: true,
@@ -118,10 +119,10 @@ describe('ask schema', () => {
       expect(assertInvalid(response, schema)).toBe(true);
     });
 
-    test('rejects invalid mode', () => {
+    test("rejects invalid mode", () => {
       const response = {
-        query: 'test',
-        mode: 'vector',
+        query: "test",
+        mode: "vector",
         results: [],
         meta: {
           expanded: true,
@@ -132,19 +133,19 @@ describe('ask schema', () => {
       expect(assertInvalid(response, schema)).toBe(true);
     });
 
-    test('rejects missing meta', () => {
+    test("rejects missing meta", () => {
       const response = {
-        query: 'test',
-        mode: 'hybrid',
+        query: "test",
+        mode: "hybrid",
         results: [],
       };
       expect(assertInvalid(response, schema)).toBe(true);
     });
 
-    test('rejects meta missing required fields', () => {
+    test("rejects meta missing required fields", () => {
       const response = {
-        query: 'test',
-        mode: 'hybrid',
+        query: "test",
+        mode: "hybrid",
         results: [],
         meta: {
           expanded: true,
@@ -153,14 +154,14 @@ describe('ask schema', () => {
       expect(assertInvalid(response, schema)).toBe(true);
     });
 
-    test('rejects invalid citation docid', () => {
+    test("rejects invalid citation docid", () => {
       const response = {
-        query: 'test',
-        mode: 'hybrid',
+        query: "test",
+        mode: "hybrid",
         citations: [
           {
-            docid: 'invalid',
-            uri: 'gno://work/doc.md',
+            docid: "invalid",
+            uri: "gno://work/doc.md",
           },
         ],
         results: [],

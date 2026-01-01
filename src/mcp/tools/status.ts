@@ -4,9 +4,10 @@
  * @module src/mcp/tools/status
  */
 
-import type { IndexStatus } from '../../store/types';
-import type { ToolContext } from '../server';
-import { runTool, type ToolResult } from './index';
+import type { IndexStatus } from "../../store/types";
+import type { ToolContext } from "../server";
+
+import { runTool, type ToolResult } from "./index";
 
 type StatusInput = Record<string, never>;
 
@@ -19,22 +20,22 @@ function formatStatus(status: IndexStatus): string {
   lines.push(`Index: ${status.indexName}`);
   lines.push(`Config: ${status.configPath}`);
   lines.push(`Database: ${status.dbPath}`);
-  lines.push(`Health: ${status.healthy ? 'OK' : 'DEGRADED'}`);
-  lines.push('');
+  lines.push(`Health: ${status.healthy ? "OK" : "DEGRADED"}`);
+  lines.push("");
 
   if (status.collections.length === 0) {
-    lines.push('No collections configured.');
+    lines.push("No collections configured.");
   } else {
-    lines.push('Collections:');
+    lines.push("Collections:");
     for (const c of status.collections) {
       lines.push(
         `  ${c.name}: ${c.activeDocuments} docs, ${c.totalChunks} chunks` +
-          (c.embeddedChunks > 0 ? `, ${c.embeddedChunks} embedded` : '')
+          (c.embeddedChunks > 0 ? `, ${c.embeddedChunks} embedded` : "")
       );
     }
   }
 
-  lines.push('');
+  lines.push("");
   lines.push(
     `Total: ${status.activeDocuments} documents, ${status.totalChunks} chunks`
   );
@@ -51,7 +52,7 @@ function formatStatus(status: IndexStatus): string {
     lines.push(`Last updated: ${status.lastUpdatedAt}`);
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**
@@ -63,7 +64,7 @@ export function handleStatus(
 ): Promise<ToolResult> {
   return runTool(
     ctx,
-    'gno_status',
+    "gno_status",
     async () => {
       const result = await ctx.store.getStatus();
       if (!result.ok) {

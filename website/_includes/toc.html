@@ -1,13 +1,8 @@
-{% comment %}
-Table of Contents for documentation pages
-Uses kramdown's automatic TOC generation
-{% endcomment %}
-
-{% if page.toc != false and page.url contains '/docs/' %}
+{% comment %} Table of Contents for documentation pages Uses kramdown's
+automatic TOC generation {% endcomment %} {% if page.toc != false and page.url
+contains '/docs/' %}
 <nav class="toc" aria-label="Table of contents">
   <h2 class="toc-title">On This Page</h2>
-  <div class="toc-content">
-    {{ content | toc_only }}
-  </div>
+  <div class="toc-content">{{ content | toc_only }}</div>
 </nav>
 {% endif %}

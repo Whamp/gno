@@ -5,17 +5,18 @@
  * @module src/cli/commands/skill/paths-cmd
  */
 
-import { join } from 'node:path';
-import { getGlobals } from '../../program.js';
-import { resolveAllPaths, type SkillScope, type SkillTarget } from './paths.js';
+import { join } from "node:path";
+
+import { getGlobals } from "../../program.js";
+import { resolveAllPaths, type SkillScope, type SkillTarget } from "./paths.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Paths Command
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface PathsOptions {
-  scope?: SkillScope | 'all';
-  target?: SkillTarget | 'all';
+  scope?: SkillScope | "all";
+  target?: SkillTarget | "all";
   /** Override for testing */
   cwd?: string;
   /** Override for testing */
@@ -46,8 +47,8 @@ function safeGetGlobals(): { json: boolean } {
  * Show resolved skill paths.
  */
 export async function showPaths(opts: PathsOptions = {}): Promise<void> {
-  const scope = opts.scope ?? 'all';
-  const target = opts.target ?? 'all';
+  const scope = opts.scope ?? "all";
+  const target = opts.target ?? "all";
   const globals = safeGetGlobals();
   const json = opts.json ?? globals.json;
 
@@ -59,7 +60,7 @@ export async function showPaths(opts: PathsOptions = {}): Promise<void> {
   const results: PathInfo[] = [];
 
   for (const r of resolved) {
-    const skillMdPath = join(r.paths.gnoDir, 'SKILL.md');
+    const skillMdPath = join(r.paths.gnoDir, "SKILL.md");
     const exists = await Bun.file(skillMdPath).exists();
     results.push({
       target: r.target,
@@ -72,9 +73,9 @@ export async function showPaths(opts: PathsOptions = {}): Promise<void> {
   if (json) {
     process.stdout.write(`${JSON.stringify({ paths: results }, null, 2)}\n`);
   } else {
-    process.stdout.write('GNO Skill Paths:\n\n');
+    process.stdout.write("GNO Skill Paths:\n\n");
     for (const r of results) {
-      const status = r.exists ? '(installed)' : '(not installed)';
+      const status = r.exists ? "(installed)" : "(not installed)";
       process.stdout.write(`  ${r.target}/${r.scope}: ${r.path} ${status}\n`);
     }
   }

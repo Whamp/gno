@@ -29,6 +29,7 @@ gno ask "What was decided about the API design?" --answer
 ```
 
 GNO will:
+
 1. Search your documents using hybrid search
 2. Retrieve relevant chunks
 3. Generate an answer citing specific documents
@@ -38,11 +39,11 @@ GNO will:
 
 Choose the right balance of speed and quality:
 
-| Preset | Speed | Quality | Use Case |
-|--------|-------|---------|----------|
-| slim | Fast | Good | Quick lookups |
-| balanced | Medium | Better | Default |
-| quality | Slower | Best | Complex questions |
+| Preset   | Speed  | Quality | Use Case          |
+| -------- | ------ | ------- | ----------------- |
+| slim     | Fast   | Good    | Quick lookups     |
+| balanced | Medium | Better  | Default           |
+| quality  | Slower | Best    | Complex questions |
 
 ```bash
 gno models use slim
@@ -52,6 +53,7 @@ gno models pull
 ### No Cloud Required
 
 Everything runs on your machine:
+
 - Models downloaded once, run locally
 - No API keys or subscriptions
 - Works completely offline

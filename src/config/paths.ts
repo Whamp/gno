@@ -5,26 +5,27 @@
  * @module src/config/paths
  */
 
-import { homedir } from 'node:os';
-import { isAbsolute, join, normalize } from 'node:path';
+import { homedir } from "node:os";
+import { isAbsolute, join, normalize } from "node:path";
+
 import {
   getConfigPath as getConfigPathBase,
   type ResolvedDirs,
   resolveDirs,
-} from '../app/constants';
+} from "../app/constants";
 
-export type { ResolvedDirs } from '../app/constants';
-export { getConfigPath } from '../app/constants';
+export type { ResolvedDirs } from "../app/constants";
+export { getConfigPath } from "../app/constants";
 
 /**
  * Resolve ~ to home directory and normalize path.
  * Converts relative paths with ~ prefix to absolute paths.
  */
 export function expandPath(inputPath: string): string {
-  if (inputPath.startsWith('~/')) {
+  if (inputPath.startsWith("~/")) {
     return join(homedir(), inputPath.slice(2));
   }
-  if (inputPath === '~') {
+  if (inputPath === "~") {
     return homedir();
   }
   return normalize(inputPath);
@@ -77,7 +78,7 @@ export function configExists(dirs?: ResolvedDirs): Promise<boolean> {
 export async function pathExists(path: string): Promise<boolean> {
   // Bun.file().exists() only works for files, not directories
   // Use fs.stat for reliable cross-platform check
-  const { stat } = await import('node:fs/promises');
+  const { stat } = await import("node:fs/promises");
   try {
     await stat(path);
     return true;

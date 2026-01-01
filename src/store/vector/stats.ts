@@ -5,10 +5,12 @@
  * @module src/store/vector/stats
  */
 
-import type { Database } from 'bun:sqlite';
-import type { StoreResult } from '../types';
-import { err, ok } from '../types';
-import type { BacklogItem, VectorStatsPort } from './types';
+import type { Database } from "bun:sqlite";
+
+import type { StoreResult } from "../types";
+import type { BacklogItem, VectorStatsPort } from "./types";
+
+import { err, ok } from "../types";
 
 /**
  * Create a VectorStatsPort for backlog detection and vector stats.
@@ -20,14 +22,14 @@ export function createVectorStatsPort(db: Database): VectorStatsPort {
       try {
         const result = db
           .prepare(
-            'SELECT COUNT(*) as count FROM content_vectors WHERE model = ?'
+            "SELECT COUNT(*) as count FROM content_vectors WHERE model = ?"
           )
           .get(model) as { count: number };
         return Promise.resolve(ok(result.count));
       } catch (e) {
         return Promise.resolve(
           err(
-            'QUERY_FAILED',
+            "QUERY_FAILED",
             `Failed to count vectors: ${e instanceof Error ? e.message : String(e)}`
           )
         );
@@ -61,7 +63,7 @@ export function createVectorStatsPort(db: Database): VectorStatsPort {
       } catch (e) {
         return Promise.resolve(
           err(
-            'QUERY_FAILED',
+            "QUERY_FAILED",
             `Failed to count backlog: ${e instanceof Error ? e.message : String(e)}`
           )
         );
@@ -145,7 +147,7 @@ export function createVectorStatsPort(db: Database): VectorStatsPort {
       } catch (e) {
         return Promise.resolve(
           err(
-            'QUERY_FAILED',
+            "QUERY_FAILED",
             `Failed to get backlog: ${e instanceof Error ? e.message : String(e)}`
           )
         );

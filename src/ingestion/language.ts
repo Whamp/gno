@@ -5,7 +5,7 @@
  * @module src/ingestion/language
  */
 
-import type { LanguageDetectorPort } from './types';
+import type { LanguageDetectorPort } from "./types";
 
 /** Regex to split on whitespace and punctuation */
 const WORD_SPLIT_REGEX = /[\s\p{P}]+/u;
@@ -43,68 +43,68 @@ const CJK_THRESHOLD = 0.1; // 10% CJK chars triggers detection
  */
 const LANGUAGE_MARKER_SETS: Record<string, Set<string>> = {
   en: new Set([
-    'the',
-    'and',
-    'is',
-    'are',
-    'was',
-    'were',
-    'be',
-    'have',
-    'has',
-    'this',
-    'that',
-    'with',
-    'for',
-    'not',
+    "the",
+    "and",
+    "is",
+    "are",
+    "was",
+    "were",
+    "be",
+    "have",
+    "has",
+    "this",
+    "that",
+    "with",
+    "for",
+    "not",
   ]),
   de: new Set([
-    'der',
-    'die',
-    'das',
-    'und',
-    'ist',
-    'sind',
-    'ein',
-    'eine',
-    'für',
-    'mit',
-    'auf',
-    'den',
-    'dem',
-    'nicht',
+    "der",
+    "die",
+    "das",
+    "und",
+    "ist",
+    "sind",
+    "ein",
+    "eine",
+    "für",
+    "mit",
+    "auf",
+    "den",
+    "dem",
+    "nicht",
   ]),
   fr: new Set([
-    'le',
-    'la',
-    'les',
-    'et',
-    'est',
-    'sont',
-    'un',
-    'une',
-    'pour',
-    'avec',
-    'sur',
-    'des',
-    'dans',
-    'pas',
+    "le",
+    "la",
+    "les",
+    "et",
+    "est",
+    "sont",
+    "un",
+    "une",
+    "pour",
+    "avec",
+    "sur",
+    "des",
+    "dans",
+    "pas",
   ]),
   it: new Set([
-    'il',
-    'la',
-    'le',
-    'e',
-    'è',
-    'sono',
-    'un',
-    'una',
-    'per',
-    'con',
-    'su',
-    'dei',
-    'nel',
-    'non',
+    "il",
+    "la",
+    "le",
+    "e",
+    "è",
+    "sono",
+    "un",
+    "una",
+    "per",
+    "con",
+    "su",
+    "dei",
+    "nel",
+    "non",
   ]),
 };
 
@@ -150,8 +150,8 @@ function extractWords(text: string): string[] {
  * Detect if text is primarily CJK (Chinese, Japanese, Korean).
  * Single-pass counting for efficiency.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Unicode range detection with multiple language heuristics
-function detectCjk(text: string): 'zh' | 'ja' | 'ko' | null {
+// oxlint-disable-next-line max-lines-per-function -- Unicode range detection with multiple heuristics
+function detectCjk(text: string): "zh" | "ja" | "ko" | null {
   let totalChars = 0;
   let cjkCount = 0;
   let hasHiragana = false;
@@ -197,14 +197,14 @@ function detectCjk(text: string): 'zh' | 'ja' | 'ko' | null {
 
   // Distinguish between CJK languages by script-specific characters
   if (hasHiragana || hasKatakana) {
-    return 'ja';
+    return "ja";
   }
   if (hasHangul) {
-    return 'ko';
+    return "ko";
   }
 
   // Default to Chinese for pure Han characters
-  return 'zh';
+  return "zh";
 }
 
 /**

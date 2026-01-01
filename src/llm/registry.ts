@@ -5,9 +5,10 @@
  * @module src/llm/registry
  */
 
-import type { Config, ModelConfig, ModelPreset } from '../config/types';
-import { DEFAULT_MODEL_PRESETS } from '../config/types';
-import type { ModelType } from './types';
+import type { Config, ModelConfig, ModelPreset } from "../config/types";
+import type { ModelType } from "./types";
+
+import { DEFAULT_MODEL_PRESETS } from "../config/types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Registry Functions
@@ -18,7 +19,7 @@ import type { ModelType } from './types';
  */
 export function getModelConfig(config: Config): ModelConfig {
   return {
-    activePreset: config.models?.activePreset ?? 'balanced',
+    activePreset: config.models?.activePreset ?? "balanced",
     presets: config.models?.presets?.length
       ? config.models.presets
       : DEFAULT_MODEL_PRESETS,
@@ -50,7 +51,7 @@ export function getActivePreset(config: Config): ModelPreset {
   // Return built-in default (guaranteed to exist)
   const builtIn = DEFAULT_MODEL_PRESETS[0];
   if (!builtIn) {
-    throw new Error('No default model presets configured');
+    throw new Error("No default model presets configured");
   }
   return builtIn;
 }

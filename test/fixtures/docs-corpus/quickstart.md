@@ -13,11 +13,13 @@ bun install -g @gmickel/gno
 ## First Steps
 
 1. Initialize your knowledge base:
+
    ```bash
    gno init ~/notes --name notes
    ```
 
 2. Index your documents:
+
    ```bash
    gno update
    ```

@@ -5,10 +5,11 @@
  * @module src/cli/commands/status
  */
 
-import { getIndexDbPath } from '../../app/constants';
-import { getConfigPaths, isInitialized, loadConfig } from '../../config';
-import { SqliteAdapter } from '../../store/sqlite/adapter';
-import type { IndexStatus } from '../../store/types';
+import type { IndexStatus } from "../../store/types";
+
+import { getIndexDbPath } from "../../app/constants";
+import { getConfigPaths, isInitialized, loadConfig } from "../../config";
+import { SqliteAdapter } from "../../store/sqlite/adapter";
 
 /**
  * Options for status command.
@@ -38,21 +39,21 @@ function formatTerminal(indexStatus: IndexStatus): string {
   lines.push(`Index: ${indexStatus.indexName}`);
   lines.push(`Config: ${indexStatus.configPath}`);
   lines.push(`Database: ${indexStatus.dbPath}`);
-  lines.push('');
+  lines.push("");
 
   if (indexStatus.collections.length === 0) {
-    lines.push('No collections configured.');
+    lines.push("No collections configured.");
   } else {
-    lines.push('Collections:');
+    lines.push("Collections:");
     for (const c of indexStatus.collections) {
       lines.push(
         `  ${c.name}: ${c.activeDocuments} docs, ${c.totalChunks} chunks` +
-          (c.embeddedChunks > 0 ? `, ${c.embeddedChunks} embedded` : '')
+          (c.embeddedChunks > 0 ? `, ${c.embeddedChunks} embedded` : "")
       );
     }
   }
 
-  lines.push('');
+  lines.push("");
   lines.push(
     `Total: ${indexStatus.activeDocuments} documents, ${indexStatus.totalChunks} chunks`
   );
@@ -69,9 +70,9 @@ function formatTerminal(indexStatus: IndexStatus): string {
     lines.push(`Last updated: ${indexStatus.lastUpdatedAt}`);
   }
 
-  lines.push(`Health: ${indexStatus.healthy ? 'OK' : 'DEGRADED'}`);
+  lines.push(`Health: ${indexStatus.healthy ? "OK" : "DEGRADED"}`);
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**
@@ -81,27 +82,27 @@ function formatMarkdown(indexStatus: IndexStatus): string {
   const lines: string[] = [];
 
   lines.push(`# Index Status: ${indexStatus.indexName}`);
-  lines.push('');
+  lines.push("");
   lines.push(`- **Config**: ${indexStatus.configPath}`);
   lines.push(`- **Database**: ${indexStatus.dbPath}`);
-  lines.push(`- **Health**: ${indexStatus.healthy ? '✓ OK' : '⚠ DEGRADED'}`);
-  lines.push('');
+  lines.push(`- **Health**: ${indexStatus.healthy ? "✓ OK" : "⚠ DEGRADED"}`);
+  lines.push("");
 
   if (indexStatus.collections.length > 0) {
-    lines.push('## Collections');
-    lines.push('');
-    lines.push('| Name | Path | Docs | Chunks | Embedded |');
-    lines.push('|------|------|------|--------|----------|');
+    lines.push("## Collections");
+    lines.push("");
+    lines.push("| Name | Path | Docs | Chunks | Embedded |");
+    lines.push("|------|------|------|--------|----------|");
     for (const c of indexStatus.collections) {
       lines.push(
         `| ${c.name} | ${c.path} | ${c.activeDocuments} | ${c.totalChunks} | ${c.embeddedChunks} |`
       );
     }
-    lines.push('');
+    lines.push("");
   }
 
-  lines.push('## Summary');
-  lines.push('');
+  lines.push("## Summary");
+  lines.push("");
   lines.push(`- **Documents**: ${indexStatus.activeDocuments}`);
   lines.push(`- **Chunks**: ${indexStatus.totalChunks}`);
   lines.push(`- **Embedding backlog**: ${indexStatus.embeddingBacklog}`);
@@ -111,7 +112,7 @@ function formatMarkdown(indexStatus: IndexStatus): string {
     lines.push(`- **Last updated**: ${indexStatus.lastUpdatedAt}`);
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**
@@ -123,7 +124,7 @@ export async function status(
   // Check if initialized
   const initialized = await isInitialized(options.configPath);
   if (!initialized) {
-    return { success: false, error: 'GNO not initialized. Run: gno init' };
+    return { success: false, error: "GNO not initialized. Run: gno init" };
   }
 
   // Load config
@@ -167,7 +168,7 @@ export function formatStatus(
 ): string {
   if (!result.success) {
     return options.json
-      ? JSON.stringify({ error: { code: 'RUNTIME', message: result.error } })
+      ? JSON.stringify({ error: { code: "RUNTIME", message: result.error } })
       : `Error: ${result.error}`;
   }
 

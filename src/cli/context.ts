@@ -5,8 +5,8 @@
  * @module src/cli/context
  */
 
-import { envIsSet } from '../llm/policy';
-import { setColorsEnabled } from './colors';
+import { envIsSet } from "../llm/policy";
+import { setColorsEnabled } from "./colors";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -36,7 +36,7 @@ export function parseGlobalOptions(
   env = process.env
 ): GlobalOptions {
   // NO_COLOR env var support (https://no-color.org/)
-  const noColorEnv = env.NO_COLOR !== undefined && env.NO_COLOR !== '';
+  const noColorEnv = env.NO_COLOR !== undefined && env.NO_COLOR !== "";
   // --no-color sets color to false in Commander
   const noColorFlag = raw.color === false;
 
@@ -45,12 +45,12 @@ export function parseGlobalOptions(
   // Offline mode: --offline flag or HF_HUB_OFFLINE/GNO_OFFLINE env var
   // Use envIsSet for consistent truthiness (treats "1", "true", "yes" as true)
   const offlineEnv =
-    envIsSet(env, 'HF_HUB_OFFLINE') || envIsSet(env, 'GNO_OFFLINE');
+    envIsSet(env, "HF_HUB_OFFLINE") || envIsSet(env, "GNO_OFFLINE");
   const offlineFlag = Boolean(raw.offline);
   const offlineEnabled = offlineEnv || offlineFlag;
 
   return {
-    index: (raw.index as string) ?? 'default',
+    index: (raw.index as string) ?? "default",
     config: raw.config as string | undefined,
     color: colorEnabled,
     verbose: Boolean(raw.verbose),

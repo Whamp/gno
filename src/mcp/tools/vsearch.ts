@@ -4,21 +4,23 @@
  * @module src/mcp/tools/vsearch
  */
 
-import { join as pathJoin } from 'node:path';
-import { parseUri } from '../../app/constants';
-import { createNonTtyProgressRenderer } from '../../cli/progress';
-import { LlmAdapter } from '../../llm/nodeLlamaCpp/adapter';
-import { resolveDownloadPolicy } from '../../llm/policy';
-import { getActivePreset } from '../../llm/registry';
-import { formatQueryForEmbedding } from '../../pipeline/contextual';
-import type { SearchResult, SearchResults } from '../../pipeline/types';
+import { join as pathJoin } from "node:path";
+
+import type { SearchResult, SearchResults } from "../../pipeline/types";
+import type { ToolContext } from "../server";
+
+import { parseUri } from "../../app/constants";
+import { createNonTtyProgressRenderer } from "../../cli/progress";
+import { LlmAdapter } from "../../llm/nodeLlamaCpp/adapter";
+import { resolveDownloadPolicy } from "../../llm/policy";
+import { getActivePreset } from "../../llm/registry";
+import { formatQueryForEmbedding } from "../../pipeline/contextual";
 import {
   searchVectorWithEmbedding,
   type VectorSearchDeps,
-} from '../../pipeline/vsearch';
-import { createVectorIndexPort } from '../../store/vector';
-import type { ToolContext } from '../server';
-import { runTool, type ToolResult } from './index';
+} from "../../pipeline/vsearch";
+import { createVectorIndexPort } from "../../store/vector";
+import { runTool, type ToolResult } from "./index";
 
 interface VsearchInput {
   query: string;
@@ -70,7 +72,7 @@ function formatSearchResults(data: SearchResults): string {
   lines.push(
     `Found ${data.results.length} results for "${data.meta.query}" (vector search):`
   );
-  lines.push('');
+  lines.push("");
 
   for (const r of data.results) {
     lines.push(`[${r.docid}] ${r.uri} (score: ${r.score.toFixed(3)})`);
@@ -78,13 +80,13 @@ function formatSearchResults(data: SearchResults): string {
       lines.push(`  Title: ${r.title}`);
     }
     if (r.snippet) {
-      const snippetPreview = r.snippet.slice(0, 200).replace(/\n/g, ' ');
-      lines.push(`  ${snippetPreview}${r.snippet.length > 200 ? '...' : ''}`);
+      const snippetPreview = r.snippet.slice(0, 200).replace(/\n/g, " ");
+      lines.push(`  ${snippetPreview}${r.snippet.length > 200 ? "..." : ""}`);
     }
-    lines.push('');
+    lines.push("");
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**
@@ -96,8 +98,8 @@ export function handleVsearch(
 ): Promise<ToolResult> {
   return runTool(
     ctx,
-    'gno_vsearch',
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: vector search with validation and result formatting
+    "gno_vsearch",
+    // oxlint-disable-next-line max-lines-per-function -- vector search with validation and result formatting
     async () => {
       // Validate collection exists if specified
       if (args.collection) {
@@ -121,12 +123,12 @@ export function handleVsearch(
       const llm = new LlmAdapter(ctx.config);
       const embedResult = await llm.createEmbeddingPort(modelUri, {
         policy,
-        onProgress: (progress) => downloadProgress('embed', progress),
+        onProgress: (progress) => downloadProgress("embed", progress),
       });
       if (!embedResult.ok) {
         throw new Error(
           `Failed to load embedding model: ${embedResult.error.message}. ` +
-            'Ensure models are downloaded with: gno models pull'
+            "Ensure models are downloaded with: gno models pull"
         );
       }
 
@@ -153,7 +155,7 @@ export function handleVsearch(
         if (!vectorResult.ok) {
           throw new Error(
             `Vector index not available: ${vectorResult.error.message}. ` +
-              'Run: gno embed'
+              "Run: gno embed"
           );
         }
 
@@ -162,10 +164,10 @@ export function handleVsearch(
         if (!vectorIndex.searchAvailable) {
           const reason = vectorIndex.loadError
             ? `sqlite-vec not loaded: ${vectorIndex.loadError}`
-            : 'sqlite-vec not available';
+            : "sqlite-vec not available";
           throw new Error(
             `Vector search unavailable (${reason}). ` +
-              'Ensure sqlite-vec is installed for your platform.'
+              "Ensure sqlite-vec is installed for your platform."
           );
         }
 

@@ -3,13 +3,14 @@
  * Validates server lifecycle and basic protocol compliance.
  */
 
-import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { MCP_SERVER_NAME, VERSION } from '../../src/app/constants';
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 
-describe('MCP Server', () => {
+import { MCP_SERVER_NAME, VERSION } from "../../src/app/constants";
+
+describe("MCP Server", () => {
   let server: McpServer;
   let client: Client;
   let serverTransport: ReturnType<typeof InMemoryTransport.createLinkedPair>[1];
@@ -34,17 +35,17 @@ describe('MCP Server', () => {
     );
 
     // Register a test tool using zod schema
-    const { z } = await import('zod');
-    server.tool('test.echo', 'Echo test', { message: z.string() }, (args) => ({
-      content: [{ type: 'text', text: `Echo: ${args.message}` }],
+    const { z } = await import("zod");
+    server.tool("test.echo", "Echo test", { message: z.string() }, (args) => ({
+      content: [{ type: "text", text: `Echo: ${args.message}` }],
     }));
 
     await server.connect(serverTransport);
 
     // Create client
     client = new Client({
-      name: 'test-client',
-      version: '1.0.0',
+      name: "test-client",
+      version: "1.0.0",
     });
 
     await client.connect(clientTransport);
@@ -55,38 +56,38 @@ describe('MCP Server', () => {
     await server.close();
   });
 
-  test('server info returns correct name and version', () => {
+  test("server info returns correct name and version", () => {
     const info = client.getServerVersion();
     expect(info?.name).toBe(MCP_SERVER_NAME);
     expect(info?.version).toBe(VERSION);
   });
 
-  test('tools/list returns registered tools', async () => {
+  test("tools/list returns registered tools", async () => {
     const result = await client.listTools();
     expect(result.tools.length).toBeGreaterThan(0);
 
     const toolNames = result.tools.map((t) => t.name);
-    expect(toolNames).toContain('test.echo');
+    expect(toolNames).toContain("test.echo");
   });
 
-  test('tools/call executes tool and returns result', async () => {
+  test("tools/call executes tool and returns result", async () => {
     const result = await client.callTool({
-      name: 'test.echo',
-      arguments: { message: 'hello world' },
+      name: "test.echo",
+      arguments: { message: "hello world" },
     });
 
     expect(result.isError).toBeFalsy();
     const content = result.content as Array<{ type: string; text: string }>;
     expect(content).toHaveLength(1);
     expect(content[0]).toEqual({
-      type: 'text',
-      text: 'Echo: hello world',
+      type: "text",
+      text: "Echo: hello world",
     });
   });
 
-  test('tools/call with unknown tool returns error', async () => {
+  test("tools/call with unknown tool returns error", async () => {
     const result = await client.callTool({
-      name: 'nonexistent.tool',
+      name: "nonexistent.tool",
       arguments: {},
     });
     // Unknown tool should return isError or throw - MCP SDK behavior varies

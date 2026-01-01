@@ -13,24 +13,26 @@ import {
   describe,
   expect,
   test,
-} from 'bun:test';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import type { Config } from '../../src/config/types';
-import type { ContextHolder } from '../../src/serve/routes/api';
+} from "bun:test";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+import type { Config } from "../../src/config/types";
+import type { ContextHolder } from "../../src/serve/routes/api";
+
 import {
   handleCollections,
   handleCreateCollection,
   handleDeleteCollection,
-} from '../../src/serve/routes/api';
+} from "../../src/serve/routes/api";
 
 interface ErrorBody {
   error: { code: string };
 }
 
 // Import config path utilities to find actual config location
-import { getConfigPaths } from '../../src/config/paths';
+import { getConfigPaths } from "../../src/config/paths";
 
 let originalConfigContent: string | null = null;
 let configFilePath: string;
@@ -48,9 +50,9 @@ beforeAll(async () => {
   }
 
   // Ensure config directory exists
-  const { dirname } = await import('node:path');
-  const { mkdir } = await import('node:fs/promises');
-  await mkdir(dirname(configFilePath), { recursive: true });
+  const nodePath = await import("node:path");
+  const { mkdir } = await import("node:fs/promises");
+  await mkdir(nodePath.dirname(configFilePath), { recursive: true });
 
   await resetConfig();
 });
@@ -73,10 +75,10 @@ async function resetConfig() {
 // Helper to write config with collections/contexts using Bun.YAML
 async function writeConfig(config: Partial<Config>) {
   const fullConfig = {
-    version: '1.0',
-    ftsTokenizer: 'unicode61',
-    collections: [] as Config['collections'],
-    contexts: [] as Config['contexts'],
+    version: "1.0",
+    ftsTokenizer: "unicode61",
+    collections: [] as Config["collections"],
+    contexts: [] as Config["contexts"],
     ...config,
   };
   const yaml = Bun.YAML.stringify(fullConfig);
@@ -106,20 +108,20 @@ function createMockStore() {
 // Minimal mock context holder
 function createMockContextHolder(config?: Partial<Config>): ContextHolder {
   const fullConfig: Config = {
-    version: '1.0',
-    ftsTokenizer: 'unicode61',
+    version: "1.0",
+    ftsTokenizer: "unicode61",
     collections: [],
     contexts: [],
     ...config,
   };
   return {
-    current: { config: fullConfig } as ContextHolder['current'],
+    current: { config: fullConfig } as ContextHolder["current"],
     config: fullConfig,
   };
 }
 
-describe('GET /api/collections', () => {
-  test('returns empty list when no collections', async () => {
+describe("GET /api/collections", () => {
+  test("returns empty list when no collections", async () => {
     const store = createMockStore();
     const res = await handleCollections(store as never);
     expect(res.status).toBe(200);
@@ -127,21 +129,21 @@ describe('GET /api/collections', () => {
     expect(body).toEqual([]);
   });
 
-  test('returns collections list', async () => {
+  test("returns collections list", async () => {
     const store = createMockStore();
-    store.collections.push({ name: 'docs', path: '/path/to/docs' });
+    store.collections.push({ name: "docs", path: "/path/to/docs" });
     const res = await handleCollections(store as never);
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body).toEqual([{ name: 'docs', path: '/path/to/docs' }]);
+    expect(body).toEqual([{ name: "docs", path: "/path/to/docs" }]);
   });
 });
 
-describe('POST /api/collections', () => {
+describe("POST /api/collections", () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gno-test-'));
+    tmpDir = await mkdtemp(join(tmpdir(), "gno-test-"));
     await resetConfig();
   });
 
@@ -149,40 +151,40 @@ describe('POST /api/collections', () => {
     await rm(tmpDir, { recursive: true, force: true });
   });
 
-  test('rejects missing path', async () => {
+  test("rejects missing path", async () => {
     const store = createMockStore();
     const ctxHolder = createMockContextHolder();
-    const req = new Request('http://localhost/api/collections', {
-      method: 'POST',
-      body: JSON.stringify({ name: 'test' }),
+    const req = new Request("http://localhost/api/collections", {
+      method: "POST",
+      body: JSON.stringify({ name: "test" }),
     });
     const res = await handleCreateCollection(ctxHolder, store as never, req);
     expect(res.status).toBe(400);
     const body = (await res.json()) as ErrorBody;
-    expect(body.error.code).toBe('VALIDATION');
+    expect(body.error.code).toBe("VALIDATION");
   });
 
-  test('rejects non-existent path', async () => {
+  test("rejects non-existent path", async () => {
     const store = createMockStore();
     const ctxHolder = createMockContextHolder();
-    const req = new Request('http://localhost/api/collections', {
-      method: 'POST',
-      body: JSON.stringify({ path: '/nonexistent/path', name: 'test' }),
+    const req = new Request("http://localhost/api/collections", {
+      method: "POST",
+      body: JSON.stringify({ path: "/nonexistent/path", name: "test" }),
     });
     const res = await handleCreateCollection(ctxHolder, store as never, req);
     expect(res.status).toBe(400);
     const body = (await res.json()) as ErrorBody;
-    expect(body.error.code).toBe('PATH_NOT_FOUND');
+    expect(body.error.code).toBe("PATH_NOT_FOUND");
   });
 
-  test('rejects duplicate collection name', async () => {
+  test("rejects duplicate collection name", async () => {
     // Write config with existing collection to disk
     await writeConfig({
       collections: [
         {
-          name: 'existing',
+          name: "existing",
           path: tmpDir,
-          pattern: '**/*.md',
+          pattern: "**/*.md",
           include: [],
           exclude: [],
         },
@@ -191,22 +193,22 @@ describe('POST /api/collections', () => {
 
     const store = createMockStore();
     const ctxHolder = createMockContextHolder();
-    const req = new Request('http://localhost/api/collections', {
-      method: 'POST',
-      body: JSON.stringify({ path: tmpDir, name: 'existing' }),
+    const req = new Request("http://localhost/api/collections", {
+      method: "POST",
+      body: JSON.stringify({ path: tmpDir, name: "existing" }),
     });
     const res = await handleCreateCollection(ctxHolder, store as never, req);
     expect(res.status).toBe(409);
     const body = (await res.json()) as ErrorBody;
-    expect(body.error.code).toBe('DUPLICATE');
+    expect(body.error.code).toBe("DUPLICATE");
   });
 });
 
-describe('DELETE /api/collections/:name', () => {
+describe("DELETE /api/collections/:name", () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gno-test-'));
+    tmpDir = await mkdtemp(join(tmpdir(), "gno-test-"));
     await resetConfig();
   });
 
@@ -214,39 +216,39 @@ describe('DELETE /api/collections/:name', () => {
     await rm(tmpDir, { recursive: true, force: true });
   });
 
-  test('rejects non-existent collection', async () => {
+  test("rejects non-existent collection", async () => {
     const store = createMockStore();
     const ctxHolder = createMockContextHolder();
     const res = await handleDeleteCollection(
       ctxHolder,
       store as never,
-      'nonexistent'
+      "nonexistent"
     );
     expect(res.status).toBe(404);
     const body = (await res.json()) as ErrorBody;
-    expect(body.error.code).toBe('NOT_FOUND');
+    expect(body.error.code).toBe("NOT_FOUND");
   });
 
-  test('rejects collection with context references', async () => {
+  test("rejects collection with context references", async () => {
     // Write config with collection and context reference to disk
     await writeConfig({
       collections: [
         {
-          name: 'docs',
+          name: "docs",
           path: tmpDir,
-          pattern: '**/*.md',
+          pattern: "**/*.md",
           include: [],
           exclude: [],
         },
       ],
-      contexts: [{ scopeType: 'collection', scopeKey: 'docs:', text: 'test' }],
+      contexts: [{ scopeType: "collection", scopeKey: "docs:", text: "test" }],
     });
 
     const store = createMockStore();
     const ctxHolder = createMockContextHolder();
-    const res = await handleDeleteCollection(ctxHolder, store as never, 'docs');
+    const res = await handleDeleteCollection(ctxHolder, store as never, "docs");
     expect(res.status).toBe(400);
     const body = (await res.json()) as ErrorBody;
-    expect(body.error.code).toBe('HAS_REFERENCES');
+    expect(body.error.code).toBe("HAS_REFERENCES");
   });
 });

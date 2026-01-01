@@ -10,8 +10,8 @@
 
 /** Native converter versions (our own) */
 export const NATIVE_VERSIONS = {
-  markdown: '1.0.0',
-  plaintext: '1.0.0',
+  markdown: "1.0.0",
+  plaintext: "1.0.0",
 } as const;
 
 /**
@@ -19,6 +19,6 @@ export const NATIVE_VERSIONS = {
  * Update these when running `bun update`.
  */
 export const ADAPTER_VERSIONS = {
-  'markitdown-ts': '0.0.8',
-  officeparser: '5.2.0',
+  "markitdown-ts": "0.0.8",
+  officeparser: "5.2.0",
 } as const;

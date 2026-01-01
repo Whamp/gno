@@ -61,13 +61,13 @@ async function deleteUser(id: string): Promise<void> {
 
 Set appropriate expiration times:
 
-| Data Type | TTL | Reason |
-|-----------|-----|--------|
-| Session tokens | 24h | Security |
-| User profiles | 1h | Moderate change frequency |
-| Static config | 24h | Rarely changes |
-| Search results | 5m | Freshness important |
-| Rate limits | 1m | Real-time accuracy needed |
+| Data Type      | TTL | Reason                    |
+| -------------- | --- | ------------------------- |
+| Session tokens | 24h | Security                  |
+| User profiles  | 1h  | Moderate change frequency |
+| Static config  | 24h | Rarely changes            |
+| Search results | 5m  | Freshness important       |
+| Rate limits    | 1m  | Real-time accuracy needed |
 
 ## Cache Stampede Prevention
 

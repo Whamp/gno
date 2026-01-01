@@ -5,17 +5,18 @@
  * @module src/cli/commands/skill/install
  */
 
-import { mkdir, readdir, rename, rm, stat } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { CliError } from '../../errors.js';
-import { getGlobals } from '../../program.js';
+import { mkdir, readdir, rename, rm, stat } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { CliError } from "../../errors.js";
+import { getGlobals } from "../../program.js";
 import {
   resolveSkillPaths,
   type SkillScope,
   type SkillTarget,
   validatePathForDeletion,
-} from './paths.js';
+} from "./paths.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Source Path Resolution
@@ -29,7 +30,7 @@ function getSkillSourceDir(): string {
   const __dirname = dirname(fileURLToPath(import.meta.url));
   // From src/cli/commands/skill/ -> assets/skill/
   // Or from dist/cli/commands/skill/ -> assets/skill/
-  return join(__dirname, '../../../../assets/skill');
+  return join(__dirname, "../../../../assets/skill");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -38,7 +39,7 @@ function getSkillSourceDir(): string {
 
 export interface InstallOptions {
   scope?: SkillScope;
-  target?: SkillTarget | 'all';
+  target?: SkillTarget | "all";
   force?: boolean;
   /** Override for testing */
   cwd?: string;
@@ -71,7 +72,7 @@ async function installToTarget(
   const paths = resolveSkillPaths({ scope, target, ...overrides });
 
   // Check if already exists (directory or SKILL.md)
-  const skillMdExists = await Bun.file(join(paths.gnoDir, 'SKILL.md')).exists();
+  const skillMdExists = await Bun.file(join(paths.gnoDir, "SKILL.md")).exists();
   let dirExists = false;
   try {
     const dirStat = await stat(paths.gnoDir);
@@ -83,7 +84,7 @@ async function installToTarget(
 
   if (destExists && !force) {
     throw new CliError(
-      'VALIDATION',
+      "VALIDATION",
       `Skill already installed at ${paths.gnoDir}. Use --force to overwrite.`
     );
   }
@@ -91,7 +92,7 @@ async function installToTarget(
   // Read source files
   const sourceFiles = await readdir(sourceDir);
   if (sourceFiles.length === 0) {
-    throw new CliError('RUNTIME', `No skill files found in ${sourceDir}`);
+    throw new CliError("RUNTIME", `No skill files found in ${sourceDir}`);
   }
 
   // Create temp directory with unique name to avoid collisions
@@ -117,7 +118,7 @@ async function installToTarget(
       const validationError = validatePathForDeletion(paths.gnoDir, paths.base);
       if (validationError) {
         throw new CliError(
-          'RUNTIME',
+          "RUNTIME",
           `Safety check failed for ${paths.gnoDir}: ${validationError}`
         );
       }
@@ -141,7 +142,7 @@ async function installToTarget(
     }
 
     throw new CliError(
-      'RUNTIME',
+      "RUNTIME",
       `Failed to install skill: ${err instanceof Error ? err.message : String(err)}`
     );
   }
@@ -162,8 +163,8 @@ function safeGetGlobals(): { json: boolean; yes: boolean; quiet: boolean } {
  * Install GNO skill.
  */
 export async function installSkill(opts: InstallOptions = {}): Promise<void> {
-  const scope = opts.scope ?? 'project';
-  const target = opts.target ?? 'claude';
+  const scope = opts.scope ?? "project";
+  const target = opts.target ?? "claude";
   const force = opts.force ?? false;
   const globals = safeGetGlobals();
   const json = opts.json ?? globals.json;
@@ -171,7 +172,7 @@ export async function installSkill(opts: InstallOptions = {}): Promise<void> {
   const quiet = opts.quiet ?? globals.quiet;
 
   const targets: SkillTarget[] =
-    target === 'all' ? ['claude', 'codex'] : [target];
+    target === "all" ? ["claude", "codex"] : [target];
 
   const results: InstallResult[] = [];
 
@@ -192,6 +193,6 @@ export async function installSkill(opts: InstallOptions = {}): Promise<void> {
     for (const r of results) {
       process.stdout.write(`Installed GNO skill to ${r.path}\n`);
     }
-    process.stdout.write('\nRestart your agent to load the skill.\n');
+    process.stdout.write("\nRestart your agent to load the skill.\n");
   }
 }

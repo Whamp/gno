@@ -2,15 +2,16 @@
 
 ## CI/CD Matrix
 
-| Trigger | Ubuntu | macOS | Windows | npm publish |
-|---------|--------|-------|---------|-------------|
-| PR | ✓ | ✓ | - | - |
-| PR + label `test-windows` | ✓ | ✓ | ✓ | - |
-| Push main | ✓ | ✓ | ✓ | - |
-| Tag `v*` | ✓ | ✓ | ✓ | ✓ |
-| Manual dispatch | ✓ | ✓ | ✓ | optional |
+| Trigger                   | Ubuntu | macOS | Windows | npm publish |
+| ------------------------- | ------ | ----- | ------- | ----------- |
+| PR                        | ✓      | ✓     | -       | -           |
+| PR + label `test-windows` | ✓      | ✓     | ✓       | -           |
+| Push main                 | ✓      | ✓     | ✓       | -           |
+| Tag `v*`                  | ✓      | ✓     | ✓       | ✓           |
+| Manual dispatch           | ✓      | ✓     | ✓       | optional    |
 
 **Rationale:**
+
 - PRs run Ubuntu + macOS (core dev platforms)
 - Windows only on main/tags/manual (slow, less critical)
 - Label `test-windows` for Windows-specific PR testing
@@ -31,10 +32,12 @@
 ## Release Process
 
 **First-time setup (npm):**
+
 1. Go to https://www.npmjs.com/package/@gmickel/gno/access
 2. Add trusted publisher: owner=`gmickel`, repo=`gno`, workflow=`publish.yml`
 
 **Release:**
+
 ```bash
 bun run version:patch   # bump version
 # Update CHANGELOG.md

@@ -10,10 +10,6 @@ layout: default
   <article class="page-content">
     {% if page.title %}
     <h1>{{ page.title }}</h1>
-    {% endif %}
-
-    {{ content }}
-
-    {% include related-docs.html %}
+    {% endif %} {{ content }} {% include related-docs.html %}
   </article>
 </div>

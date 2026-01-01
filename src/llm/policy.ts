@@ -34,11 +34,11 @@ export function envIsSet(
   key: string
 ): boolean {
   const val = env[key];
-  if (val === undefined || val === '') {
+  if (val === undefined || val === "") {
     return false;
   }
   const lower = val.toLowerCase();
-  return lower === '1' || lower === 'true' || lower === 'yes';
+  return lower === "1" || lower === "true" || lower === "yes";
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -65,17 +65,17 @@ export function resolveDownloadPolicy(
   }
 
   // 2. HF_HUB_OFFLINE env var (standard HuggingFace offline mode)
-  if (envIsSet(env, 'HF_HUB_OFFLINE')) {
+  if (envIsSet(env, "HF_HUB_OFFLINE")) {
     return { offline: true, allowDownload: false };
   }
 
   // 3. GNO_OFFLINE env var (GNO-specific offline mode)
-  if (envIsSet(env, 'GNO_OFFLINE')) {
+  if (envIsSet(env, "GNO_OFFLINE")) {
     return { offline: true, allowDownload: false };
   }
 
   // 4. GNO_NO_AUTO_DOWNLOAD env var (allow resolve but no download)
-  if (envIsSet(env, 'GNO_NO_AUTO_DOWNLOAD')) {
+  if (envIsSet(env, "GNO_NO_AUTO_DOWNLOAD")) {
     return { offline: false, allowDownload: false };
   }
 

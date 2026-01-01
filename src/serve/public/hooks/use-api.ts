@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState } from "react";
 
 interface ApiState<T> {
   data: T | null;
@@ -12,8 +12,8 @@ interface ApiState<T> {
 async function parseJsonSafe(
   res: Response
 ): Promise<{ json: unknown; parseError: string | null }> {
-  const ct = res.headers.get('content-type') ?? '';
-  const isJson = ct.includes('application/json');
+  const ct = res.headers.get("content-type") ?? "";
+  const isJson = ct.includes("application/json");
 
   if (!isJson) {
     // Non-JSON response - return text as error context
@@ -28,7 +28,7 @@ async function parseJsonSafe(
     const json = await res.json();
     return { json, parseError: null };
   } catch {
-    return { json: null, parseError: 'Invalid JSON response' };
+    return { json: null, parseError: "Invalid JSON response" };
   }
 }
 
@@ -45,7 +45,7 @@ export function useApi<T>() {
 
       try {
         const res = await fetch(endpoint, {
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
           ...options,
         });
 
@@ -67,7 +67,7 @@ export function useApi<T>() {
         setState({ data: json as T, loading: false, error: null });
         return json as T;
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Network error';
+        const msg = err instanceof Error ? err.message : "Network error";
         setState({ data: null, loading: false, error: msg });
         return null;
       }
@@ -84,7 +84,7 @@ export async function apiFetch<T>(
 ): Promise<{ data: T | null; error: string | null }> {
   try {
     const res = await fetch(endpoint, {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
       ...options,
     });
 
@@ -106,7 +106,7 @@ export async function apiFetch<T>(
   } catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : 'Network error',
+      error: err instanceof Error ? err.message : "Network error",
     };
   }
 }

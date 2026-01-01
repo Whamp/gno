@@ -11,7 +11,7 @@ import {
   basename as posixBasename,
   extname as posixExtname,
   normalize as posixNormalize,
-} from 'node:path/posix';
+} from "node:path/posix";
 
 /**
  * Normalize a relative path to POSIX format.
@@ -19,7 +19,7 @@ import {
  */
 export function normalizePath(p: string): string {
   // Convert Windows separators to POSIX
-  const posixPath = p.replace(/\\/g, '/');
+  const posixPath = p.replace(/\\/g, "/");
   // Normalize (resolve .., ., double slashes)
   return posixNormalize(posixPath);
 }

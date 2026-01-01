@@ -2,21 +2,23 @@
  * Tests for sqlite-vec adapter.
  */
 
-import { Database } from 'bun:sqlite';
-import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
-import { mkdtemp } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { Database } from "bun:sqlite";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { mkdtemp } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+import type { VectorRow } from "../../../src/store/vector/types";
+
 import {
   createVectorIndexPort,
   decodeEmbedding,
   encodeEmbedding,
-} from '../../../src/store/vector/sqlite-vec';
-import type { VectorRow } from '../../../src/store/vector/types';
-import { safeRm } from '../../helpers/cleanup';
+} from "../../../src/store/vector/sqlite-vec";
+import { safeRm } from "../../helpers/cleanup";
 
-describe('encodeEmbedding/decodeEmbedding', () => {
-  test('round-trips Float32Array correctly', () => {
+describe("encodeEmbedding/decodeEmbedding", () => {
+  test("round-trips Float32Array correctly", () => {
     const original = new Float32Array([1.0, 2.0, 3.0, 4.0]);
     const encoded = encodeEmbedding(original);
     const decoded = decodeEmbedding(encoded);
@@ -27,7 +29,7 @@ describe('encodeEmbedding/decodeEmbedding', () => {
     }
   });
 
-  test('creates isolated copies', () => {
+  test("creates isolated copies", () => {
     const original = new Float32Array([1.0, 2.0]);
     const encoded = encodeEmbedding(original);
 
@@ -38,13 +40,13 @@ describe('encodeEmbedding/decodeEmbedding', () => {
   });
 });
 
-describe('createVectorIndexPort', () => {
+describe("createVectorIndexPort", () => {
   let db: Database;
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'gno-vec-test-'));
-    const dbPath = join(testDir, 'test.sqlite');
+    testDir = await mkdtemp(join(tmpdir(), "gno-vec-test-"));
+    const dbPath = join(testDir, "test.sqlite");
     db = new Database(dbPath, { create: true });
 
     // Create required tables (minimal schema)
@@ -84,9 +86,9 @@ describe('createVectorIndexPort', () => {
     await safeRm(testDir);
   });
 
-  test('creates port with correct properties', async () => {
+  test("creates port with correct properties", async () => {
     const result = await createVectorIndexPort(db, {
-      model: 'test-model',
+      model: "test-model",
       dimensions: 4,
     });
 
@@ -96,15 +98,15 @@ describe('createVectorIndexPort', () => {
     }
 
     const port = result.value;
-    expect(port.model).toBe('test-model');
+    expect(port.model).toBe("test-model");
     expect(port.dimensions).toBe(4);
     // searchAvailable depends on sqlite-vec being installed
-    expect(typeof port.searchAvailable).toBe('boolean');
+    expect(typeof port.searchAvailable).toBe("boolean");
   });
 
-  test('upsertVectors stores vectors in content_vectors', async () => {
+  test("upsertVectors stores vectors in content_vectors", async () => {
     const result = await createVectorIndexPort(db, {
-      model: 'test-model',
+      model: "test-model",
       dimensions: 4,
     });
     expect(result.ok).toBe(true);
@@ -115,16 +117,16 @@ describe('createVectorIndexPort', () => {
     const port = result.value;
     const vectors: VectorRow[] = [
       {
-        mirrorHash: 'hash1',
+        mirrorHash: "hash1",
         seq: 0,
-        model: 'test-model',
+        model: "test-model",
         embedding: new Float32Array([1.0, 2.0, 3.0, 4.0]),
         embeddedAt: new Date().toISOString(),
       },
       {
-        mirrorHash: 'hash1',
+        mirrorHash: "hash1",
         seq: 1,
-        model: 'test-model',
+        model: "test-model",
         embedding: new Float32Array([5.0, 6.0, 7.0, 8.0]),
         embeddedAt: new Date().toISOString(),
       },
@@ -135,14 +137,14 @@ describe('createVectorIndexPort', () => {
 
     // Verify stored in content_vectors
     const rows = db
-      .prepare('SELECT * FROM content_vectors WHERE model = ?')
-      .all('test-model') as { mirror_hash: string; seq: number }[];
+      .prepare("SELECT * FROM content_vectors WHERE model = ?")
+      .all("test-model") as { mirror_hash: string; seq: number }[];
     expect(rows.length).toBe(2);
   });
 
-  test('upsertVectors replaces existing vectors', async () => {
+  test("upsertVectors replaces existing vectors", async () => {
     const result = await createVectorIndexPort(db, {
-      model: 'test-model',
+      model: "test-model",
       dimensions: 4,
     });
     expect(result.ok).toBe(true);
@@ -155,9 +157,9 @@ describe('createVectorIndexPort', () => {
     // Insert initial
     await port.upsertVectors([
       {
-        mirrorHash: 'hash1',
+        mirrorHash: "hash1",
         seq: 0,
-        model: 'test-model',
+        model: "test-model",
         embedding: new Float32Array([1.0, 2.0, 3.0, 4.0]),
         embeddedAt: new Date().toISOString(),
       },
@@ -166,24 +168,24 @@ describe('createVectorIndexPort', () => {
     // Update with new embedding
     await port.upsertVectors([
       {
-        mirrorHash: 'hash1',
+        mirrorHash: "hash1",
         seq: 0,
-        model: 'test-model',
+        model: "test-model",
         embedding: new Float32Array([9.0, 9.0, 9.0, 9.0]),
         embeddedAt: new Date().toISOString(),
       },
     ]);
 
     // Should still be 1 row
-    const rows = db.prepare('SELECT * FROM content_vectors').all() as {
+    const rows = db.prepare("SELECT * FROM content_vectors").all() as {
       mirror_hash: string;
     }[];
     expect(rows.length).toBe(1);
   });
 
-  test('deleteVectorsForMirror removes vectors for mirror hash', async () => {
+  test("deleteVectorsForMirror removes vectors for mirror hash", async () => {
     const result = await createVectorIndexPort(db, {
-      model: 'test-model',
+      model: "test-model",
       dimensions: 4,
     });
     expect(result.ok).toBe(true);
@@ -196,36 +198,36 @@ describe('createVectorIndexPort', () => {
     // Insert vectors for two different mirrors
     await port.upsertVectors([
       {
-        mirrorHash: 'hash1',
+        mirrorHash: "hash1",
         seq: 0,
-        model: 'test-model',
+        model: "test-model",
         embedding: new Float32Array([1, 2, 3, 4]),
         embeddedAt: new Date().toISOString(),
       },
       {
-        mirrorHash: 'hash2',
+        mirrorHash: "hash2",
         seq: 0,
-        model: 'test-model',
+        model: "test-model",
         embedding: new Float32Array([5, 6, 7, 8]),
         embeddedAt: new Date().toISOString(),
       },
     ]);
 
     // Delete hash1 vectors
-    const deleteResult = await port.deleteVectorsForMirror('hash1');
+    const deleteResult = await port.deleteVectorsForMirror("hash1");
     expect(deleteResult.ok).toBe(true);
 
     // Should only have hash2
     const rows = db
-      .prepare('SELECT mirror_hash FROM content_vectors')
+      .prepare("SELECT mirror_hash FROM content_vectors")
       .all() as { mirror_hash: string }[];
     expect(rows.length).toBe(1);
-    expect(rows[0]?.mirror_hash).toBe('hash2');
+    expect(rows[0]?.mirror_hash).toBe("hash2");
   });
 
-  test('searchNearest returns error without sqlite-vec', async () => {
+  test("searchNearest returns error without sqlite-vec", async () => {
     const result = await createVectorIndexPort(db, {
-      model: 'test-model',
+      model: "test-model",
       dimensions: 4,
     });
     expect(result.ok).toBe(true);
@@ -243,18 +245,18 @@ describe('createVectorIndexPort', () => {
       );
       expect(searchResult.ok).toBe(false);
       if (!searchResult.ok) {
-        expect(searchResult.error.code).toBe('VEC_SEARCH_UNAVAILABLE');
+        expect(searchResult.error.code).toBe("VEC_SEARCH_UNAVAILABLE");
       }
     }
   });
 
-  test('different models use separate vec tables', async () => {
+  test("different models use separate vec tables", async () => {
     const result1 = await createVectorIndexPort(db, {
-      model: 'model-a',
+      model: "model-a",
       dimensions: 4,
     });
     const result2 = await createVectorIndexPort(db, {
-      model: 'model-b',
+      model: "model-b",
       dimensions: 8,
     });
 
@@ -265,9 +267,9 @@ describe('createVectorIndexPort', () => {
     }
 
     // Both ports should work independently
-    expect(result1.value.model).toBe('model-a');
+    expect(result1.value.model).toBe("model-a");
     expect(result1.value.dimensions).toBe(4);
-    expect(result2.value.model).toBe('model-b');
+    expect(result2.value.model).toBe("model-b");
     expect(result2.value.dimensions).toBe(8);
   });
 });

@@ -5,15 +5,16 @@
  * @module src/pipeline/vsearch
  */
 
-import type { Config } from '../config/types';
-import type { EmbeddingPort } from '../llm/types';
-import type { StorePort } from '../store/types';
-import { err, ok } from '../store/types';
-import type { VectorIndexPort } from '../store/vector/types';
-import { createChunkLookup } from './chunk-lookup';
-import { formatQueryForEmbedding } from './contextual';
-import { detectQueryLanguage } from './query-language';
-import type { SearchOptions, SearchResult, SearchResults } from './types';
+import type { Config } from "../config/types";
+import type { EmbeddingPort } from "../llm/types";
+import type { StorePort } from "../store/types";
+import type { VectorIndexPort } from "../store/vector/types";
+import type { SearchOptions, SearchResult, SearchResults } from "./types";
+
+import { err, ok } from "../store/types";
+import { createChunkLookup } from "./chunk-lookup";
+import { formatQueryForEmbedding } from "./contextual";
+import { detectQueryLanguage } from "./query-language";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Score Normalization
@@ -47,15 +48,13 @@ export interface VectorSearchDeps {
  * Execute vector search with pre-computed embedding.
  * Use this to avoid double-embedding when caller already has the query vector.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: search pipeline with expansion, reranking, and scoring
+// oxlint-disable-next-line max-lines-per-function -- search pipeline with expansion, reranking, scoring
 export async function searchVectorWithEmbedding(
   deps: VectorSearchDeps,
   query: string,
   queryEmbedding: Float32Array,
   options: SearchOptions = {}
-): Promise<
-  ReturnType<typeof ok<SearchResults>> | ReturnType<typeof err<SearchResults>>
-> {
+): Promise<ReturnType<typeof ok<SearchResults>>> {
   const { store, vectorIndex } = deps;
   const limit = options.limit ?? 20;
   const minScore = options.minScore ?? 0;
@@ -67,8 +66,8 @@ export async function searchVectorWithEmbedding(
   // Check if vector search is available
   if (!vectorIndex.searchAvailable) {
     return err(
-      'VEC_SEARCH_UNAVAILABLE',
-      'Vector search requires sqlite-vec. Run: gno embed'
+      "VEC_SEARCH_UNAVAILABLE",
+      "Vector search requires sqlite-vec. Run: gno embed"
     );
   }
 
@@ -78,7 +77,7 @@ export async function searchVectorWithEmbedding(
   });
 
   if (!searchResult.ok) {
-    return err('QUERY_FAILED', searchResult.error.message);
+    return err("QUERY_FAILED", searchResult.error.message);
   }
 
   const vecResults = searchResult.value;
@@ -99,7 +98,7 @@ export async function searchVectorWithEmbedding(
   const uniqueHashes = [...new Set(vecResults.map((v) => v.mirrorHash))];
   const chunksMapResult = await store.getChunksBatch(uniqueHashes);
   if (!chunksMapResult.ok) {
-    return err('QUERY_FAILED', chunksMapResult.error.message);
+    return err("QUERY_FAILED", chunksMapResult.error.message);
   }
   const chunksMap = chunksMapResult.value;
   const getChunk = createChunkLookup(chunksMap);
@@ -238,7 +237,7 @@ export async function searchVectorWithEmbedding(
     results,
     meta: {
       query,
-      mode: 'vector',
+      mode: "vector",
       vectorsUsed: true,
       totalResults: results.length,
       collection: options.collection,
@@ -256,16 +255,14 @@ export async function searchVector(
   deps: VectorSearchDeps,
   query: string,
   options: SearchOptions = {}
-): Promise<
-  ReturnType<typeof ok<SearchResults>> | ReturnType<typeof err<SearchResults>>
-> {
+): Promise<ReturnType<typeof ok<SearchResults>>> {
   const { vectorIndex, embedPort } = deps;
 
   // Check if vector search is available
   if (!vectorIndex.searchAvailable) {
     return err(
-      'VEC_SEARCH_UNAVAILABLE',
-      'Vector search requires sqlite-vec. Run: gno embed'
+      "VEC_SEARCH_UNAVAILABLE",
+      "Vector search requires sqlite-vec. Run: gno embed"
     );
   }
 
@@ -273,7 +270,7 @@ export async function searchVector(
   const embedResult = await embedPort.embed(formatQueryForEmbedding(query));
   if (!embedResult.ok) {
     return err(
-      'QUERY_FAILED',
+      "QUERY_FAILED",
       `Failed to embed query: ${embedResult.error.message}`
     );
   }

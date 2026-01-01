@@ -4,9 +4,10 @@
  * @module src/llm/nodeLlamaCpp/generation
  */
 
-import { inferenceFailedError } from '../errors';
-import type { GenerationPort, GenParams, LlmResult } from '../types';
-import type { ModelManager } from './lifecycle';
+import type { GenerationPort, GenParams, LlmResult } from "../types";
+import type { ModelManager } from "./lifecycle";
+
+import { inferenceFailedError } from "../errors";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -14,7 +15,7 @@ import type { ModelManager } from './lifecycle';
 
 type LlamaModel = Awaited<
   ReturnType<
-    Awaited<ReturnType<typeof import('node-llama-cpp').getLlama>>['loadModel']
+    Awaited<ReturnType<typeof import("node-llama-cpp").getLlama>>["loadModel"]
   >
 >;
 
@@ -48,7 +49,7 @@ export class NodeLlamaCppGeneration implements GenerationPort {
     const model = await this.manager.loadModel(
       this.modelPath,
       this.modelUri,
-      'gen'
+      "gen"
     );
     if (!model.ok) {
       return model;
@@ -59,7 +60,7 @@ export class NodeLlamaCppGeneration implements GenerationPort {
 
     try {
       // Import LlamaChatSession dynamically
-      const { LlamaChatSession } = await import('node-llama-cpp');
+      const { LlamaChatSession } = await import("node-llama-cpp");
       const session = new LlamaChatSession({
         contextSequence: context.getSequence(),
       });

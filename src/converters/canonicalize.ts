@@ -12,7 +12,7 @@
  */
 const CONTROL_CHAR_PATTERN = new RegExp(
   `[${String.fromCharCode(0)}-${String.fromCharCode(8)}${String.fromCharCode(11)}${String.fromCharCode(12)}${String.fromCharCode(14)}-${String.fromCharCode(31)}${String.fromCharCode(127)}]`,
-  'g'
+  "g"
 );
 
 /**
@@ -30,25 +30,25 @@ const CONTROL_CHAR_PATTERN = new RegExp(
  */
 export function canonicalize(markdown: string): string {
   if (!markdown) {
-    return '\n';
+    return "\n";
   }
 
   // 0. Strip BOM if present (U+FEFF) - ensures deterministic hashing
-  let result = markdown.startsWith('\uFEFF') ? markdown.slice(1) : markdown;
+  let result = markdown.startsWith("\uFEFF") ? markdown.slice(1) : markdown;
 
   // 1. Normalize line endings: \r\n → \n, lone \r → \n
-  result = result.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  result = result.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 
   // 2. Apply NFC Unicode normalization
-  result = result.normalize('NFC');
+  result = result.normalize("NFC");
 
   // 3. Strip control characters except \n (U+000A) and \t (U+0009)
   // Range: U+0000-U+0008, U+000B-U+000C, U+000E-U+001F, U+007F
-  result = result.replace(CONTROL_CHAR_PATTERN, '');
+  result = result.replace(CONTROL_CHAR_PATTERN, "");
 
   // 4. Trim trailing whitespace per line and
   // 5. Treat whitespace-only lines as blank
-  const lines = result.split('\n').map((line) => line.trimEnd());
+  const lines = result.split("\n").map((line) => line.trimEnd());
 
   // 6. Collapse multiple blank lines to exactly 1
   // (i.e., content\n\ncontent between paragraphs)
@@ -56,7 +56,7 @@ export function canonicalize(markdown: string): string {
   let blankCount = 0;
 
   for (const line of lines) {
-    if (line === '') {
+    if (line === "") {
       blankCount += 1;
       // Only keep one blank line between content
       if (blankCount === 1) {
@@ -70,12 +70,12 @@ export function canonicalize(markdown: string): string {
 
   // 7. Ensure exactly one final \n
   // Remove trailing blank lines first
-  while (collapsed.length > 0 && collapsed.at(-1) === '') {
+  while (collapsed.length > 0 && collapsed.at(-1) === "") {
     collapsed.pop();
   }
 
   // Join and add single final newline
-  return `${collapsed.join('\n')}\n`;
+  return `${collapsed.join("\n")}\n`;
 }
 
 /**
@@ -83,7 +83,7 @@ export function canonicalize(markdown: string): string {
  * Returns lowercase hex string (64 chars).
  */
 export function mirrorHash(canonical: string): string {
-  const hasher = new Bun.CryptoHasher('sha256');
+  const hasher = new Bun.CryptoHasher("sha256");
   hasher.update(canonical);
-  return hasher.digest('hex');
+  return hasher.digest("hex");
 }

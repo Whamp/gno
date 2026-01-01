@@ -27,21 +27,14 @@ Implement vector embedding workflow that transforms chunked document content int
 The following issues were identified in architectural reviews and are resolved in this plan:
 
 **Review 1 Issues:**
+
 1. **EmbeddingPort.dimensions() throws before embed()** - Fixed via lazy dimensions discovery (probe embedding)
 2. **Multi-model vec index collision** - Resolved with per-model vec tables (`vec_<modelHash>`)
 3. **StorePort.open() signature change** - Avoided via separate VectorIndexPort factory
 4. **Backlog may include orphan chunks** - Fixed with `EXISTS` subquery (not JOIN to avoid dups)
 5. **Vec index maintenance on chunk deletion** - Handled via explicit `syncVecIndex()` after rechunking
 
-**Review 2 Issues:**
-6. **StorePort.getDb() doesn't exist** - Fixed via `SqliteDbProvider` type guard interface
-7. **Backlog query duplicates** - Fixed using `EXISTS` instead of `INNER JOIN`
-8. **ESM require() incompatible** - Fixed using `await import("sqlite-vec")`
-9. **CLI spec misalignment** - Aligned: batch default=32, document `--dry-run` in spec
-10. **Embed errors persistence** - Reuse `ingest_errors` table with EMBED_* codes
-11. **Foreign key enforcement** - Require `PRAGMA foreign_keys = ON`
-12. **BLOB encoding footgun** - Added canonical encode/decode helpers
-13. **Backlog pagination** - Added `limit`/`offset` params to `getBacklog()`
+**Review 2 Issues:** 6. **StorePort.getDb() doesn't exist** - Fixed via `SqliteDbProvider` type guard interface 7. **Backlog query duplicates** - Fixed using `EXISTS` instead of `INNER JOIN` 8. **ESM require() incompatible** - Fixed using `await import("sqlite-vec")` 9. **CLI spec misalignment** - Aligned: batch default=32, document `--dry-run` in spec 10. **Embed errors persistence** - Reuse `ingest_errors` table with EMBED\_\* codes 11. **Foreign key enforcement** - Require `PRAGMA foreign_keys = ON` 12. **BLOB encoding footgun** - Added canonical encode/decode helpers 13. **Backlog pagination** - Added `limit`/`offset` params to `getBacklog()`
 
 ---
 
@@ -50,6 +43,7 @@ The following issues were identified in architectural reviews and are resolved i
 ### Existing Infrastructure (from EPIC 5 & 6)
 
 **LLM Subsystem (EPIC 6 - Complete):**
+
 - `EmbeddingPort` interface: `src/llm/types.ts:78-84`
   - `embed(text)`, `embedBatch(texts)`, `dimensions()`, `dispose()`
 - `NodeLlamaCppEmbedding` adapter: `src/llm/nodeLlamaCpp/embedding.ts`
@@ -57,12 +51,14 @@ The following issues were identified in architectural reviews and are resolved i
 - Model presets with bge-m3 default: `src/config/types.ts:154-200`
 
 **Store Layer (EPIC 3/5 - Complete):**
+
 - `content_chunks` table: `(mirror_hash, seq)` PK
 - `content_vectors` table already in schema: `src/store/migrations/001-initial.ts:133-143`
 - `ChunkRow` type: `src/store/types.ts:115-126`
 - Status tracking: `IndexStatus.embeddingBacklog`, `CollectionStatus.embeddedChunks`
 
 **Key Interfaces:**
+
 ```typescript
 // EmbeddingPort (src/llm/types.ts:78-84)
 export type EmbeddingPort = {
@@ -100,6 +96,7 @@ export type ChunkRow = {
 **Problem:** Existing `StorePort.open()` signature cannot accept embedding dimensions early (unknown until model loads and embeds first chunk). Also, vector layer needs raw DB access but `StorePort` doesn't expose it.
 
 **Solution:**
+
 1. Create a standalone `VectorIndexPort` factory, NOT a sub-port of StorePort
 2. Add `SqliteDbProvider` type guard to safely access raw DB from sqlite adapter only
 
@@ -213,6 +210,7 @@ export type BacklogItem = {
 File: `src/store/vector/sqliteVec.ts`
 
 **Key Design:** Per-model vec tables to avoid dimension/collision issues:
+
 - Table name: `vec_<modelHash>` where modelHash = first 8 chars of SHA256(modelUri)
 - Each model gets its own vec0 virtual table with correct dimensions
 - **ESM-compatible:** Use dynamic `import()` not `require()`
@@ -630,6 +628,7 @@ async function initEmbedding(config: Config, store: StorePort): Promise<{
 ```
 
 **Acceptance Criteria:**
+
 - [ ] `VectorIndexPort` interface defined with storage + search methods
 - [ ] `VectorStatsPort` interface defined for backlog/stats
 - [ ] sqlite-vec loads successfully on macOS/Linux
@@ -733,6 +732,7 @@ Index Status:
 ```
 
 **Acceptance Criteria:**
+
 - [ ] Backlog query correctly identifies new chunks
 - [ ] Backlog query identifies changed chunks (content updated after embedding)
 - [ ] `gno status` shows backlog count and percentage
@@ -905,7 +905,7 @@ export function calculateBatchSize(
 
 #### 7.3.3 Error Handling
 
-**Design Decision:** Reuse existing `ingest_errors` table with EMBED_* error codes. No new migration needed.
+**Design Decision:** Reuse existing `ingest_errors` table with EMBED\_\* error codes. No new migration needed.
 
 ```typescript
 // Error codes for embedding failures (use with ingest_errors table)
@@ -956,6 +956,7 @@ async function recordEmbedError(db: Database, error: EmbedError): Promise<void> 
 ```
 
 **Acceptance Criteria:**
+
 - [ ] `gno embed` embeds all backlog chunks
 - [ ] Progress shows chunks/total, rate, ETA
 - [ ] `--batch-size` controls batch size
@@ -1022,6 +1023,7 @@ async function checkModelSwitch(
 ```
 
 **Acceptance Criteria:**
+
 - [ ] `--force` re-embeds all chunks
 - [ ] Confirmation prompt for large corpus
 - [ ] Warning when switching models
@@ -1037,11 +1039,13 @@ async function checkModelSwitch(
 **Decision:** Support multiple embedding models simultaneously via composite PK `(mirror_hash, seq, model)`.
 
 **Rationale:**
+
 - Allows experimentation with different models
 - Enables gradual migration without re-embedding entire corpus
 - Search can specify which model to use
 
 **Implications:**
+
 - Per-model vec tables (`vec_<modelHash>`)
 - Need to track "active model" in config
 - `gno status` shows per-model stats
@@ -1051,11 +1055,13 @@ async function checkModelSwitch(
 **Decision:** Commit per-batch, not per-chunk or per-job.
 
 **Rationale:**
+
 - Per-chunk: too slow (many small transactions)
 - Per-job: too risky (lose all progress on crash)
 - Per-batch: good balance (resume from last batch)
 
 **Implementation:**
+
 ```typescript
 db.transaction(() => {
   for (const row of batch) {
@@ -1071,12 +1077,14 @@ db.transaction(() => {
 **Decision:** Bundle sqlite-vec via npm, lazy-load at runtime using ESM dynamic import.
 
 **Rationale:**
+
 - No separate installation step for users
 - Graceful degradation if native module fails
 - `gno doctor` reports availability
 - ESM-compatible (no require())
 
 **Implementation:**
+
 ```typescript
 try {
   const sqliteVec = await import("sqlite-vec");
@@ -1092,6 +1100,7 @@ try {
 **Decision:** `gno embed` auto-downloads default model if missing (with confirmation).
 
 **Rationale:**
+
 - First-run UX: user shouldn't need separate `gno models pull`
 - Confirmation prevents surprise large downloads
 - `--yes` flag for scripted usage
@@ -1124,11 +1133,13 @@ Exit codes:
 **Decision:** Enable `PRAGMA foreign_keys = ON` in `SqliteAdapter.open()` as a baseline invariant.
 
 **Rationale:**
+
 - Cascade deletes from `content_chunks` → `content_vectors` must work during ingestion/rechunking
 - Without FK enforcement, old vectors may persist as orphans
 - Enabling in adapter ensures it's always on, not just when vector layer is initialized
 
 **Implementation:**
+
 ```typescript
 // In SqliteAdapter.open() - add after opening connection
 this.db.exec("PRAGMA foreign_keys = ON");
@@ -1144,6 +1155,7 @@ this.db.exec("PRAGMA foreign_keys = ON");
 4. **Periodic maintenance** - Via `gno doctor --fix` if drift detected
 
 **Implementation in walker:**
+
 ```typescript
 // After rechunking a document
 async function onDocumentRechunked(mirrorHash: string, store: StorePort) {

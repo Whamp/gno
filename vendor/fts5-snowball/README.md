@@ -4,12 +4,12 @@ Prebuilt [fts5-snowball](https://github.com/abiliojr/fts5-snowball) SQLite exten
 
 ## Supported Platforms
 
-| Platform | File | Architecture |
-|----------|------|--------------|
-| Linux | `linux-x64/fts5stemmer.so` | x86_64 |
-| macOS | `darwin-arm64/fts5stemmer.dylib` | ARM64 (Apple Silicon) |
-| macOS | `darwin-x64/fts5stemmer.dylib` | x86_64 (Intel) |
-| Windows | `windows-x64/fts5stemmer.dll` | x86_64 |
+| Platform | File                             | Architecture          |
+| -------- | -------------------------------- | --------------------- |
+| Linux    | `linux-x64/fts5stemmer.so`       | x86_64                |
+| macOS    | `darwin-arm64/fts5stemmer.dylib` | ARM64 (Apple Silicon) |
+| macOS    | `darwin-x64/fts5stemmer.dylib`   | x86_64 (Intel)        |
+| Windows  | `windows-x64/fts5stemmer.dll`    | x86_64                |
 
 ## Build Provenance
 

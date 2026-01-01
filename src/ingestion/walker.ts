@@ -6,7 +6,7 @@
  */
 
 // node:fs/promises - Bun has no realpath equivalent
-import { realpath } from 'node:fs/promises';
+import { realpath } from "node:fs/promises";
 // node:path - Bun has no path manipulation module
 import {
   extname,
@@ -15,8 +15,9 @@ import {
   relative,
   resolve,
   sep,
-} from 'node:path';
-import type { SkippedEntry, WalkConfig, WalkEntry, WalkerPort } from './types';
+} from "node:path";
+
+import type { SkippedEntry, WalkConfig, WalkEntry, WalkerPort } from "./types";
 
 /**
  * Regex to detect dangerous patterns with parent directory traversal.
@@ -28,10 +29,10 @@ const DANGEROUS_PATTERN_REGEX = /(?:^|[\\/])\.\./;
  * Normalize path to POSIX format (forward slashes).
  */
 function toPosixPath(path: string): string {
-  if (sep === '/') {
+  if (sep === "/") {
     return path;
   }
-  return path.replaceAll(sep, '/');
+  return path.replaceAll(sep, "/");
 }
 
 /**
@@ -40,10 +41,10 @@ function toPosixPath(path: string): string {
  */
 function validatePattern(pattern: string): string | null {
   if (isAbsolute(pattern)) {
-    return 'Pattern must be relative, not absolute';
+    return "Pattern must be relative, not absolute";
   }
   if (DANGEROUS_PATTERN_REGEX.test(pattern)) {
-    return 'Pattern contains dangerous parent directory reference (..)';
+    return "Pattern contains dangerous parent directory reference (..)";
   }
   return null;
 }
@@ -63,7 +64,7 @@ async function safeRelPath(
 
     // Reject if relative path escapes root
     // Check for ".." at start followed by separator or end (not just ".." prefix)
-    if (rel === '..' || rel.startsWith(`..${sep}`) || isAbsolute(rel)) {
+    if (rel === ".." || rel.startsWith(`..${sep}`) || isAbsolute(rel)) {
       return null;
     }
 
@@ -88,7 +89,7 @@ async function safeRelPath(
  * - exclude: ["dist"] matches "dist/bundle.js" and "src/dist/output.js"
  */
 function matchesExclude(relPath: string, excludes: string[]): boolean {
-  const parts = relPath.split('/');
+  const parts = relPath.split("/");
 
   for (const pattern of excludes) {
     // Check if any path component matches exactly
@@ -119,7 +120,7 @@ function matchesInclude(relPath: string, include: string[]): boolean {
   }
 
   return include.some((inc) => {
-    const normalizedInc = inc.startsWith('.')
+    const normalizedInc = inc.startsWith(".")
       ? inc.toLowerCase()
       : `.${inc.toLowerCase()}`;
     return ext === normalizedInc;
@@ -178,7 +179,7 @@ export class FileWalker implements WalkerPort {
         skipped.push({
           absPath,
           relPath,
-          reason: 'EXCLUDED',
+          reason: "EXCLUDED",
         });
         continue;
       }
@@ -188,7 +189,7 @@ export class FileWalker implements WalkerPort {
         skipped.push({
           absPath,
           relPath,
-          reason: 'EXCLUDED',
+          reason: "EXCLUDED",
         });
         continue;
       }
@@ -208,7 +209,7 @@ export class FileWalker implements WalkerPort {
         skipped.push({
           absPath,
           relPath,
-          reason: 'TOO_LARGE',
+          reason: "TOO_LARGE",
           size: stat.size,
         });
         continue;

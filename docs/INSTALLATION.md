@@ -19,12 +19,12 @@ gno doctor
 
 ## Requirements
 
-| Component | Version | Notes |
-|-----------|---------|-------|
-| Bun | 1.0+ | JavaScript runtime |
-| macOS | 12+ | Homebrew SQLite required for vector search |
-| Linux | Any | Works out of box |
-| Windows | 10+ | Experimental, some tests may fail |
+| Component | Version | Notes                                      |
+| --------- | ------- | ------------------------------------------ |
+| Bun       | 1.0+    | JavaScript runtime                         |
+| macOS     | 12+     | Homebrew SQLite required for vector search |
+| Linux     | Any     | Works out of box                           |
+| Windows   | 10+     | Experimental, some tests may fail          |
 
 ## Platform-Specific Setup
 
@@ -72,13 +72,13 @@ gno doctor
 
 ## Capabilities Matrix
 
-| Feature | Requirements | Command |
-|---------|--------------|---------|
-| BM25 search | None (works everywhere) | `gno search <query>` |
-| Vector search | sqlite-vec extension | `gno vsearch <query>` |
-| Hybrid search | sqlite-vec + embed model | `gno query <query>` |
-| Reranking | rerank model cached | `gno query` (auto-enabled) |
-| AI answers | gen model cached | `gno ask <query> --answer` |
+| Feature       | Requirements             | Command                    |
+| ------------- | ------------------------ | -------------------------- |
+| BM25 search   | None (works everywhere)  | `gno search <query>`       |
+| Vector search | sqlite-vec extension     | `gno vsearch <query>`      |
+| Hybrid search | sqlite-vec + embed model | `gno query <query>`        |
+| Reranking     | rerank model cached      | `gno query` (auto-enabled) |
+| AI answers    | gen model cached         | `gno ask <query> --answer` |
 
 ## Model Setup (Optional)
 
@@ -96,13 +96,14 @@ gno models pull --gen     # Required for --answer
 
 Model presets control disk usage:
 
-| Preset | Disk | Embed | Rerank | Gen |
-|--------|------|-------|--------|-----|
-| slim | ~1GB | bge-m3-Q4 | Qwen3-Reranker-0.6B-Q8 | Qwen3-1.7B-Q4 |
-| balanced | ~2GB | bge-m3-Q4 | Qwen3-Reranker-0.6B-Q8 | SmolLM3-3B-Q4 |
-| quality | ~2.5GB | bge-m3-Q4 | Qwen3-Reranker-0.6B-Q8 | Qwen3-4B-Q4 |
+| Preset   | Disk   | Embed     | Rerank                 | Gen           |
+| -------- | ------ | --------- | ---------------------- | ------------- |
+| slim     | ~1GB   | bge-m3-Q4 | Qwen3-Reranker-0.6B-Q8 | Qwen3-1.7B-Q4 |
+| balanced | ~2GB   | bge-m3-Q4 | Qwen3-Reranker-0.6B-Q8 | SmolLM3-3B-Q4 |
+| quality  | ~2.5GB | bge-m3-Q4 | Qwen3-Reranker-0.6B-Q8 | Qwen3-4B-Q4   |
 
 Change preset in config:
+
 ```yaml
 models:
   activePreset: balanced
@@ -131,6 +132,7 @@ gno doctor --json
 ```
 
 Status meanings:
+
 - `ok` - Component working
 - `warn` - Optional component missing (functionality limited)
 - `error` - Required component failing
@@ -163,6 +165,7 @@ gno models pull --all
 ### Permission errors
 
 Ensure write access to:
+
 - Config: `~/.config/gno/`
 - Data: `~/.local/share/gno/`
 - Cache: `~/Library/Caches/gno/` (macOS) or `~/.cache/gno/` (Linux)

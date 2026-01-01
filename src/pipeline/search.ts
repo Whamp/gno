@@ -5,17 +5,19 @@
  * @module src/pipeline/search
  */
 
-import { join as pathJoin } from 'node:path'; // No Bun path utils equivalent
-import type { ChunkRow, FtsResult, StorePort } from '../store/types';
-import { err, ok } from '../store/types';
-import { createChunkLookup } from './chunk-lookup';
-import { detectQueryLanguage } from './query-language';
+import { join as pathJoin } from "node:path"; // No Bun path utils equivalent
+
+import type { ChunkRow, FtsResult, StorePort } from "../store/types";
 import type {
   SearchOptions,
   SearchResult,
   SearchResultSource,
   SearchResults,
-} from './types';
+} from "./types";
+
+import { err, ok } from "../store/types";
+import { createChunkLookup } from "./chunk-lookup";
+import { detectQueryLanguage } from "./query-language";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Score Normalization
@@ -67,10 +69,10 @@ interface BuildResultContext {
 function buildSearchResult(ctx: BuildResultContext): SearchResult {
   const { fts, chunk, collectionPath, options, fullContent } = ctx;
   const source: SearchResultSource = {
-    relPath: fts.relPath ?? '',
+    relPath: fts.relPath ?? "",
     // Use actual source metadata with fallback to markdown defaults
-    mime: fts.sourceMime ?? 'text/markdown',
-    ext: fts.sourceExt ?? '.md',
+    mime: fts.sourceMime ?? "text/markdown",
+    ext: fts.sourceExt ?? ".md",
     modifiedAt: fts.sourceMtime,
     sizeBytes: fts.sourceSize,
     sourceHash: fts.sourceHash,
@@ -95,16 +97,16 @@ function buildSearchResult(ctx: BuildResultContext): SearchResult {
     snippetRange = { startLine: chunk.startLine, endLine: chunk.endLine };
   } else {
     // Default: use FTS snippet or chunk text
-    snippet = fts.snippet ?? chunk?.text ?? '';
+    snippet = fts.snippet ?? chunk?.text ?? "";
     snippetRange = chunk
       ? { startLine: chunk.startLine, endLine: chunk.endLine }
       : undefined;
   }
 
   return {
-    docid: fts.docid ?? '',
+    docid: fts.docid ?? "",
     score: fts.score, // Raw score, normalized later as batch
-    uri: fts.uri ?? '',
+    uri: fts.uri ?? "",
     title: fts.title,
     snippet,
     snippetLanguage: chunk?.language ?? undefined,
@@ -121,14 +123,12 @@ function buildSearchResult(ctx: BuildResultContext): SearchResult {
 /**
  * Execute BM25 search and return structured results.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: BM25 search with pagination, filtering, and explain output
+// oxlint-disable-next-line max-lines-per-function -- BM25 search with pagination, filtering, explain
 export async function searchBm25(
   store: StorePort,
   query: string,
   options: SearchOptions = {}
-): Promise<
-  ReturnType<typeof ok<SearchResults>> | ReturnType<typeof err<SearchResults>>
-> {
+): Promise<ReturnType<typeof ok<SearchResults>>> {
   const limit = options.limit ?? 20;
   const minScore = options.minScore ?? 0;
 
@@ -148,10 +148,10 @@ export async function searchBm25(
   if (!ftsResult.ok) {
     // Adapter returns INVALID_INPUT for FTS syntax errors, pass through
     const { code, message, cause } = ftsResult.error;
-    if (code === 'INVALID_INPUT') {
-      return err('INVALID_INPUT', `Invalid search query: ${message}`);
+    if (code === "INVALID_INPUT") {
+      return err("INVALID_INPUT", `Invalid search query: ${message}`);
     }
-    return err('QUERY_FAILED', message, cause);
+    return err("QUERY_FAILED", message, cause);
   }
 
   // Get collection paths for absPath resolution
@@ -192,7 +192,7 @@ export async function searchBm25(
     // Use robust key to avoid over-dedup if uri is unexpectedly missing
     const uriSeqKey = fts.uri
       ? `${fts.uri}:${fts.seq}`
-      : `${fts.mirrorHash ?? ''}:${fts.seq}:${fts.relPath ?? ''}`;
+      : `${fts.mirrorHash ?? ""}:${fts.seq}:${fts.relPath ?? ""}`;
     if (seenUriSeq.has(uriSeqKey)) {
       continue;
     }
@@ -206,7 +206,7 @@ export async function searchBm25(
     // For --full, de-dupe by docid (keep best scoring chunk per doc)
     // Raw BM25: smaller (more negative) is better
     if (options.full) {
-      const docid = fts.docid ?? '';
+      const docid = fts.docid ?? "";
       const existing = bestByDocid.get(docid);
       if (!existing || fts.score < existing.score) {
         bestByDocid.set(docid, { fts, chunk, score: fts.score });
@@ -251,7 +251,7 @@ export async function searchBm25(
     results: filteredResults,
     meta: {
       query,
-      mode: 'bm25',
+      mode: "bm25",
       totalResults: filteredResults.length,
       collection: options.collection,
       lang: options.lang,

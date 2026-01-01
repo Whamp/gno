@@ -10,7 +10,7 @@ import type {
   ExplainLine,
   ExplainResult,
   RerankedCandidate,
-} from './types';
+} from "./types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Formatter
@@ -20,7 +20,7 @@ import type {
  * Format explain lines for stderr output.
  */
 export function formatExplain(lines: ExplainLine[]): string {
-  return lines.map((l) => `[explain] ${l.stage}: ${l.message}`).join('\n');
+  return lines.map((l) => `[explain] ${l.stage}: ${l.message}`).join("\n");
 }
 
 /**
@@ -38,11 +38,11 @@ export function formatResultExplain(results: ExplainResult[]): string {
       if (r.rerankScore !== undefined) {
         msg += `, rerank=${r.rerankScore.toFixed(2)}`;
       }
-      msg += ')';
+      msg += ")";
     }
     lines.push(`[explain] result ${r.rank}: ${r.docid} ${msg}`);
   }
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -50,55 +50,55 @@ export function formatResultExplain(results: ExplainResult[]): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type ExpansionStatus =
-  | 'disabled' // User chose --no-expand
-  | 'skipped_strong' // Strong BM25 signal detected
-  | 'attempted'; // Expansion was attempted (may have succeeded or timed out)
+  | "disabled" // User chose --no-expand
+  | "skipped_strong" // Strong BM25 signal detected
+  | "attempted"; // Expansion was attempted (may have succeeded or timed out)
 
 export function explainExpansion(
   status: ExpansionStatus,
   result: ExpansionResult | null
 ): ExplainLine {
-  if (status === 'disabled') {
-    return { stage: 'expansion', message: 'disabled' };
+  if (status === "disabled") {
+    return { stage: "expansion", message: "disabled" };
   }
-  if (status === 'skipped_strong') {
-    return { stage: 'expansion', message: 'skipped (strong BM25)' };
+  if (status === "skipped_strong") {
+    return { stage: "expansion", message: "skipped (strong BM25)" };
   }
   if (!result) {
-    return { stage: 'expansion', message: 'skipped (timeout)' };
+    return { stage: "expansion", message: "skipped (timeout)" };
   }
   const lex = result.lexicalQueries.length;
   const sem = result.vectorQueries.length;
-  const hyde = result.hyde ? ', 1 HyDE' : '';
+  const hyde = result.hyde ? ", 1 HyDE" : "";
   return {
-    stage: 'expansion',
+    stage: "expansion",
     message: `enabled (${lex} lexical, ${sem} semantic variants${hyde})`,
   };
 }
 
 export function explainBm25(count: number): ExplainLine {
-  return { stage: 'bm25', message: `${count} candidates` };
+  return { stage: "bm25", message: `${count} candidates` };
 }
 
 export function explainVector(count: number, available: boolean): ExplainLine {
   if (!available) {
-    return { stage: 'vector', message: 'unavailable (sqlite-vec not loaded)' };
+    return { stage: "vector", message: "unavailable (sqlite-vec not loaded)" };
   }
-  return { stage: 'vector', message: `${count} candidates` };
+  return { stage: "vector", message: `${count} candidates` };
 }
 
 export function explainFusion(k: number, uniqueCount: number): ExplainLine {
   return {
-    stage: 'fusion',
+    stage: "fusion",
     message: `RRF k=${k}, ${uniqueCount} unique candidates`,
   };
 }
 
 export function explainRerank(enabled: boolean, count: number): ExplainLine {
   if (!enabled) {
-    return { stage: 'rerank', message: 'disabled' };
+    return { stage: "rerank", message: "disabled" };
   }
-  return { stage: 'rerank', message: `top ${count} reranked` };
+  return { stage: "rerank", message: `top ${count} reranked` };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -113,7 +113,7 @@ export function buildExplainResults(
     const key = `${c.mirrorHash}:${c.seq}`;
     return {
       rank: i + 1,
-      docid: docidMap.get(key) ?? '#unknown',
+      docid: docidMap.get(key) ?? "#unknown",
       score: c.blendedScore,
       bm25Score: c.bm25Rank !== null ? 1 / (60 + c.bm25Rank) : undefined,
       vecScore: c.vecRank !== null ? 1 / (60 + c.vecRank) : undefined,

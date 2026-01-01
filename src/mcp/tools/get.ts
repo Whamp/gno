@@ -4,12 +4,14 @@
  * @module src/mcp/tools/get
  */
 
-import { join as pathJoin } from 'node:path';
-import { parseUri } from '../../app/constants';
-import { parseRef } from '../../cli/commands/ref-parser';
-import type { DocumentRow, StorePort } from '../../store/types';
-import type { ToolContext } from '../server';
-import { runTool, type ToolResult } from './index';
+import { join as pathJoin } from "node:path";
+
+import type { DocumentRow, StorePort } from "../../store/types";
+import type { ToolContext } from "../server";
+
+import { parseUri } from "../../app/constants";
+import { parseRef } from "../../cli/commands/ref-parser";
+import { runTool, type ToolResult } from "./index";
 
 interface GetInput {
   ref: string;
@@ -49,20 +51,20 @@ async function lookupDocument(
   store: StorePort,
   parsed: ReturnType<typeof parseRef>
 ): Promise<DocumentRow | null> {
-  if ('error' in parsed) {
+  if ("error" in parsed) {
     return null;
   }
 
   switch (parsed.type) {
-    case 'docid': {
+    case "docid": {
       const result = await store.getDocumentByDocid(parsed.value);
       return result.ok ? result.value : null;
     }
-    case 'uri': {
+    case "uri": {
       const result = await store.getDocumentByUri(parsed.value);
       return result.ok ? result.value : null;
     }
-    case 'collPath': {
+    case "collPath": {
       if (!(parsed.collection && parsed.relPath)) {
         return null;
       }
@@ -88,19 +90,19 @@ function formatGetResponse(data: GetResponse): string {
   if (data.source.absPath) {
     lines.push(`Path: ${data.source.absPath}`);
   }
-  lines.push('');
+  lines.push("");
 
   if (data.returnedLines) {
     lines.push(
       `--- Content (lines ${data.returnedLines.start}-${data.returnedLines.end}) ---`
     );
   } else {
-    lines.push('--- Content ---');
+    lines.push("--- Content ---");
   }
 
   lines.push(data.content);
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**
@@ -112,12 +114,12 @@ export function handleGet(
 ): Promise<ToolResult> {
   return runTool(
     ctx,
-    'gno_get',
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: document retrieval with multiple ref formats and chunk handling
+    "gno_get",
+    // oxlint-disable-next-line max-lines-per-function -- document retrieval with multiple ref formats
     async () => {
       // Parse reference
       const parsed = parseRef(args.ref);
-      if ('error' in parsed) {
+      if ("error" in parsed) {
         throw new Error(parsed.error);
       }
 
@@ -129,7 +131,7 @@ export function handleGet(
 
       // Get content
       if (!doc.mirrorHash) {
-        throw new Error('Document has no indexed content');
+        throw new Error("Document has no indexed content");
       }
 
       const contentResult = await ctx.store.getContent(doc.mirrorHash);
@@ -137,8 +139,8 @@ export function handleGet(
         throw new Error(contentResult.error.message);
       }
 
-      const fullContent = contentResult.value ?? '';
-      const contentLines = fullContent.split('\n');
+      const fullContent = contentResult.value ?? "";
+      const contentLines = fullContent.split("\n");
       const totalLines = contentLines.length;
 
       // Apply line range if specified
@@ -153,7 +155,7 @@ export function handleGet(
         // Clamp startLine to valid range
         if (startLine > totalLines) {
           // Return empty content for out-of-range request
-          content = '';
+          content = "";
           returnedLines = undefined;
         } else {
           const count = args.lineCount ?? totalLines - startLine + 1;
@@ -164,15 +166,15 @@ export function handleGet(
           if (showLineNumbers) {
             content = slicedLines
               .map((line, i) => `${startLine + i}: ${line}`)
-              .join('\n');
+              .join("\n");
           } else {
-            content = slicedLines.join('\n');
+            content = slicedLines.join("\n");
           }
 
           returnedLines = { start: startLine, end: endLine };
         }
       } else if (showLineNumbers) {
-        content = contentLines.map((line, i) => `${i + 1}: ${line}`).join('\n');
+        content = contentLines.map((line, i) => `${i + 1}: ${line}`).join("\n");
       }
 
       // Build absPath

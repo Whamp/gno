@@ -5,8 +5,9 @@
  * @module src/cli/commands/ls
  */
 
-import type { DocumentRow, StorePort, StoreResult } from '../../store/types';
-import { initStore } from './shared';
+import type { DocumentRow, StorePort, StoreResult } from "../../store/types";
+
+import { initStore } from "./shared";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -65,7 +66,7 @@ async function fetchDocuments(
     return store.listDocuments();
   }
 
-  if (scope.startsWith('gno://')) {
+  if (scope.startsWith("gno://")) {
     const allDocs = await store.listDocuments();
     if (!allDocs.ok) {
       return allDocs;
@@ -91,18 +92,18 @@ export async function ls(
   options: LsCommandOptions = {}
 ): Promise<LsResult> {
   // Validate scope if it's a gno:// URI
-  if (scope?.startsWith('gno://')) {
-    if (scope === 'gno://') {
+  if (scope?.startsWith("gno://")) {
+    if (scope === "gno://") {
       return {
         success: false,
-        error: 'Invalid scope: missing collection',
+        error: "Invalid scope: missing collection",
         isValidation: true,
       };
     }
     if (!URI_PREFIX_PATTERN.test(scope)) {
       return {
         success: false,
-        error: 'Invalid scope: missing trailing path (use gno://collection/)',
+        error: "Invalid scope: missing trailing path (use gno://collection/)",
         isValidation: true,
       };
     }
@@ -167,7 +168,7 @@ export function formatLs(result: LsResult, options: LsCommandOptions): string {
   if (!result.success) {
     if (options.json) {
       return JSON.stringify({
-        error: { code: 'LS_FAILED', message: result.error },
+        error: { code: "LS_FAILED", message: result.error },
       });
     }
     return `Error: ${result.error}`;
@@ -181,31 +182,31 @@ export function formatLs(result: LsResult, options: LsCommandOptions): string {
   }
 
   if (options.files) {
-    return docs.map((d) => `${d.docid},${d.uri}`).join('\n');
+    return docs.map((d) => `${d.docid},${d.uri}`).join("\n");
   }
 
   if (options.md) {
     if (docs.length === 0) {
-      return '# Documents\n\nNo documents found.';
+      return "# Documents\n\nNo documents found.";
     }
     const lines: string[] = [];
-    lines.push('# Documents');
-    lines.push('');
+    lines.push("# Documents");
+    lines.push("");
     lines.push(
       `*Showing ${data.meta.returned} of ${data.meta.total} documents*`
     );
-    lines.push('');
-    lines.push('| DocID | URI | Title |');
-    lines.push('|-------|-----|-------|');
+    lines.push("");
+    lines.push("| DocID | URI | Title |");
+    lines.push("|-------|-----|-------|");
     for (const d of docs) {
-      lines.push(`| \`${d.docid}\` | \`${d.uri}\` | ${d.title || '-'} |`);
+      lines.push(`| \`${d.docid}\` | \`${d.uri}\` | ${d.title || "-"} |`);
     }
-    return lines.join('\n');
+    return lines.join("\n");
   }
 
   // Terminal format
   if (docs.length === 0) {
-    return 'No documents found.';
+    return "No documents found.";
   }
   const lines = docs.map((d) => `${d.docid}\t${d.uri}`);
   if (data.meta.returned < data.meta.total) {
@@ -213,5 +214,5 @@ export function formatLs(result: LsResult, options: LsCommandOptions): string {
       `\n(${data.meta.returned} of ${data.meta.total} documents shown)`
     );
   }
-  return lines.join('\n');
+  return lines.join("\n");
 }

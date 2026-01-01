@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx ultracite fix && bun run typecheck && bun run lint:typeaware"
+            "command": "bun run lint"
           }
         ]
       }

@@ -9,9 +9,11 @@ permalink: /faq/
 Find answers to common questions about GNO.
 
 {% for category in site.data.faq %}
+
 ## {{ category.category }}
 
 {% for item in category.questions %}
+
 <details class="faq-item">
 <summary class="faq-question">{{ item.q }}</summary>
 <div class="faq-answer" markdown="1">

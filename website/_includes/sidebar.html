@@ -2,13 +2,23 @@
   {% for section in site.nav %}
   <div class="sidebar-section">
     <h3 class="sidebar-heading">
-      {% include icons.html icon=section.icon size="14" %}
-      {{ section.title }}
+      {% include icons.html icon=section.icon size="14" %} {{ section.title }}
     </h3>
     <ul class="sidebar-nav">
       {% for item in section.items %}
       <li>
-        <a href="{{ item.url | relative_url }}" {% if page.url contains item.url %}class="active"{% endif %}>
+        <a
+          href="{{ item.url | relative_url }}"
+          {%
+          if
+          page.url
+          contains
+          item.url
+          %}class="active"
+          {%
+          endif
+          %}
+        >
           {{ item.title }}
         </a>
       </li>

@@ -3,6 +3,7 @@
 Use GNO with Claude Code (Anthropic's CLI) via MCP and Skills.
 
 Claude Code has two integration methods:
+
 - **MCP**: Search tools accessible to Claude
 - **Skills**: `/gno` slash command for quick searches
 
@@ -53,14 +54,17 @@ This creates `.claude/settings.json` with MCP configuration.
 ## Example Workflows
 
 **Research while coding:**
+
 ```
 /gno query "error handling best practices"
 ```
 
 **Find related docs:**
+
 > "Search my notes for anything about the feature I'm working on"
 
 **Get context:**
+
 > "Find my architecture docs and summarize the relevant parts for this change"
 
 ## Manual Configuration

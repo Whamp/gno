@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.7.0] - 2026-01-01
 
 ### Added
+
 - **REST API write operations** - Full CRUD for collections and documents
   - `POST /api/collections` - Add new collection
   - `DELETE /api/collections/:name` - Remove collection
@@ -19,12 +20,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **API token auth** - `X-GNO-Token` header for non-browser clients
 
 ### Changed
+
 - Extracted collection CRUD to `src/collection/` for API/CLI parity
 - Config sync with mutex serialization (YAML → DB → memory)
 
 ## [0.6.1] - 2026-01-01
 
 ### Added
+
 - **Auto-download models** - Models download automatically on first use (CLI, MCP, Web UI)
 - **Offline mode** - `--offline` flag and `HF_HUB_OFFLINE`/`GNO_OFFLINE` env vars
 - **Cross-process locking** - Safe concurrent model downloads with stale lock recovery
@@ -32,25 +35,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.6.0] - 2026-01-01
 
 ### Added
+
 - **Tiered search modes** - `--fast` (BM25 only, ~0.7s), default (with reranking, ~2-3s), `--thorough` (full pipeline with expansion, ~5-8s)
 - **Chunk-level reranking** - Reranks best chunk per document (4K) instead of full documents, ~25× faster with same quality
 
 ### Changed
+
 - Default search now skips LLM query expansion (faster) but keeps reranking (quality)
 - Refactored rerank pipeline with extracted helper functions for maintainability
 
 ### Fixed
+
 - Properly await `store.close()` in scripts
 - Handle `cleanupAndExit` promises to prevent floating promise warnings
 
 ## [0.5.1] - 2026-01-01
 
 ### Fixed
+
 - Include fts5-snowball binaries in npm package
 
 ## [0.5.0] - 2026-01-01
 
 ### Added
+
 - **Document-level BM25** - Full documents indexed (not chunks), finds terms across sections
 - **Snowball stemmer** - FTS5 with multilingual stemming (20+ languages); "running" matches "run"
 - **Contextual chunking** - Chunks embedded with document title prefix for context awareness
@@ -60,12 +68,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Full-document answers** - Answer generation receives complete document content
 
 ### Changed
+
 - Original query now gets **2× weight** in RRF fusion (prevents dilution by variants)
 - Switched to Qwen3-Reranker-0.6B (Apache 2.0 license, 32K context)
 
 ## [0.4.0] - 2026-01-01
 
 ### Added
+
 - **Web UI** - Local web dashboard via `gno serve`
   - Dashboard with index stats and collection overview
   - Search page with BM25/hybrid search modes
@@ -84,46 +94,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Convenience scripts** - `bun run serve` and `bun run serve:dev`
 
 ### Changed
+
 - Extracted answer generation to shared `src/pipeline/answer.ts` module
 - API and CLI now share identical pipeline code
 
 ## [0.3.5] - 2025-12-31
 
 ### Changed
+
 - README: Comprehensive rewrite with full MCP install commands, feature tables, doc links
 - README: Added footer attribution
 
 ### Fixed
+
 - License badge spacing
 
 ## [0.3.4] - 2025-12-31
 
 ### Fixed
+
 - CI: Use Node.js 24 for npm OIDC trusted publishing support
 
 ## [0.3.3] - 2025-12-31
 
 ### Fixed
+
 - CI: Use npm for tarball install test (bun has issues with local tarballs)
 
 ## [0.3.2] - 2025-12-31
 
 ### Fixed
+
 - CI: Add TTY workarounds to publish workflow
 
 ## [0.3.1] - 2025-12-31
 
 ### Fixed
+
 - CI: Serial test execution on Windows fixes exit code issue
 - CI: TTY workaround for macOS/Ubuntu test output
 - CI: Use native Bun ecosystem for Dependabot
 
 ### Changed
+
 - Use npm trusted publishing (OIDC) instead of tokens
 
 ## [0.3.0] - 2025-12-31
 
 ### Added
+
 - 10 MCP installation targets (Claude Desktop, Claude Code, Cursor, Zed, Windsurf, etc.)
 - LibreChat YAML config support
 - Incremental sync (only new/modified files re-indexed)
@@ -131,6 +150,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.1] - 2025-12-31
 
 ### Added
+
 - **MCP Install CLI** - One-command setup for AI assistant integration
   - `gno mcp install` - Configure gno as MCP server in Claude Desktop, Claude Code, or Codex
   - `gno mcp uninstall` - Remove gno from MCP configuration
@@ -142,6 +162,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.0] - 2025-12-30
 
 ### Added
+
 - MCP server with stdio transport for AI assistant integration
 - Tools: `gno_search`, `gno_vsearch`, `gno_query`, `gno_get`, `gno_multi_get`, `gno_status`
 - Resources: `gno://{collection}/{path}` document access
@@ -153,12 +174,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 #### Core Features
+
 - **Hybrid Search Pipeline** - BM25 + vector retrieval with RRF fusion
 - **HyDE Query Expansion** - Hypothetical Document Embeddings for better semantic matching
 - **Cross-encoder Reranking** - Two-stage retrieval with reranking for precision
 - **Multi-language Support** - Automatic language detection with BCP-47 codes
 
 #### CLI Commands
+
 - `gno init` - Initialize a knowledge base with a collection
 - `gno collection add/list/remove/rename` - Manage document collections
 - `gno update` - Sync files from disk (no embedding)
@@ -179,36 +202,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `gno skill install/uninstall/show/paths` - Claude Code skill management
 
 #### Document Processing
+
 - **Native Converters** - Markdown, plain text, JSON, YAML, TOML, CSV
 - **External Converters** - PDF (pdftotext), Office docs (pandoc), images (tesseract OCR)
 - **Smart Chunking** - Semantic-aware document splitting
 - **File Walker** - Configurable patterns, gitignore support, extension filters
 
 #### Storage & Indexing
+
 - **SQLite Backend** - Single-file database with FTS5 full-text search
 - **sqlite-vec** - Cross-platform vector storage and similarity search
 - **Migrations** - Schema versioning with automatic upgrades
 - **Mirror Cache** - Converted document caching for fast re-indexing
 
 #### AI/ML Integration
+
 - **Local Embeddings** - GGUF models via node-llama-cpp (no API keys)
 - **Model Presets** - slim (~1GB), balanced (~2GB), quality (~2.5GB)
 - **Reranker Models** - Cross-encoder scoring for result quality
 - **LLM Abstraction** - Pluggable providers (Anthropic, OpenAI, Ollama)
 
 #### Developer Experience
+
 - **Output Formats** - JSON, CSV, Markdown, XML, files protocol
 - **Verbose Mode** - Detailed logging with `--verbose`
 - **Exit Codes** - 0 (success), 1 (validation), 2 (runtime)
 - **Contract Tests** - Schema validation for all outputs
 
 #### Documentation
+
 - **Jekyll Website** - Comprehensive docs at gno.sh
 - **VHS Terminal Demos** - Animated CLI demonstrations
 - **Search Pipeline Guide** - Deep dive into HyDE, RRF, reranking
 - **API Specifications** - CLI spec, MCP spec, output schemas
 
 ### Infrastructure
+
 - **Bun Runtime** - Fast startup, native TypeScript
 - **Biome Linting** - Zero-config via Ultracite preset
 - **GitHub Actions CI** - Lint, typecheck, test matrix
@@ -218,12 +247,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
-| Version | Date | Highlights |
-|---------|------|------------|
-| 0.3.5 | 2025-12-31 | README rewrite with comprehensive MCP docs |
-| 0.3.0 | 2025-12-31 | 10 MCP installation targets |
-| 0.2.0 | 2025-12-30 | MCP server for AI assistant integration |
-| 0.1.0 | 2025-12-30 | Initial release with full search pipeline |
+| Version | Date       | Highlights                                 |
+| ------- | ---------- | ------------------------------------------ |
+| 0.3.5   | 2025-12-31 | README rewrite with comprehensive MCP docs |
+| 0.3.0   | 2025-12-31 | 10 MCP installation targets                |
+| 0.2.0   | 2025-12-30 | MCP server for AI assistant integration    |
+| 0.1.0   | 2025-12-30 | Initial release with full search pipeline  |
 
 [Unreleased]: https://github.com/gmickel/gno/compare/v0.3.5...HEAD
 [0.3.5]: https://github.com/gmickel/gno/compare/v0.3.4...v0.3.5

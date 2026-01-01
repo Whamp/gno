@@ -8,7 +8,7 @@
  */
 
 // Canonicalization
-export { canonicalize, mirrorHash } from './canonicalize';
+export { canonicalize, mirrorHash } from "./canonicalize";
 // Errors
 export {
   adapterError,
@@ -18,23 +18,23 @@ export {
   timeoutError,
   tooLargeError,
   unsupportedError,
-} from './errors';
+} from "./errors";
 // MIME detection
-export type { MimeDetection, MimeDetector } from './mime';
+export type { MimeDetection, MimeDetector } from "./mime";
 export {
   DefaultMimeDetector,
   getDefaultMimeDetector,
   isSupportedExtension,
   SUPPORTED_EXTENSIONS,
-} from './mime';
+} from "./mime";
 // Pipeline (main entry point)
 export {
   ConversionPipeline,
   getDefaultPipeline,
   resetDefaultPipeline,
-} from './pipeline';
+} from "./pipeline";
 // Registry
-export { ConverterRegistry, createDefaultRegistry } from './registry';
+export { ConverterRegistry, createDefaultRegistry } from "./registry";
 // Types
 export type {
   ConversionArtifact,
@@ -47,5 +47,5 @@ export type {
   ConvertResult,
   ConvertWarning,
   PipelineResult,
-} from './types';
-export { DEFAULT_LIMITS } from './types';
+} from "./types";
+export { DEFAULT_LIMITS } from "./types";

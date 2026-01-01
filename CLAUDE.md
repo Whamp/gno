@@ -15,26 +15,26 @@ Default to using Bun instead of Node.js.
 
 ### Must Use Bun
 
-| Task | Use This | NOT This |
-|------|----------|----------|
-| HTTP server | `Bun.serve()` | express, fastify, koa |
-| SQLite | `bun:sqlite` | better-sqlite3, sqlite3 |
-| Redis | `Bun.redis` | ioredis, redis |
-| Postgres | `Bun.sql` | pg, postgres.js |
-| WebSockets | `WebSocket` (built-in) | ws |
+| Task            | Use This                    | NOT This                   |
+| --------------- | --------------------------- | -------------------------- |
+| HTTP server     | `Bun.serve()`               | express, fastify, koa      |
+| SQLite          | `bun:sqlite`                | better-sqlite3, sqlite3    |
+| Redis           | `Bun.redis`                 | ioredis, redis             |
+| Postgres        | `Bun.sql`                   | pg, postgres.js            |
+| WebSockets      | `WebSocket` (built-in)      | ws                         |
 | File read/write | `Bun.file()`, `Bun.write()` | node:fs readFile/writeFile |
-| File existence | `Bun.file(path).exists()` | node:fs stat/access |
-| Shell commands | `Bun.$\`cmd\`` | execa, child_process |
-| YAML | `Bun.YAML` | js-yaml, yaml |
-| Env loading | (automatic) | dotenv |
+| File existence  | `Bun.file(path).exists()`   | node:fs stat/access        |
+| Shell commands  | `Bun.$\`cmd\``              | execa, child_process       |
+| YAML            | `Bun.YAML`                  | js-yaml, yaml              |
+| Env loading     | (automatic)                 | dotenv                     |
 
-### Acceptable node:* (No Bun Equivalent)
+### Acceptable node:\* (No Bun Equivalent)
 
-| Module | Functions | Why |
-|--------|-----------|-----|
-| `node:path` | join, dirname, basename, isAbsolute, normalize | No Bun path utils |
-| `node:os` | homedir, platform, tmpdir | No Bun os utils |
-| `node:fs/promises` | mkdir, rename, unlink, rm, mkdtemp | Filesystem structure ops only |
+| Module             | Functions                                      | Why                           |
+| ------------------ | ---------------------------------------------- | ----------------------------- |
+| `node:path`        | join, dirname, basename, isAbsolute, normalize | No Bun path utils             |
+| `node:os`          | homedir, platform, tmpdir                      | No Bun os utils               |
+| `node:fs/promises` | mkdir, rename, unlink, rm, mkdtemp             | Filesystem structure ops only |
 
 **Rule**: If you add a `node:*` import, comment WHY there's no Bun alternative.
 
@@ -54,14 +54,15 @@ test("hello world", () => {
 
 **scripts/** - Development and testing utilities (not published)
 
-| Script | Purpose |
-|--------|---------|
-| `perf-test.ts` | Performance testing for search pipeline. Tests different configurations (expand/rerank combinations) and measures timing. |
-| `test-rerank-size.ts` | Tests reranker performance at different document sizes (1K-128K chars). Used to identify optimal chunk size for reranking. |
-| `docs-verify.ts` | Verifies documentation is up-to-date with implementation. |
-| `generate-test-fixtures.ts` | Generates test fixtures for unit tests. |
+| Script                      | Purpose                                                                                                                    |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `perf-test.ts`              | Performance testing for search pipeline. Tests different configurations (expand/rerank combinations) and measures timing.  |
+| `test-rerank-size.ts`       | Tests reranker performance at different document sizes (1K-128K chars). Used to identify optimal chunk size for reranking. |
+| `docs-verify.ts`            | Verifies documentation is up-to-date with implementation.                                                                  |
+| `generate-test-fixtures.ts` | Generates test fixtures for unit tests.                                                                                    |
 
 **Usage:**
+
 ```bash
 bun scripts/perf-test.ts        # Run full performance test suite
 bun scripts/test-rerank-size.ts # Test rerank scaling with doc size
@@ -70,10 +71,12 @@ bun scripts/test-rerank-size.ts # Test rerank scaling with doc size
 ## Directory Structure
 
 **docs/** - User-facing documentation only. Published to website.
+
 - QUICKSTART.md, CLI.md, CONFIGURATION.md, etc.
 - Do NOT put internal docs, spikes, plans, or dev notes here
 
 **notes/** - Internal documentation, spikes, plans, dev notes (gitignored)
+
 - Not published, not user-facing, not tracked in git
 - Spike results, implementation plans, architecture decisions
 
@@ -84,11 +87,13 @@ bun scripts/test-rerank-size.ts # Test rerank scaling with doc size
 Version is managed in `package.json` (single source of truth). `src/app/constants.ts` imports it.
 
 **IMPORTANT**: Bump version on EVERY merge to main:
+
 - Features/new functionality → `version:minor`
 - Bug fixes/patches → `version:patch`
 - Breaking changes → `version:major`
 
 **Bump version:**
+
 ```bash
 bun run version:patch   # 0.1.0 → 0.1.1 (bug fixes)
 bun run version:minor   # 0.1.0 → 0.2.0 (features)
@@ -96,6 +101,7 @@ bun run version:major   # 0.1.0 → 1.0.0 (breaking)
 ```
 
 **Release workflow:**
+
 ```bash
 bun run prerelease       # lint + typecheck + test
 bun run release:dry-run  # trigger CI without publishing
@@ -103,12 +109,14 @@ bun run release:trigger  # trigger CI with publish (uses OIDC, no token needed)
 ```
 
 **Manual workflow dispatch:**
+
 ```bash
 gh workflow run publish.yml -f publish=false  # dry run
 gh workflow run publish.yml -f publish=true   # actual publish
 ```
 
 **Post-merge workflow (EVERY merge to main):**
+
 1. `bun run version:patch` (or minor/major based on changes)
 2. **Update CHANGELOG.md** - Move [Unreleased] items to new version section
 3. `git add package.json CHANGELOG.md`
@@ -119,6 +127,7 @@ gh workflow run publish.yml -f publish=true   # actual publish
 **Note**: `website/changelog.md` is auto-copied from root CHANGELOG.md during build (gitignored).
 
 **CHANGELOG format** (Keep a Changelog):
+
 ```markdown
 ## [Unreleased]
 ### Added
@@ -132,6 +141,7 @@ gh workflow run publish.yml -f publish=true   # actual publish
 ```
 
 **Requirements:**
+
 - Configure npm trusted publisher at https://www.npmjs.com/package/@gmickel/gno/access
   - Owner: `gmickel`, Repo: `gno`, Workflow: `publish.yml`
 
@@ -166,6 +176,7 @@ CLI/MCP/Serve → new Adapter() → adapter.createPort() → Port interface → 
 Contract tests in `test/spec/schemas/` validate outputs against schemas. Run `bun test` to verify compliance.
 
 When adding new commands or modifying outputs:
+
 1. Update the relevant spec first
 2. Add/update JSON schema if output shape changes
 3. Add contract tests for the schema
@@ -178,13 +189,13 @@ When adding new commands or modifying outputs:
 
 - [ ] README.md - Does it reflect current capabilities?
 - [ ] CLAUDE.md / AGENTS.md - Are instructions still accurate?
-- [ ] spec/*.md - Do specs match implementation?
-- [ ] spec/output-schemas/*.json - Do schemas match actual outputs?
-- [ ] docs/*.md - User-facing docs accurate?
+- [ ] spec/\*.md - Do specs match implementation?
+- [ ] spec/output-schemas/\*.json - Do schemas match actual outputs?
+- [ ] docs/\*.md - User-facing docs accurate?
   - CLI.md, QUICKSTART.md, ARCHITECTURE.md
   - WEB-UI.md, API.md (for `gno serve` and REST API)
   - MCP.md (for `gno mcp`)
-- [ ] website/_data/features.yml - Feature bento cards current?
+- [ ] website/\_data/features.yml - Feature bento cards current?
 - [ ] website/ - Auto-synced from docs/ via `bun run website:sync-docs`
 - [ ] Beads - Are descriptions and comments up to date?
 
@@ -326,6 +337,7 @@ Sleep 3s
 2. Build: `./website/demos/build-demos.sh your-demo`
 
 3. Use in docs:
+
 ```html
 <div class="demo-container">
   <img src="/assets/demos/your-demo.gif" alt="Demo" class="demo-gif">
@@ -338,6 +350,7 @@ Sleep 3s
 - GNO linked globally: `bun link`
 
 <!-- BEGIN BEADS INTEGRATION -->
+
 ## Issue Tracking with bd (beads)
 
 **IMPORTANT**: This project uses **bd (beads)** for ALL issue tracking. Do NOT use markdown TODOs, task lists, or other tracking methods.

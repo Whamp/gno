@@ -7,6 +7,7 @@ Key terms and concepts in GNO.
 ### Collection
 
 A named group of documents from a single directory. Collections define:
+
 - Path to source files
 - Glob patterns for matching
 - Include/exclude rules
@@ -21,6 +22,7 @@ gno collection add ~/notes --name notes --pattern "**/*.md"
 Semantic hint attached to a scope to improve search relevance. Contexts provide additional meaning beyond the raw text.
 
 Scope types:
+
 - **Global** (`/`): Applies to all documents
 - **Collection** (`notes:`): Applies to a collection
 - **Prefix** (`gno://notes/projects`): Applies to path prefix
@@ -28,6 +30,7 @@ Scope types:
 ### Document
 
 A single indexed file. Each document has:
+
 - `docid`: Unique identifier (8-char hash prefix)
 - `sourceHash`: SHA-256 of original file content
 - `mirrorHash`: SHA-256 of canonical markdown
@@ -122,6 +125,7 @@ Multiple sources can share the same mirror (content deduplication).
 ### Chunk
 
 Text segment (~800 tokens) created during indexing. Each chunk is:
+
 - Part of document-level FTS5 index
 - Optionally embedded for vector search with contextual prefix
 
@@ -150,6 +154,7 @@ Cross-encoder that scores query-document pairs. Default: Qwen3-Reranker-0.6B (32
 ### Gen Model
 
 Language model for answer generation. Options:
+
 - Qwen3-1.7B (slim preset)
 - SmolLM3-3B (balanced preset)
 - Qwen3-4B (quality preset)
@@ -175,6 +180,7 @@ SQLite extension for vector storage and KNN search. Required for vector search.
 ### Tokenizer
 
 Text segmentation method for FTS5:
+
 - `snowball english`: Snowball stemmer (default, 20+ languages supported)
 - `unicode61`: Unicode-aware, no stemming
 - `porter`: English-only stemming (legacy)
@@ -200,18 +206,18 @@ MCP content accessible by URI. Format: `gno://collection/path`
 
 ## Exit Codes
 
-| Code | Name | Meaning |
-|------|------|---------|
-| 0 | SUCCESS | Command completed |
-| 1 | VALIDATION | Bad input or arguments |
-| 2 | RUNTIME | System or IO error |
+| Code | Name       | Meaning                |
+| ---- | ---------- | ---------------------- |
+| 0    | SUCCESS    | Command completed      |
+| 1    | VALIDATION | Bad input or arguments |
+| 2    | RUNTIME    | System or IO error     |
 
 ## Abbreviations
 
-| Term | Meaning |
-|------|---------|
+| Term | Meaning                              |
+| ---- | ------------------------------------ |
 | BM25 | Best Matching 25 (ranking algorithm) |
-| FTS | Full-Text Search |
-| KNN | K-Nearest Neighbors |
-| RAG | Retrieval-Augmented Generation |
-| RRF | Reciprocal Rank Fusion |
+| FTS  | Full-Text Search                     |
+| KNN  | K-Nearest Neighbors                  |
+| RAG  | Retrieval-Augmented Generation       |
+| RRF  | Reciprocal Rank Fusion               |

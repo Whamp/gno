@@ -5,8 +5,8 @@
  * @module src/cli/commands/update
  */
 
-import { defaultSyncService, type SyncResult } from '../../ingestion';
-import { formatSyncResultLines, initStore } from './shared';
+import { defaultSyncService, type SyncResult } from "../../ingestion";
+import { formatSyncResultLines, initStore } from "./shared";
 
 /**
  * Options for update command.
@@ -64,5 +64,5 @@ export function formatUpdate(
     return `Error: ${result.error}`;
   }
 
-  return formatSyncResultLines(result.result, options).join('\n');
+  return formatSyncResultLines(result.result, options).join("\n");
 }

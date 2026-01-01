@@ -40,12 +40,15 @@ Ask Cursor's AI:
 ## Example Prompts
 
 **Coding with context:**
+
 > "Search my notes for how we handle API errors, then apply that pattern here"
 
 **Finding examples:**
+
 > "Find examples of React hooks in my knowledge base"
 
 **Research:**
+
 > "Search my docs for anything about database migrations"
 
 ## Manual Configuration

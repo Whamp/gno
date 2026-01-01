@@ -26,32 +26,32 @@ All endpoints are JSON-based and run entirely on your machine.
 
 ### Read Operations
 
-| Endpoint | Method | Description |
-|:---------|:-------|:------------|
-| `/api/health` | GET | Health check |
-| `/api/status` | GET | Index statistics |
-| `/api/capabilities` | GET | Available features |
-| `/api/collections` | GET | List collections |
-| `/api/docs` | GET | List documents |
-| `/api/doc` | GET | Get document content |
-| `/api/search` | POST | BM25 keyword search |
-| `/api/query` | POST | Hybrid search |
-| `/api/ask` | POST | AI-powered Q&A |
-| `/api/presets` | GET | List model presets |
-| `/api/presets` | POST | Switch preset |
-| `/api/models/status` | GET | Download status |
-| `/api/models/pull` | POST | Start model download |
+| Endpoint             | Method | Description          |
+| :------------------- | :----- | :------------------- |
+| `/api/health`        | GET    | Health check         |
+| `/api/status`        | GET    | Index statistics     |
+| `/api/capabilities`  | GET    | Available features   |
+| `/api/collections`   | GET    | List collections     |
+| `/api/docs`          | GET    | List documents       |
+| `/api/doc`           | GET    | Get document content |
+| `/api/search`        | POST   | BM25 keyword search  |
+| `/api/query`         | POST   | Hybrid search        |
+| `/api/ask`           | POST   | AI-powered Q&A       |
+| `/api/presets`       | GET    | List model presets   |
+| `/api/presets`       | POST   | Switch preset        |
+| `/api/models/status` | GET    | Download status      |
+| `/api/models/pull`   | POST   | Start model download |
 
 ### Write Operations
 
-| Endpoint | Method | Description |
-|:---------|:-------|:------------|
-| `/api/collections` | POST | Add new collection |
-| `/api/collections/:name` | DELETE | Remove collection |
-| `/api/sync` | POST | Trigger re-index |
-| `/api/docs` | POST | Create new document |
-| `/api/docs/:id/deactivate` | POST | Unindex document |
-| `/api/jobs/:id` | GET | Poll job status |
+| Endpoint                   | Method | Description         |
+| :------------------------- | :----- | :------------------ |
+| `/api/collections`         | POST   | Add new collection  |
+| `/api/collections/:name`   | DELETE | Remove collection   |
+| `/api/sync`                | POST   | Trigger re-index    |
+| `/api/docs`                | POST   | Create new document |
+| `/api/docs/:id/deactivate` | POST   | Unindex document    |
+| `/api/jobs/:id`            | GET    | Poll job status     |
 
 ---
 
@@ -100,6 +100,7 @@ GET /api/health
 ```
 
 **Response**:
+
 ```json
 {
   "ok": true
@@ -117,6 +118,7 @@ GET /api/status
 Returns index statistics and health.
 
 **Response**:
+
 ```json
 {
   "indexName": "default",
@@ -140,6 +142,7 @@ Returns index statistics and health.
 ```
 
 **Example**:
+
 ```bash
 curl http://localhost:3000/api/status | jq
 ```
@@ -155,6 +158,7 @@ GET /api/capabilities
 Returns available features based on loaded models.
 
 **Response**:
+
 ```json
 {
   "bm25": true,
@@ -164,11 +168,11 @@ Returns available features based on loaded models.
 }
 ```
 
-| Field | Description |
-|:------|:------------|
-| `bm25` | BM25 search (always true) |
-| `vector` | Vector search available |
-| `hybrid` | Hybrid search available |
+| Field    | Description                    |
+| :------- | :----------------------------- |
+| `bm25`   | BM25 search (always true)      |
+| `vector` | Vector search available        |
+| `hybrid` | Hybrid search available        |
 | `answer` | AI answer generation available |
 
 ---
@@ -180,6 +184,7 @@ GET /api/collections
 ```
 
 **Response**:
+
 ```json
 [
   { "name": "notes", "path": "/Users/you/notes" },
@@ -198,6 +203,7 @@ POST /api/collections
 Add a folder to the index as a new collection. Starts background indexing job.
 
 **Request Body**:
+
 ```json
 {
   "path": "/Users/you/notes",
@@ -209,16 +215,17 @@ Add a folder to the index as a new collection. Starts background indexing job.
 }
 ```
 
-| Field | Type | Required | Description |
-|:------|:-----|:---------|:------------|
-| `path` | string | Yes | Absolute path to folder |
-| `name` | string | No | Collection name (defaults to folder name) |
-| `pattern` | string | No | Glob pattern for files (default: `**/*.md`) |
-| `include` | string | No | Additional include patterns |
-| `exclude` | string | No | Exclude patterns |
-| `gitPull` | boolean | No | Run `git pull` before indexing |
+| Field     | Type    | Required | Description                                 |
+| :-------- | :------ | :------- | :------------------------------------------ |
+| `path`    | string  | Yes      | Absolute path to folder                     |
+| `name`    | string  | No       | Collection name (defaults to folder name)   |
+| `pattern` | string  | No       | Glob pattern for files (default: `**/*.md`) |
+| `include` | string  | No       | Additional include patterns                 |
+| `exclude` | string  | No       | Exclude patterns                            |
+| `gitPull` | boolean | No       | Run `git pull` before indexing              |
 
 **Response** (202 Accepted):
+
 ```json
 {
   "jobId": "550e8400-e29b-41d4-a716-446655440000",
@@ -228,14 +235,15 @@ Add a folder to the index as a new collection. Starts background indexing job.
 
 **Errors**:
 
-| Code | Status | Description |
-|:-----|:-------|:------------|
-| `VALIDATION` | 400 | Missing or invalid path |
-| `PATH_NOT_FOUND` | 400 | Path does not exist |
-| `DUPLICATE` | 409 | Collection name already exists |
-| `CONFLICT` | 409 | Another job is running |
+| Code             | Status | Description                    |
+| :--------------- | :----- | :----------------------------- |
+| `VALIDATION`     | 400    | Missing or invalid path        |
+| `PATH_NOT_FOUND` | 400    | Path does not exist            |
+| `DUPLICATE`      | 409    | Collection name already exists |
+| `CONFLICT`       | 409    | Another job is running         |
 
 **Example**:
+
 ```bash
 curl -X POST http://localhost:3000/api/collections \
   -H "Content-Type: application/json" \
@@ -253,6 +261,7 @@ DELETE /api/collections/:name
 Remove a collection from the config. Indexed documents remain in DB but won't appear in searches.
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -263,12 +272,13 @@ Remove a collection from the config. Indexed documents remain in DB but won't ap
 
 **Errors**:
 
-| Code | Status | Description |
-|:-----|:-------|:------------|
-| `NOT_FOUND` | 404 | Collection does not exist |
-| `HAS_REFERENCES` | 400 | Collection has context references |
+| Code             | Status | Description                       |
+| :--------------- | :----- | :-------------------------------- |
+| `NOT_FOUND`      | 404    | Collection does not exist         |
+| `HAS_REFERENCES` | 400    | Collection has context references |
 
 **Example**:
+
 ```bash
 curl -X DELETE http://localhost:3000/api/collections/notes
 ```
@@ -284,6 +294,7 @@ POST /api/sync
 Trigger re-indexing of all collections or a specific one.
 
 **Request Body**:
+
 ```json
 {
   "collection": "notes",
@@ -291,12 +302,13 @@ Trigger re-indexing of all collections or a specific one.
 }
 ```
 
-| Field | Type | Required | Description |
-|:------|:-----|:---------|:------------|
-| `collection` | string | No | Specific collection to sync (case-insensitive) |
-| `gitPull` | boolean | No | Run `git pull` before sync |
+| Field        | Type    | Required | Description                                    |
+| :----------- | :------ | :------- | :--------------------------------------------- |
+| `collection` | string  | No       | Specific collection to sync (case-insensitive) |
+| `gitPull`    | boolean | No       | Run `git pull` before sync                     |
 
 **Response** (202 Accepted):
+
 ```json
 {
   "jobId": "550e8400-e29b-41d4-a716-446655440000"
@@ -304,6 +316,7 @@ Trigger re-indexing of all collections or a specific one.
 ```
 
 **Example**:
+
 ```bash
 # Sync all collections
 curl -X POST http://localhost:3000/api/sync
@@ -325,6 +338,7 @@ GET /api/jobs/:id
 Poll the status of a background job (indexing, sync).
 
 **Response** (running):
+
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
@@ -335,6 +349,7 @@ Poll the status of a background job (indexing, sync).
 ```
 
 **Response** (completed):
+
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
@@ -365,6 +380,7 @@ Poll the status of a background job (indexing, sync).
 ```
 
 **Response** (failed):
+
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
@@ -375,13 +391,14 @@ Poll the status of a background job (indexing, sync).
 }
 ```
 
-| Status | Description |
-|:-------|:------------|
-| `running` | Job in progress |
+| Status      | Description               |
+| :---------- | :------------------------ |
+| `running`   | Job in progress           |
 | `completed` | Job finished successfully |
-| `failed` | Job failed with error |
+| `failed`    | Job failed with error     |
 
 **Example**:
+
 ```bash
 # Poll until complete
 JOB_ID="550e8400-e29b-41d4-a716-446655440000"
@@ -403,13 +420,14 @@ GET /api/docs?collection=notes&limit=20&offset=0
 
 **Query Parameters**:
 
-| Param | Type | Default | Description |
-|:------|:-----|:--------|:------------|
-| `collection` | string | — | Filter by collection name |
-| `limit` | number | 20 | Results per page (max 100) |
-| `offset` | number | 0 | Pagination offset |
+| Param        | Type   | Default | Description                |
+| :----------- | :----- | :------ | :------------------------- |
+| `collection` | string | —       | Filter by collection name  |
+| `limit`      | number | 20      | Results per page (max 100) |
+| `offset`     | number | 0       | Pagination offset          |
 
 **Response**:
+
 ```json
 {
   "documents": [
@@ -431,6 +449,7 @@ GET /api/docs?collection=notes&limit=20&offset=0
 ```
 
 **Example**:
+
 ```bash
 curl "http://localhost:3000/api/docs?collection=notes&limit=10" | jq
 ```
@@ -445,11 +464,12 @@ GET /api/doc?uri=gno://notes/projects/readme.md
 
 **Query Parameters**:
 
-| Param | Type | Required | Description |
-|:------|:-----|:---------|:------------|
-| `uri` | string | Yes | Document URI |
+| Param | Type   | Required | Description  |
+| :---- | :----- | :------- | :----------- |
+| `uri` | string | Yes      | Document URI |
 
 **Response**:
+
 ```json
 {
   "docid": "abc123def456",
@@ -469,6 +489,7 @@ GET /api/doc?uri=gno://notes/projects/readme.md
 ```
 
 **Example**:
+
 ```bash
 curl "http://localhost:3000/api/doc?uri=gno://notes/readme.md" | jq '.content'
 ```
@@ -484,6 +505,7 @@ POST /api/docs
 Create a new document file in a collection. Triggers background sync to index it.
 
 **Request Body**:
+
 ```json
 {
   "collection": "notes",
@@ -493,14 +515,15 @@ Create a new document file in a collection. Triggers background sync to index it
 }
 ```
 
-| Field | Type | Required | Description |
-|:------|:-----|:---------|:------------|
-| `collection` | string | Yes | Target collection name |
-| `relPath` | string | Yes | Relative path within collection |
-| `content` | string | Yes | File content (markdown) |
-| `overwrite` | boolean | No | Overwrite if exists (default: false) |
+| Field        | Type    | Required | Description                          |
+| :----------- | :------ | :------- | :----------------------------------- |
+| `collection` | string  | Yes      | Target collection name               |
+| `relPath`    | string  | Yes      | Relative path within collection      |
+| `content`    | string  | Yes      | File content (markdown)              |
+| `overwrite`  | boolean | No       | Overwrite if exists (default: false) |
 
 **Response** (202 Accepted):
+
 ```json
 {
   "uri": "file:///Users/you/notes/ideas/new-feature.md",
@@ -512,18 +535,20 @@ Create a new document file in a collection. Triggers background sync to index it
 
 **Errors**:
 
-| Code | Status | Description |
-|:-----|:-------|:------------|
-| `VALIDATION` | 400 | Missing collection, relPath, or content |
-| `NOT_FOUND` | 404 | Collection does not exist |
-| `CONFLICT` | 409 | File exists and overwrite=false |
+| Code         | Status | Description                             |
+| :----------- | :----- | :-------------------------------------- |
+| `VALIDATION` | 400    | Missing collection, relPath, or content |
+| `NOT_FOUND`  | 404    | Collection does not exist               |
+| `CONFLICT`   | 409    | File exists and overwrite=false         |
 
 **Path Validation**:
+
 - `relPath` must be relative (no leading `/`)
 - Path traversal (`..`) is rejected
 - Null bytes are rejected
 
 **Example**:
+
 ```bash
 curl -X POST http://localhost:3000/api/docs \
   -H "Content-Type: application/json" \
@@ -546,11 +571,12 @@ Remove a document from the index. The file remains on disk.
 
 **URL Parameters**:
 
-| Param | Description |
-|:------|:------------|
+| Param | Description                                                          |
+| :---- | :------------------------------------------------------------------- |
 | `:id` | Document ID (the `#hexhash` from docid, URL-encoded as `%23hexhash`) |
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -562,11 +588,12 @@ Remove a document from the index. The file remains on disk.
 
 **Errors**:
 
-| Code | Status | Description |
-|:-----|:-------|:------------|
-| `NOT_FOUND` | 404 | Document not found |
+| Code        | Status | Description        |
+| :---------- | :----- | :----------------- |
+| `NOT_FOUND` | 404    | Document not found |
 
 **Example**:
+
 ```bash
 # Note: # must be URL-encoded as %23
 curl -X POST "http://localhost:3000/api/docs/%23abc123/deactivate"
@@ -585,6 +612,7 @@ POST /api/search
 Keyword search using BM25 algorithm.
 
 **Request Body**:
+
 ```json
 {
   "query": "authentication",
@@ -594,14 +622,15 @@ Keyword search using BM25 algorithm.
 }
 ```
 
-| Field | Type | Default | Description |
-|:------|:-----|:--------|:------------|
-| `query` | string | — | Search query (required) |
-| `limit` | number | 10 | Max results (max 50) |
-| `minScore` | number | — | Minimum score threshold (0-1) |
-| `collection` | string | — | Filter by collection |
+| Field        | Type   | Default | Description                   |
+| :----------- | :----- | :------ | :---------------------------- |
+| `query`      | string | —       | Search query (required)       |
+| `limit`      | number | 10      | Max results (max 50)          |
+| `minScore`   | number | —       | Minimum score threshold (0-1) |
+| `collection` | string | —       | Filter by collection          |
 
 **Response**:
+
 ```json
 {
   "query": "authentication",
@@ -626,6 +655,7 @@ Keyword search using BM25 algorithm.
 ```
 
 **Example**:
+
 ```bash
 curl -X POST http://localhost:3000/api/search \
   -H "Content-Type: application/json" \
@@ -643,6 +673,7 @@ POST /api/query
 Combined BM25 + vector search with optional reranking. **Recommended for best results.**
 
 **Request Body**:
+
 ```json
 {
   "query": "how to handle authentication errors",
@@ -655,17 +686,18 @@ Combined BM25 + vector search with optional reranking. **Recommended for best re
 }
 ```
 
-| Field | Type | Default | Description |
-|:------|:-----|:--------|:------------|
-| `query` | string | — | Search query (required) |
-| `limit` | number | 20 | Max results (max 50) |
-| `minScore` | number | — | Minimum score threshold (0-1) |
-| `collection` | string | — | Filter by collection |
-| `lang` | string | auto | Query language hint |
-| `noExpand` | boolean | false | Disable query expansion |
-| `noRerank` | boolean | false | Disable cross-encoder reranking |
+| Field        | Type    | Default | Description                     |
+| :----------- | :------ | :------ | :------------------------------ |
+| `query`      | string  | —       | Search query (required)         |
+| `limit`      | number  | 20      | Max results (max 50)            |
+| `minScore`   | number  | —       | Minimum score threshold (0-1)   |
+| `collection` | string  | —       | Filter by collection            |
+| `lang`       | string  | auto    | Query language hint             |
+| `noExpand`   | boolean | false   | Disable query expansion         |
+| `noRerank`   | boolean | false   | Disable cross-encoder reranking |
 
 **Response**:
+
 ```json
 {
   "query": "how to handle authentication errors",
@@ -694,6 +726,7 @@ Combined BM25 + vector search with optional reranking. **Recommended for best re
 ```
 
 **Example**:
+
 ```bash
 curl -X POST http://localhost:3000/api/query \
   -H "Content-Type: application/json" \
@@ -711,6 +744,7 @@ POST /api/ask
 Get an AI-generated answer with citations from your documents.
 
 **Request Body**:
+
 ```json
 {
   "query": "What is our authentication strategy?",
@@ -721,15 +755,16 @@ Get an AI-generated answer with citations from your documents.
 }
 ```
 
-| Field | Type | Default | Description |
-|:------|:-----|:--------|:------------|
-| `query` | string | — | Question (required) |
-| `limit` | number | 5 | Number of sources to consider (max 20) |
-| `collection` | string | — | Filter by collection |
-| `lang` | string | auto | Query language hint |
-| `maxAnswerTokens` | number | 512 | Max tokens in answer |
+| Field             | Type   | Default | Description                            |
+| :---------------- | :----- | :------ | :------------------------------------- |
+| `query`           | string | —       | Question (required)                    |
+| `limit`           | number | 5       | Number of sources to consider (max 20) |
+| `collection`      | string | —       | Filter by collection                   |
+| `lang`            | string | auto    | Query language hint                    |
+| `maxAnswerTokens` | number | 512     | Max tokens in answer                   |
 
 **Response**:
+
 ```json
 {
   "query": "What is our authentication strategy?",
@@ -752,6 +787,7 @@ Get an AI-generated answer with citations from your documents.
 ```
 
 **Example**:
+
 ```bash
 curl -X POST http://localhost:3000/api/ask \
   -H "Content-Type: application/json" \
@@ -769,6 +805,7 @@ GET /api/presets
 ```
 
 **Response**:
+
 ```json
 {
   "presets": [
@@ -801,6 +838,7 @@ POST /api/presets
 Switch to a different model preset. Reloads models automatically.
 
 **Request Body**:
+
 ```json
 {
   "presetId": "quality"
@@ -808,6 +846,7 @@ Switch to a different model preset. Reloads models automatically.
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -822,6 +861,7 @@ Switch to a different model preset. Reloads models automatically.
 ```
 
 **Example**:
+
 ```bash
 curl -X POST http://localhost:3000/api/presets \
   -H "Content-Type: application/json" \
@@ -839,6 +879,7 @@ GET /api/models/status
 Check the status of model downloads.
 
 **Response**:
+
 ```json
 {
   "active": true,
@@ -854,13 +895,13 @@ Check the status of model downloads.
 }
 ```
 
-| Field | Description |
-|:------|:------------|
-| `active` | Whether download is in progress |
+| Field         | Description                                |
+| :------------ | :----------------------------------------- |
+| `active`      | Whether download is in progress            |
 | `currentType` | Current model: `embed`, `gen`, or `rerank` |
-| `progress` | Download progress for current model |
-| `completed` | Successfully downloaded model types |
-| `failed` | Failed downloads with error messages |
+| `progress`    | Download progress for current model        |
+| `completed`   | Successfully downloaded model types        |
+| `failed`      | Failed downloads with error messages       |
 
 ---
 
@@ -873,6 +914,7 @@ POST /api/models/pull
 Start downloading models for the active preset. Returns immediately and downloads in background. Poll `/api/models/status` for progress.
 
 **Response**:
+
 ```json
 {
   "started": true,
@@ -881,6 +923,7 @@ Start downloading models for the active preset. Returns immediately and download
 ```
 
 **Error** (download already in progress):
+
 ```json
 {
   "error": {
@@ -891,6 +934,7 @@ Start downloading models for the active preset. Returns immediately and download
 ```
 
 **Example**:
+
 ```bash
 # Start download
 curl -X POST http://localhost:3000/api/models/pull
@@ -917,17 +961,17 @@ All errors follow a consistent format:
 }
 ```
 
-| Code | HTTP Status | Description |
-|:-----|:------------|:------------|
-| `VALIDATION` | 400 | Invalid request parameters |
-| `PATH_NOT_FOUND` | 400 | Specified path does not exist |
-| `HAS_REFERENCES` | 400 | Resource has dependencies (e.g., collection in contexts) |
-| `CSRF_VIOLATION` | 403 | Cross-origin request rejected |
-| `NOT_FOUND` | 404 | Resource not found |
-| `DUPLICATE` | 409 | Resource already exists |
-| `CONFLICT` | 409 | Operation already in progress |
-| `UNAVAILABLE` | 503 | Feature not available (model not loaded) |
-| `RUNTIME` | 500 | Internal error |
+| Code             | HTTP Status | Description                                              |
+| :--------------- | :---------- | :------------------------------------------------------- |
+| `VALIDATION`     | 400         | Invalid request parameters                               |
+| `PATH_NOT_FOUND` | 400         | Specified path does not exist                            |
+| `HAS_REFERENCES` | 400         | Resource has dependencies (e.g., collection in contexts) |
+| `CSRF_VIOLATION` | 403         | Cross-origin request rejected                            |
+| `NOT_FOUND`      | 404         | Resource not found                                       |
+| `DUPLICATE`      | 409         | Resource already exists                                  |
+| `CONFLICT`       | 409         | Operation already in progress                            |
+| `UNAVAILABLE`    | 503         | Feature not available (model not loaded)                 |
+| `RUNTIME`        | 500         | Internal error                                           |
 
 ---
 

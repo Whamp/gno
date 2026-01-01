@@ -4,23 +4,24 @@ import {
   FileText,
   FolderOpen,
   HardDrive,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
+} from "lucide-react";
+import { useEffect, useState } from "react";
+
 import {
   CodeBlock,
   CodeBlockCopyButton,
-} from '../components/ai-elements/code-block';
-import { Loader } from '../components/ai-elements/loader';
-import { Badge } from '../components/ui/badge';
-import { Button } from '../components/ui/button';
+} from "../components/ai-elements/code-block";
+import { Loader } from "../components/ai-elements/loader";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '../components/ui/card';
-import { Separator } from '../components/ui/separator';
-import { apiFetch } from '../hooks/use-api';
+} from "../components/ui/card";
+import { Separator } from "../components/ui/separator";
+import { apiFetch } from "../hooks/use-api";
 
 interface PageProps {
   navigate: (to: string | number) => void;
@@ -44,22 +45,22 @@ interface DocData {
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) {
-    return '0 B';
+    return "0 B";
   }
   const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const sizes = ["B", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return `${Number.parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
 }
 
 function formatDate(dateStr: string): string {
   try {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   } catch {
     return dateStr;
@@ -67,44 +68,48 @@ function formatDate(dateStr: string): string {
 }
 
 // Shiki BundledLanguage subset we actually use
+// Cast is safe - all values are valid BundledLanguage
 type SupportedLanguage =
-  | 'markdown'
-  | 'javascript'
-  | 'jsx'
-  | 'typescript'
-  | 'tsx'
-  | 'python'
-  | 'rust'
-  | 'go'
-  | 'json'
-  | 'yaml'
-  | 'html'
-  | 'css'
-  | 'sql'
-  | 'bash'
-  | 'text';
+  | "markdown"
+  | "javascript"
+  | "jsx"
+  | "typescript"
+  | "tsx"
+  | "python"
+  | "rust"
+  | "go"
+  | "json"
+  | "yaml"
+  | "html"
+  | "css"
+  | "sql"
+  | "bash"
+  | "text";
+
+// Import BundledLanguage for type assertion
+import type { BundledLanguage } from "shiki";
 
 function getLanguageFromExt(ext: string): SupportedLanguage {
   const map: Record<string, SupportedLanguage> = {
-    '.md': 'markdown',
-    '.markdown': 'markdown',
-    '.js': 'javascript',
-    '.jsx': 'jsx',
-    '.ts': 'typescript',
-    '.tsx': 'tsx',
-    '.py': 'python',
-    '.rs': 'rust',
-    '.go': 'go',
-    '.json': 'json',
-    '.yaml': 'yaml',
-    '.yml': 'yaml',
-    '.html': 'html',
-    '.css': 'css',
-    '.sql': 'sql',
-    '.sh': 'bash',
-    '.bash': 'bash',
+    ".md": "markdown",
+    ".markdown": "markdown",
+    ".js": "javascript",
+    ".jsx": "jsx",
+    ".ts": "typescript",
+    ".tsx": "tsx",
+    ".py": "python",
+    ".rs": "rust",
+    ".go": "go",
+    ".json": "json",
+    ".yaml": "yaml",
+    ".yml": "yaml",
+    ".html": "html",
+    ".css": "css",
+    ".sql": "sql",
+    ".sh": "bash",
+    ".bash": "bash",
   };
-  return map[ext.toLowerCase()] || 'text';
+  return map[ext.toLowerCase()] || "text";
 }
 
 export default function DocView({ navigate }: PageProps) {
@@ -114,15 +119,15 @@ export default function DocView({ navigate }: PageProps) {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const uri = params.get('uri');
+    const uri = params.get("uri");
 
     if (!uri) {
-      setError('No document URI provided');
+      setError("No document URI provided");
       setLoading(false);
       return;
     }
 
-    apiFetch<DocData>(`/api/doc?uri=${encodeURIComponent(uri)}`).then(
+    void apiFetch<DocData>(`/api/doc?uri=${encodeURIComponent(uri)}`).then(
       ({ data, error }) => {
         setLoading(false);
         if (error) {
@@ -137,22 +142,22 @@ export default function DocView({ navigate }: PageProps) {
   const isCodeFile =
     doc?.source.ext &&
     [
-      '.md',
-      '.js',
-      '.jsx',
-      '.ts',
-      '.tsx',
-      '.py',
-      '.rs',
-      '.go',
-      '.json',
-      '.yaml',
-      '.yml',
-      '.html',
-      '.css',
-      '.sql',
-      '.sh',
-      '.bash',
+      ".md",
+      ".js",
+      ".jsx",
+      ".ts",
+      ".tsx",
+      ".py",
+      ".rs",
+      ".go",
+      ".json",
+      ".yaml",
+      ".yml",
+      ".html",
+      ".css",
+      ".sql",
+      ".sh",
+      ".bash",
     ].includes(doc.source.ext.toLowerCase());
 
   return (
@@ -173,7 +178,7 @@ export default function DocView({ navigate }: PageProps) {
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <FileText className="size-4 shrink-0 text-muted-foreground" />
             <h1 className="truncate font-semibold text-xl">
-              {doc?.title || 'Document'}
+              {doc?.title || "Document"}
             </h1>
           </div>
           {doc?.source.ext && (
@@ -220,7 +225,7 @@ export default function DocView({ navigate }: PageProps) {
                         Collection
                       </div>
                       <div className="font-medium">
-                        {doc.collection || 'Unknown'}
+                        {doc.collection || "Unknown"}
                       </div>
                     </div>
                   </div>
@@ -278,8 +283,10 @@ export default function DocView({ navigate }: PageProps) {
                 )}
                 {doc.contentAvailable && isCodeFile && (
                   <CodeBlock
-                    code={doc.content ?? ''}
-                    language={getLanguageFromExt(doc.source.ext)}
+                    code={doc.content ?? ""}
+                    language={
+                      getLanguageFromExt(doc.source.ext) as BundledLanguage
+                    }
                     showLineNumbers
                   >
                     <CodeBlockCopyButton />

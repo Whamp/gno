@@ -5,17 +5,19 @@
  * @module src/pipeline/expansion
  */
 
-import { createHash } from 'node:crypto'; // No Bun alternative for hashing
-import type { GenerationPort } from '../llm/types';
-import type { StoreResult } from '../store/types';
-import { ok } from '../store/types';
-import type { ExpansionResult } from './types';
+import { createHash } from "node:crypto"; // No Bun alternative for hashing
+
+import type { GenerationPort } from "../llm/types";
+import type { StoreResult } from "../store/types";
+import type { ExpansionResult } from "./types";
+
+import { ok } from "../store/types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-const EXPANSION_PROMPT_VERSION = 'v2';
+const EXPANSION_PROMPT_VERSION = "v2";
 const DEFAULT_TIMEOUT_MS = 5000;
 // Non-greedy to avoid matching from first { to last } across multiple objects
 const JSON_EXTRACT_PATTERN = /\{[\s\S]*?\}/;
@@ -33,8 +35,8 @@ export function generateCacheKey(
   query: string,
   lang: string
 ): string {
-  const data = [EXPANSION_PROMPT_VERSION, modelUri, query, lang].join('\0');
-  return createHash('sha256').update(data).digest('hex');
+  const data = [EXPANSION_PROMPT_VERSION, modelUri, query, lang].join("\0");
+  return createHash("sha256").update(data).digest("hex");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -94,14 +96,14 @@ Respond with valid JSON only.`;
  */
 function getPromptTemplate(lang?: string): string {
   switch (lang?.toLowerCase()) {
-    case 'en':
-    case 'en-us':
-    case 'en-gb':
+    case "en":
+    case "en-us":
+    case "en-gb":
       return EXPANSION_PROMPT_EN;
-    case 'de':
-    case 'de-de':
-    case 'de-at':
-    case 'de-ch':
+    case "de":
+    case "de-de":
+    case "de-at":
+    case "de-ch":
       return EXPANSION_PROMPT_DE;
     default:
       return EXPANSION_PROMPT_MULTILINGUAL;
@@ -135,10 +137,10 @@ function parseExpansionResult(output: string): ExpansionResult | null {
 
     // Validate array contents are strings
     const lexicalQueries = parsed.lexicalQueries.filter(
-      (q): q is string => typeof q === 'string' && q.length > 0
+      (q): q is string => typeof q === "string" && q.length > 0
     );
     const vectorQueries = parsed.vectorQueries.filter(
-      (q): q is string => typeof q === 'string' && q.length > 0
+      (q): q is string => typeof q === "string" && q.length > 0
     );
 
     // Limit array sizes
@@ -148,10 +150,10 @@ function parseExpansionResult(output: string): ExpansionResult | null {
     };
 
     // Optional fields
-    if (typeof parsed.hyde === 'string' && parsed.hyde.length > 0) {
+    if (typeof parsed.hyde === "string" && parsed.hyde.length > 0) {
       result.hyde = parsed.hyde;
     }
-    if (typeof parsed.notes === 'string') {
+    if (typeof parsed.notes === "string") {
       result.notes = parsed.notes;
     }
 
@@ -185,7 +187,7 @@ export async function expandQuery(
 
   // Build prompt
   const template = getPromptTemplate(options.lang);
-  const prompt = template.replace('{query}', query);
+  const prompt = template.replace("{query}", query);
 
   // Run with timeout (clear timer to avoid resource leak)
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -247,7 +249,7 @@ export async function expandQueryCached(
   query: string,
   options: ExpansionOptions = {}
 ): Promise<StoreResult<ExpansionResult | null>> {
-  const lang = options.lang ?? 'auto';
+  const lang = options.lang ?? "auto";
   const cacheKey = generateCacheKey(deps.genPort.modelUri, query, lang);
 
   // Check cache

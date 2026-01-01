@@ -5,7 +5,7 @@
  * @module src/pipeline/fusion
  */
 
-import type { FusionCandidate, FusionSource, RrfConfig } from './types';
+import type { FusionCandidate, FusionSource, RrfConfig } from "./types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -44,7 +44,7 @@ function rrfContribution(rank: number, k: number, weight: number): number {
  * @param config - RRF configuration
  * @returns Fused and sorted candidates
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: RRF fusion with deduplication and scoring
+// oxlint-disable-next-line max-lines-per-function -- RRF fusion with deduplication and scoring
 export function rrfFuse(
   inputs: RankedInput[],
   config: RrfConfig
@@ -54,20 +54,20 @@ export function rrfFuse(
 
   // Separate inputs by type for weight assignment
   const bm25Inputs = inputs.filter(
-    (i) => i.source === 'bm25' || i.source === 'bm25_variant'
+    (i) => i.source === "bm25" || i.source === "bm25_variant"
   );
   const vectorInputs = inputs.filter(
     (i) =>
-      i.source === 'vector' ||
-      i.source === 'vector_variant' ||
-      i.source === 'hyde'
+      i.source === "vector" ||
+      i.source === "vector_variant" ||
+      i.source === "hyde"
   );
 
   // Process BM25 sources
   // Original query gets 2x weight to prevent dilution by expansion variants
   for (const input of bm25Inputs) {
     const weight =
-      input.source === 'bm25'
+      input.source === "bm25"
         ? config.bm25Weight * 2.0
         : config.bm25Weight * 0.5;
 
@@ -104,9 +104,9 @@ export function rrfFuse(
   // Original query gets 2x weight to prevent dilution by expansion variants
   for (const input of vectorInputs) {
     let weight = config.vecWeight * 2.0; // Default for original vector
-    if (input.source === 'vector_variant') {
+    if (input.source === "vector_variant") {
       weight = config.vecWeight * 0.5;
-    } else if (input.source === 'hyde') {
+    } else if (input.source === "hyde") {
       weight = config.vecWeight * 0.7;
     }
 

@@ -5,9 +5,10 @@
  * @module src/cli/commands/models/clear
  */
 
-import { getModelsCachePath } from '../../../app/constants';
-import { ModelCache } from '../../../llm/cache';
-import type { ModelType } from '../../../llm/types';
+import type { ModelType } from "../../../llm/types";
+
+import { getModelsCachePath } from "../../../app/constants";
+import { ModelCache } from "../../../llm/cache";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -52,13 +53,13 @@ export async function modelsClear(
   } else if (options.embed || options.rerank || options.gen) {
     types = [];
     if (options.embed) {
-      types.push('embed');
+      types.push("embed");
     }
     if (options.rerank) {
-      types.push('rerank');
+      types.push("rerank");
     }
     if (options.gen) {
-      types.push('gen');
+      types.push("gen");
     }
   } else {
     // Default: clear all
@@ -70,7 +71,7 @@ export async function modelsClear(
   const sizeAfter = await cache.totalSize();
 
   return {
-    cleared: types ?? ['embed', 'rerank', 'gen'],
+    cleared: types ?? ["embed", "rerank", "gen"],
     sizeBefore,
     sizeAfter,
   };
@@ -82,10 +83,10 @@ export async function modelsClear(
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) {
-    return '0 B';
+    return "0 B";
   }
   const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const sizes = ["B", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return `${(bytes / k ** i).toFixed(1)} ${sizes[i]}`;
 }
@@ -96,8 +97,8 @@ function formatBytes(bytes: number): string {
 export function formatModelsClear(result: ModelsClearResult): string {
   const lines: string[] = [];
 
-  lines.push(`Cleared: ${result.cleared.join(', ')}`);
+  lines.push(`Cleared: ${result.cleared.join(", ")}`);
   lines.push(`Freed: ${formatBytes(result.sizeBefore - result.sizeAfter)}`);
 
-  return lines.join('\n');
+  return lines.join("\n");
 }

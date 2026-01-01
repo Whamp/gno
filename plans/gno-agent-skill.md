@@ -5,12 +5,14 @@ Create a skill distribution system that enables AI agents (Claude Code, Codex) t
 ## Overview
 
 GNO needs to be installable as an Agent Skill so that CLI-based AI agents can:
+
 - Initialize and configure GNO indexes
 - Search documents (BM25, vector, hybrid)
 - Get AI-powered answers with citations
 - Set up MCP server integration
 
 The system consists of:
+
 1. **SKILL.md** - Core skill file with frontmatter + instructions
 2. **Reference files** - CLI reference, MCP reference, examples (progressive disclosure)
 3. **`gno skill install`** - CLI command to install skill to target agent
@@ -18,6 +20,7 @@ The system consists of:
 ## Scope
 
 **In Scope**:
+
 - SKILL.md following Claude Code skills spec
 - `gno skill install` command with `--scope` (project|user) and `--target` (claude|codex|all)
 - `gno skill uninstall` command with path safety guards
@@ -25,6 +28,7 @@ The system consists of:
 - Injectable path resolver for testability
 
 **Out of Scope**:
+
 - Cursor/Windsurf/other agent support (future)
 - Auto-updating claude_desktop_config.json for MCP
 - Skill versioning/upgrade detection
@@ -83,6 +87,7 @@ For usage examples, see [examples.md](examples.md).
 ```
 
 **Key points from skills docs**:
+
 - `name` and `description` required in frontmatter
 - `allowed-tools` is **experimental** per Agent Skills spec - Claude Code supports it, Codex support unclear
 - Keep SKILL.md under 500 lines - detailed docs in reference files
@@ -119,18 +124,19 @@ export function resolveSkillPaths(opts: SkillPathOptions): SkillPaths;
 
 **Target Paths** (defaults, overridable):
 
-| Target | Scope | Default Path |
-|--------|-------|--------------|
+| Target      | Scope   | Default Path                |
+| ----------- | ------- | --------------------------- |
 | Claude Code | project | `<cwd>/.claude/skills/gno/` |
-| Claude Code | user | `~/.claude/skills/gno/` |
-| Codex | project | `<cwd>/.codex/skills/gno/` |
-| Codex | user | `~/.codex/skills/gno/` |
+| Claude Code | user    | `~/.claude/skills/gno/`     |
+| Codex       | project | `<cwd>/.codex/skills/gno/`  |
+| Codex       | user    | `~/.codex/skills/gno/`      |
 
 ### Phase 3: Install Command
 
 New command group: `gno skill`
 
 **`gno skill install`**:
+
 ```bash
 gno skill install [--scope <project|user>] [--target <claude|codex|all>]
 
@@ -149,6 +155,7 @@ Global flags honored:
 ```
 
 **Install Algorithm** (atomic, Windows-safe):
+
 1. Resolve source path via `import.meta.dir` → `assets/skill/`
 2. Resolve dest paths via `resolveSkillPaths()`
 3. If dest exists and not (`--force` || `--yes`): throw `CliError('VALIDATION', 'Skill already installed. Use --force to overwrite.')`
@@ -160,11 +167,13 @@ Global flags honored:
 9. Output success message (or JSON if `--json`)
 
 **`gno skill uninstall`**:
+
 ```bash
 gno skill uninstall [--scope <project|user>] [--target <claude|codex|all>]
 ```
 
 **Uninstall Safety Checks** (critical):
+
 1. Resolve `destDir` via `resolveSkillPaths()`
 2. Normalize to absolute path via `realpath` where possible
 3. **Reject if**:
@@ -175,6 +184,7 @@ gno skill uninstall [--scope <project|user>] [--target <claude|codex|all>]
 4. Only then: remove directory with retry (Windows-safe)
 
 **`gno skill show`**:
+
 ```bash
 gno skill show [--file <name>]   # Preview skill files
 
@@ -193,6 +203,7 @@ Output:
 ```
 
 **`gno skill paths`** (debugging helper):
+
 ```bash
 gno skill paths [--scope <project|user>] [--target <claude|codex|all>] [--json]
 
@@ -202,6 +213,7 @@ Output: Shows resolved paths for each target without installing
 ### Phase 4: Implementation
 
 **File Structure**:
+
 ```plaintext
 assets/skill/                    # Skill files shipped with package
 ├── SKILL.md
@@ -219,6 +231,7 @@ src/cli/commands/skill/
 ```
 
 **Ensure files ship with package** (package.json):
+
 ```jsonc
 {
   "files": [
@@ -229,6 +242,7 @@ src/cli/commands/skill/
 ```
 
 **Locate source files at runtime**:
+
 ```ts
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -239,12 +253,14 @@ const SKILL_SOURCE_DIR = join(__dirname, '../../assets/skill');
 ```
 
 **Error Handling** (follow existing patterns):
+
 - Validation errors (bad args, existing install): `throw new CliError('VALIDATION', message)`
 - IO failures: `throw new CliError('RUNTIME', message)`
 - Let `run.ts` handle exit codes and `--json` error envelopes
 - Output to stdout; diagnostics to stderr via `src/cli/ui.ts` patterns
 
 **Wire into program.ts**:
+
 ```ts
 // In wireManagementCommands() or similar
 const skillCmd = program.command('skill').description('Manage GNO agent skill');
@@ -311,14 +327,14 @@ skillCmd.command('install')
 
 ## Risks
 
-| Risk | Mitigation |
-|------|------------|
-| Claude Code/Codex paths change | Centralized resolver + env overrides, easy to update |
-| Skill doesn't trigger | Strong description with keywords; test manually |
-| Reference files bloat context | Keep focused; SKILL.md < 500 lines |
-| Windows path/locking issues | Use atomic temp+rename pattern; retry on EBUSY |
+| Risk                               | Mitigation                                               |
+| ---------------------------------- | -------------------------------------------------------- |
+| Claude Code/Codex paths change     | Centralized resolver + env overrides, easy to update     |
+| Skill doesn't trigger              | Strong description with keywords; test manually          |
+| Reference files bloat context      | Keep focused; SKILL.md < 500 lines                       |
+| Windows path/locking issues        | Use atomic temp+rename pattern; retry on EBUSY           |
 | Source files missing after install | Verify `assets/` in package.json files; integration test |
-| Unsafe uninstall | Strict path validation before any rm |
+| Unsafe uninstall                   | Strict path validation before any rm                     |
 
 ## Dependencies
 

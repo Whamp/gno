@@ -24,21 +24,25 @@ commands:
 GNO intelligently processes multiple document formats:
 
 ### Markdown (.md)
+
 - Extracts YAML frontmatter metadata
 - Preserves heading structure
 - Maintains code block context
 
 ### PDF (.pdf)
+
 - Full text extraction
 - Page-aware chunking
 - Handles multi-column layouts
 
 ### Microsoft Office
+
 - **Word (.docx)** - Full document text
 - **Excel (.xlsx)** - Sheet content and headers
 - **PowerPoint (.pptx)** - Slide text and notes
 
 ### Plain Text
+
 - Any .txt file
 - Code files (configurable)
 - Log files
@@ -61,6 +65,7 @@ gno update
 ## Language Detection
 
 Automatic language detection optimizes search for:
+
 - English
 - Chinese, Japanese, Korean (CJK)
 - Other languages with Unicode support

@@ -3,32 +3,34 @@
  * Uses convertBuffer() with bytes for determinism.
  */
 
-import { MarkItDown } from 'markitdown-ts';
-import {
-  adapterError,
-  corruptError,
-  timeoutError,
-  tooLargeError,
-} from '../../errors';
+import { MarkItDown } from "markitdown-ts";
+
 import type {
   Converter,
   ConvertInput,
   ConvertResult,
   ConvertWarning,
-} from '../../types';
-import { ADAPTER_VERSIONS } from '../../versions';
+} from "../../types";
 
-const CONVERTER_ID = 'adapter/markitdown-ts' as const;
-const CONVERTER_VERSION = ADAPTER_VERSIONS['markitdown-ts'];
+import {
+  adapterError,
+  corruptError,
+  timeoutError,
+  tooLargeError,
+} from "../../errors";
+import { ADAPTER_VERSIONS } from "../../versions";
+
+const CONVERTER_ID = "adapter/markitdown-ts" as const;
+const CONVERTER_VERSION = ADAPTER_VERSIONS["markitdown-ts"];
 
 /** Supported extensions for this adapter */
-const SUPPORTED_EXTENSIONS = ['.pdf', '.docx', '.xlsx'];
+const SUPPORTED_EXTENSIONS = [".pdf", ".docx", ".xlsx"];
 
 /** Supported MIME types */
 const SUPPORTED_MIMES = [
-  'application/pdf',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 ];
 
 /**
@@ -62,7 +64,7 @@ export const markitdownAdapter: Converter = {
     const timeoutPromise = new Promise<never>((_, reject) => {
       timeoutId = setTimeout(() => {
         timedOut = true;
-        reject(new Error('TIMEOUT'));
+        reject(new Error("TIMEOUT"));
       }, input.limits.timeoutMs);
     });
 
@@ -86,14 +88,14 @@ export const markitdownAdapter: Converter = {
       if (!result?.markdown) {
         return {
           ok: false,
-          error: corruptError(input, CONVERTER_ID, 'Empty conversion result'),
+          error: corruptError(input, CONVERTER_ID, "Empty conversion result"),
         };
       }
 
       // Emit warnings for suspicious output
       const warnings: ConvertWarning[] = [];
       if (result.markdown.length < 10 && input.bytes.length > 1000) {
-        warnings.push({ code: 'LOSSY', message: 'Suspiciously short output' });
+        warnings.push({ code: "LOSSY", message: "Suspiciously short output" });
       }
 
       // NOTE: Canonicalization happens in pipeline.ts, not here
@@ -131,7 +133,7 @@ export const markitdownAdapter: Converter = {
         error: adapterError(
           input,
           CONVERTER_ID,
-          err instanceof Error ? err.message : 'Unknown error',
+          err instanceof Error ? err.message : "Unknown error",
           err
         ),
       };

@@ -1,4 +1,4 @@
-import { CheckIcon, CopyIcon } from 'lucide-react';
+import { CheckIcon, CopyIcon } from "lucide-react";
 import {
   type ComponentProps,
   createContext,
@@ -7,10 +7,11 @@ import {
   useEffect,
   useRef,
   useState,
-} from 'react';
-import { type BundledLanguage, codeToHtml, type ShikiTransformer } from 'shiki';
-import { cn } from '../../lib/utils';
-import { Button } from '../ui/button';
+} from "react";
+import { type BundledLanguage, codeToHtml, type ShikiTransformer } from "shiki";
+
+import { cn } from "../../lib/utils";
+import { Button } from "../ui/button";
 
 type CodeBlockProps = HTMLAttributes<HTMLDivElement> & {
   code: string;
@@ -23,26 +24,26 @@ interface CodeBlockContextType {
 }
 
 const CodeBlockContext = createContext<CodeBlockContextType>({
-  code: '',
+  code: "",
 });
 
 const lineNumberTransformer: ShikiTransformer = {
-  name: 'line-numbers',
+  name: "line-numbers",
   line(node, line) {
     node.children.unshift({
-      type: 'element',
-      tagName: 'span',
+      type: "element",
+      tagName: "span",
       properties: {
         className: [
-          'inline-block',
-          'min-w-10',
-          'mr-4',
-          'text-right',
-          'select-none',
-          'text-muted-foreground',
+          "inline-block",
+          "min-w-10",
+          "mr-4",
+          "text-right",
+          "select-none",
+          "text-muted-foreground",
         ],
       },
-      children: [{ type: 'text', value: String(line) }],
+      children: [{ type: "text", value: String(line) }],
     });
   },
 };
@@ -59,12 +60,12 @@ export async function highlightCode(
   return await Promise.all([
     codeToHtml(code, {
       lang: language,
-      theme: 'one-light',
+      theme: "one-light",
       transformers,
     }),
     codeToHtml(code, {
       lang: language,
-      theme: 'one-dark-pro',
+      theme: "one-dark-pro",
       transformers,
     }),
   ]);
@@ -78,18 +79,20 @@ export const CodeBlock = ({
   children,
   ...props
 }: CodeBlockProps) => {
-  const [html, setHtml] = useState<string>('');
-  const [darkHtml, setDarkHtml] = useState<string>('');
+  const [html, setHtml] = useState<string>("");
+  const [darkHtml, setDarkHtml] = useState<string>("");
   const mounted = useRef(false);
 
   useEffect(() => {
-    highlightCode(code, language, showLineNumbers).then(([light, dark]) => {
-      if (!mounted.current) {
-        setHtml(light);
-        setDarkHtml(dark);
-        mounted.current = true;
+    void highlightCode(code, language, showLineNumbers).then(
+      ([light, dark]) => {
+        if (!mounted.current) {
+          setHtml(light);
+          setDarkHtml(dark);
+          mounted.current = true;
+        }
       }
-    });
+    );
 
     return () => {
       mounted.current = false;
@@ -100,7 +103,7 @@ export const CodeBlock = ({
     <CodeBlockContext.Provider value={{ code }}>
       <div
         className={cn(
-          'group relative w-full overflow-hidden rounded-md border bg-background text-foreground',
+          "group relative w-full overflow-hidden rounded-md border bg-background text-foreground",
           className
         )}
         {...props}
@@ -108,12 +111,12 @@ export const CodeBlock = ({
         <div className="relative">
           <div
             className="overflow-auto dark:hidden [&>pre]:m-0 [&>pre]:bg-background! [&>pre]:p-4 [&>pre]:text-foreground! [&>pre]:text-sm [&_code]:font-mono [&_code]:text-sm"
-            // biome-ignore lint/security/noDangerouslySetInnerHtml: "this is needed."
+            // oxlint-disable-next-line react/no-danger -- syntax highlighting requires innerHTML
             dangerouslySetInnerHTML={{ __html: html }}
           />
           <div
             className="hidden overflow-auto dark:block [&>pre]:m-0 [&>pre]:bg-background! [&>pre]:p-4 [&>pre]:text-foreground! [&>pre]:text-sm [&_code]:font-mono [&_code]:text-sm"
-            // biome-ignore lint/security/noDangerouslySetInnerHtml: "this is needed."
+            // oxlint-disable-next-line react/no-danger -- syntax highlighting requires innerHTML
             dangerouslySetInnerHTML={{ __html: darkHtml }}
           />
           {children && (
@@ -145,8 +148,8 @@ export const CodeBlockCopyButton = ({
   const { code } = useContext(CodeBlockContext);
 
   const copyToClipboard = async () => {
-    if (typeof window === 'undefined' || !navigator?.clipboard?.writeText) {
-      onError?.(new Error('Clipboard API not available'));
+    if (typeof window === "undefined" || !navigator?.clipboard?.writeText) {
+      onError?.(new Error("Clipboard API not available"));
       return;
     }
 
@@ -164,7 +167,7 @@ export const CodeBlockCopyButton = ({
 
   return (
     <Button
-      className={cn('shrink-0', className)}
+      className={cn("shrink-0", className)}
       onClick={copyToClipboard}
       size="icon"
       variant="ghost"

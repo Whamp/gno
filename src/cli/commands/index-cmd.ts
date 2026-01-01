@@ -5,8 +5,8 @@
  * @module src/cli/commands/indexCmd
  */
 
-import { defaultSyncService, type SyncResult } from '../../ingestion';
-import { formatSyncResultLines, initStore } from './shared';
+import { defaultSyncService, type SyncResult } from "../../ingestion";
+import { formatSyncResultLines, initStore } from "./shared";
 
 /**
  * Options for index command.
@@ -68,7 +68,7 @@ export async function index(options: IndexOptions = {}): Promise<IndexResult> {
       | undefined;
 
     if (!embedSkipped) {
-      const { embed } = await import('./embed');
+      const { embed } = await import("./embed");
       const result = await embed({
         configPath: options.configPath,
       });
@@ -99,21 +99,21 @@ export function formatIndex(
   }
 
   const { syncResult, embedSkipped } = result;
-  const lines: string[] = ['Indexing complete.', ''];
+  const lines: string[] = ["Indexing complete.", ""];
 
   lines.push(...formatSyncResultLines(syncResult, options));
 
   if (embedSkipped) {
-    lines.push('');
-    lines.push('Embedding skipped (--no-embed)');
+    lines.push("");
+    lines.push("Embedding skipped (--no-embed)");
   } else if (result.embedResult) {
-    lines.push('');
+    lines.push("");
     const { embedded, errors, duration } = result.embedResult;
-    const errPart = errors > 0 ? ` (${errors} errors)` : '';
+    const errPart = errors > 0 ? ` (${errors} errors)` : "";
     lines.push(
       `Embedded ${embedded} chunks in ${(duration / 1000).toFixed(1)}s${errPart}`
     );
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }

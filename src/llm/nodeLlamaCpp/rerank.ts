@@ -4,9 +4,10 @@
  * @module src/llm/nodeLlamaCpp/rerank
  */
 
-import { inferenceFailedError } from '../errors';
-import type { LlmResult, RerankPort, RerankScore } from '../types';
-import type { ModelManager } from './lifecycle';
+import type { LlmResult, RerankPort, RerankScore } from "../types";
+import type { ModelManager } from "./lifecycle";
+
+import { inferenceFailedError } from "../errors";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -14,7 +15,7 @@ import type { ModelManager } from './lifecycle';
 
 type LlamaModel = Awaited<
   ReturnType<
-    Awaited<ReturnType<typeof import('node-llama-cpp').getLlama>>['loadModel']
+    Awaited<ReturnType<typeof import("node-llama-cpp").getLlama>>["loadModel"]
   >
 >;
 
@@ -44,7 +45,7 @@ export class NodeLlamaCppRerank implements RerankPort {
     const model = await this.manager.loadModel(
       this.modelPath,
       this.modelUri,
-      'rerank'
+      "rerank"
     );
     if (!model.ok) {
       return model;

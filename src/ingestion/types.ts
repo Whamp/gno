@@ -5,7 +5,7 @@
  * @module src/ingestion/types
  */
 
-import type { Collection } from '../config/types';
+import type { Collection } from "../config/types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Walker Types
@@ -41,7 +41,7 @@ export interface WalkConfig {
 export interface SkippedEntry {
   absPath: string;
   relPath: string;
-  reason: 'TOO_LARGE' | 'EXCLUDED';
+  reason: "TOO_LARGE" | "EXCLUDED";
   size?: number;
 }
 
@@ -133,11 +133,11 @@ export interface SyncOptions {
 
 /** Per-file sync status */
 export type FileSyncStatus =
-  | 'added'
-  | 'updated'
-  | 'unchanged'
-  | 'error'
-  | 'skipped';
+  | "added"
+  | "updated"
+  | "unchanged"
+  | "error"
+  | "skipped";
 
 /** Per-file sync result */
 export interface FileSyncResult {
@@ -180,9 +180,9 @@ export interface SyncResult {
 
 /** Decision for whether to process a file */
 export type ProcessDecision =
-  | { kind: 'skip'; reason: string }
-  | { kind: 'process'; reason: string }
-  | { kind: 'repair'; reason: string };
+  | { kind: "skip"; reason: string }
+  | { kind: "process"; reason: string }
+  | { kind: "repair"; reason: string };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Language Detection Types

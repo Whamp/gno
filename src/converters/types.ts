@@ -31,11 +31,11 @@ export interface ConvertInput {
 
 export interface ConvertWarning {
   code:
-    | 'LOSSY'
-    | 'TRUNCATED'
-    | 'PARTIAL'
-    | 'UNSUPPORTED_FEATURE'
-    | 'LOW_CONFIDENCE';
+    | "LOSSY"
+    | "TRUNCATED"
+    | "PARTIAL"
+    | "UNSUPPORTED_FEATURE"
+    | "LOW_CONFIDENCE";
   message: string;
   details?: Record<string, unknown>;
 }
@@ -61,14 +61,14 @@ export interface ConvertOutput {
 }
 
 export type ConvertErrorCode =
-  | 'UNSUPPORTED'
-  | 'TOO_LARGE'
-  | 'TIMEOUT'
-  | 'CORRUPT'
-  | 'PERMISSION'
-  | 'IO'
-  | 'ADAPTER_FAILURE'
-  | 'INTERNAL';
+  | "UNSUPPORTED"
+  | "TOO_LARGE"
+  | "TIMEOUT"
+  | "CORRUPT"
+  | "PERMISSION"
+  | "IO"
+  | "ADAPTER_FAILURE"
+  | "INTERNAL";
 
 export interface ConvertError {
   code: ConvertErrorCode;
@@ -108,7 +108,7 @@ export interface ConversionArtifact {
   /** Language hint from conversion */
   languageHint?: string;
   /** Conversion metadata */
-  meta: ConvertOutput['meta'];
+  meta: ConvertOutput["meta"];
 }
 
 export type PipelineResult =

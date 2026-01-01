@@ -5,11 +5,12 @@
  * @module src/cli/commands/models/pull
  */
 
-import { getModelsCachePath } from '../../../app/constants';
-import { loadConfig } from '../../../config';
-import { ModelCache } from '../../../llm/cache';
-import { getActivePreset } from '../../../llm/registry';
-import type { DownloadProgress, ModelType } from '../../../llm/types';
+import type { DownloadProgress, ModelType } from "../../../llm/types";
+
+import { getModelsCachePath } from "../../../app/constants";
+import { loadConfig } from "../../../config";
+import { ModelCache } from "../../../llm/cache";
+import { getActivePreset } from "../../../llm/registry";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -19,7 +20,7 @@ export interface ModelsPullOptions {
   /** Override config path */
   configPath?: string;
   /** Override config object (takes precedence over configPath) */
-  config?: import('../../../config/types').Config;
+  config?: import("../../../config/types").Config;
   /** Pull all models */
   all?: boolean;
   /** Pull embedding model */
@@ -58,23 +59,23 @@ export interface ModelsPullResult {
  */
 function getTypesToPull(options: ModelsPullOptions): ModelType[] {
   if (options.all) {
-    return ['embed', 'rerank', 'gen'];
+    return ["embed", "rerank", "gen"];
   }
   if (options.embed || options.rerank || options.gen) {
     const types: ModelType[] = [];
     if (options.embed) {
-      types.push('embed');
+      types.push("embed");
     }
     if (options.rerank) {
-      types.push('rerank');
+      types.push("rerank");
     }
     if (options.gen) {
-      types.push('gen');
+      types.push("gen");
     }
     return types;
   }
   // Default: pull all
-  return ['embed', 'rerank', 'gen'];
+  return ["embed", "rerank", "gen"];
 }
 
 /**
@@ -86,7 +87,7 @@ export async function modelsPull(
   // Use provided config, or load from disk (use defaults if not initialized)
   let config = options.config;
   if (!config) {
-    const { createDefaultConfig } = await import('../../../config');
+    const { createDefaultConfig } = await import("../../../config");
     const configResult = await loadConfig(options.configPath);
     config = configResult.ok ? configResult.value : createDefaultConfig();
   }
@@ -173,15 +174,15 @@ export function formatModelsPull(result: ModelsPullResult): string {
   }
 
   if (result.failed > 0) {
-    lines.push('');
+    lines.push("");
     lines.push(`${result.failed} model(s) failed to download.`);
   } else if (result.skipped === result.results.length) {
-    lines.push('');
-    lines.push('All models already cached. Use --force to re-download.');
+    lines.push("");
+    lines.push("All models already cached. Use --force to re-download.");
   } else {
-    lines.push('');
-    lines.push('All models downloaded successfully.');
+    lines.push("");
+    lines.push("All models downloaded successfully.");
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }

@@ -5,7 +5,7 @@
  * @module src/llm/types
  */
 
-import type { LlmError } from './errors';
+import type { LlmError } from "./errors";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Result Type
@@ -19,7 +19,7 @@ export type LlmResult<T> =
 // Model Types
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type ModelType = 'embed' | 'rerank' | 'gen';
+export type ModelType = "embed" | "rerank" | "gen";
 
 /** Model URI format: hf:org/repo/file.gguf or file:/path */
 export type ModelUri = string;

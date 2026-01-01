@@ -5,30 +5,31 @@
  * @module src/cli/commands/ask
  */
 
-import { LlmAdapter } from '../../llm/nodeLlamaCpp/adapter';
-import { resolveDownloadPolicy } from '../../llm/policy';
-import { getActivePreset } from '../../llm/registry';
 import type {
   EmbeddingPort,
   GenerationPort,
   RerankPort,
-} from '../../llm/types';
+} from "../../llm/types";
+import type { AskOptions, AskResult, Citation } from "../../pipeline/types";
+
+import { LlmAdapter } from "../../llm/nodeLlamaCpp/adapter";
+import { resolveDownloadPolicy } from "../../llm/policy";
+import { getActivePreset } from "../../llm/registry";
 import {
   generateGroundedAnswer,
   processAnswerResult,
-} from '../../pipeline/answer';
-import { type HybridSearchDeps, searchHybrid } from '../../pipeline/hybrid';
-import type { AskOptions, AskResult, Citation } from '../../pipeline/types';
+} from "../../pipeline/answer";
+import { type HybridSearchDeps, searchHybrid } from "../../pipeline/hybrid";
 import {
   createVectorIndexPort,
   type VectorIndexPort,
-} from '../../store/vector';
-import { getGlobals } from '../program';
+} from "../../store/vector";
+import { getGlobals } from "../program";
 import {
   createProgressRenderer,
   createThrottledProgressRenderer,
-} from '../progress';
-import { initStore } from './shared';
+} from "../progress";
+import { initStore } from "./shared";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -62,7 +63,7 @@ export type AskCommandResult =
 /**
  * Execute gno ask command.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: CLI orchestration with multiple output formats
+// oxlint-disable-next-line max-lines-per-function -- CLI orchestration with multiple output formats
 export async function ask(
   query: string,
   options: AskCommandOptions = {}
@@ -105,7 +106,7 @@ export async function ask(
     const embedResult = await llm.createEmbeddingPort(embedUri, {
       policy,
       onProgress: downloadProgress
-        ? (progress) => downloadProgress('embed', progress)
+        ? (progress) => downloadProgress("embed", progress)
         : undefined,
     });
     if (embedResult.ok) {
@@ -120,7 +121,7 @@ export async function ask(
       const genResult = await llm.createGenerationPort(genUri, {
         policy,
         onProgress: downloadProgress
-          ? (progress) => downloadProgress('gen', progress)
+          ? (progress) => downloadProgress("gen", progress)
           : undefined,
       });
       if (genResult.ok) {
@@ -134,7 +135,7 @@ export async function ask(
       const rerankResult = await llm.createRerankPort(rerankUri, {
         policy,
         onProgress: downloadProgress
-          ? (progress) => downloadProgress('rerank', progress)
+          ? (progress) => downloadProgress("rerank", progress)
           : undefined,
       });
       if (rerankResult.ok) {
@@ -144,7 +145,7 @@ export async function ask(
 
     // Clear progress line if shown
     if (showProgress && downloadProgress) {
-      process.stderr.write('\n');
+      process.stderr.write("\n");
     }
 
     // Create vector index
@@ -181,8 +182,8 @@ export async function ask(
       return {
         success: false,
         error:
-          'Answer generation requested but no generation model available. ' +
-          'Run `gno models pull --gen` to download a model, or configure a preset.',
+          "Answer generation requested but no generation model available. " +
+          "Run `gno models pull --gen` to download a model, or configure a preset.",
       };
     }
 
@@ -227,7 +228,7 @@ export async function ask(
         return {
           success: false,
           error:
-            'Answer generation failed. The generation model may have encountered an error.',
+            "Answer generation failed. The generation model may have encountered an error.",
         };
       }
 
@@ -240,8 +241,8 @@ export async function ask(
 
     const askResult: AskResult = {
       query,
-      mode: searchResult.value.meta.vectorsUsed ? 'hybrid' : 'bm25_only',
-      queryLanguage: searchResult.value.meta.queryLanguage ?? 'und',
+      mode: searchResult.value.meta.vectorsUsed ? "hybrid" : "bm25_only",
+      queryLanguage: searchResult.value.meta.queryLanguage ?? "und",
       answer,
       citations,
       results,
@@ -277,28 +278,28 @@ interface FormatOptions {
   showSources?: boolean;
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: terminal formatting with conditional sections
+// oxlint-disable-next-line max-lines-per-function -- terminal formatting with conditional sections
 function formatTerminal(data: AskResult, opts: FormatOptions = {}): string {
   const lines: string[] = [];
   const hasAnswer = Boolean(data.answer);
 
   // Show answer if present
   if (data.answer) {
-    lines.push('Answer:');
+    lines.push("Answer:");
     lines.push(data.answer);
-    lines.push('');
+    lines.push("");
   }
 
   // Show cited sources (only sources actually referenced in answer)
   if (data.citations && data.citations.length > 0) {
-    lines.push('Cited Sources:');
+    lines.push("Cited Sources:");
     for (let i = 0; i < data.citations.length; i++) {
       const c = data.citations[i];
       if (c) {
         lines.push(`  [${i + 1}] ${c.uri}`);
       }
     }
-    lines.push('');
+    lines.push("");
   }
 
   // Show all retrieved sources if:
@@ -306,7 +307,7 @@ function formatTerminal(data: AskResult, opts: FormatOptions = {}): string {
   // - User explicitly requested with --show-sources
   const showAllSources = !hasAnswer || opts.showSources;
   if (showAllSources && data.results.length > 0) {
-    lines.push(hasAnswer ? 'All Retrieved Sources:' : 'Sources:');
+    lines.push(hasAnswer ? "All Retrieved Sources:" : "Sources:");
     for (const r of data.results) {
       lines.push(`  [${r.docid}] ${r.uri}`);
       if (r.title) {
@@ -324,10 +325,10 @@ function formatTerminal(data: AskResult, opts: FormatOptions = {}): string {
   }
 
   if (!data.answer && data.results.length === 0) {
-    lines.push('No relevant sources found.');
+    lines.push("No relevant sources found.");
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 function formatMarkdown(data: AskResult, opts: FormatOptions = {}): string {
@@ -335,33 +336,33 @@ function formatMarkdown(data: AskResult, opts: FormatOptions = {}): string {
   const hasAnswer = Boolean(data.answer);
 
   lines.push(`# Question: ${data.query}`);
-  lines.push('');
+  lines.push("");
 
   if (data.answer) {
-    lines.push('## Answer');
-    lines.push('');
+    lines.push("## Answer");
+    lines.push("");
     lines.push(data.answer);
-    lines.push('');
+    lines.push("");
   }
 
   // Show cited sources (only sources actually referenced in answer)
   if (data.citations && data.citations.length > 0) {
-    lines.push('## Cited Sources');
-    lines.push('');
+    lines.push("## Cited Sources");
+    lines.push("");
     for (let i = 0; i < data.citations.length; i++) {
       const c = data.citations[i];
       if (c) {
         lines.push(`**[${i + 1}]** \`${c.uri}\``);
       }
     }
-    lines.push('');
+    lines.push("");
   }
 
   // Show all retrieved sources if no answer or --show-sources
   const showAllSources = !hasAnswer || opts.showSources;
   if (showAllSources) {
-    lines.push(hasAnswer ? '## All Retrieved Sources' : '## Sources');
-    lines.push('');
+    lines.push(hasAnswer ? "## All Retrieved Sources" : "## Sources");
+    lines.push("");
 
     for (let i = 0; i < data.results.length; i++) {
       const r = data.results[i];
@@ -374,17 +375,17 @@ function formatMarkdown(data: AskResult, opts: FormatOptions = {}): string {
     }
 
     if (data.results.length === 0) {
-      lines.push('*No relevant sources found.*');
+      lines.push("*No relevant sources found.*");
     }
   }
 
-  lines.push('');
-  lines.push('---');
+  lines.push("");
+  lines.push("---");
   lines.push(
     `*Mode: ${data.mode} | Expanded: ${data.meta.expanded} | Reranked: ${data.meta.reranked}*`
   );
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**
@@ -397,7 +398,7 @@ export function formatAsk(
   if (!result.success) {
     return options.json
       ? JSON.stringify({
-          error: { code: 'ASK_FAILED', message: result.error },
+          error: { code: "ASK_FAILED", message: result.error },
         })
       : `Error: ${result.error}`;
   }

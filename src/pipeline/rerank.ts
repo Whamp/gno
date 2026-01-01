@@ -5,10 +5,11 @@
  * @module src/pipeline/rerank
  */
 
-import type { RerankPort } from '../llm/types';
-import type { StorePort } from '../store/types';
-import type { BlendingTier, FusionCandidate, RerankedCandidate } from './types';
-import { DEFAULT_BLENDING_SCHEDULE } from './types';
+import type { RerankPort } from "../llm/types";
+import type { StorePort } from "../store/types";
+import type { BlendingTier, FusionCandidate, RerankedCandidate } from "./types";
+
+import { DEFAULT_BLENDING_SCHEDULE } from "./types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -113,7 +114,7 @@ async function fetchChunkTexts(
 
     if (result?.ok && result.value && bestInfo) {
       const chunk = result.value.find((c) => c.seq === bestInfo.seq);
-      const text = chunk?.text ?? '';
+      const text = chunk?.text ?? "";
       chunkTexts.set(
         hash,
         text.length > MAX_CHUNK_CHARS
@@ -121,7 +122,7 @@ async function fetchChunkTexts(
           : text
       );
     } else {
-      chunkTexts.set(hash, '');
+      chunkTexts.set(hash, "");
     }
   }
 
@@ -129,7 +130,7 @@ async function fetchChunkTexts(
   const texts: string[] = [];
   for (const hash of uniqueHashes) {
     hashToIndex.set(hash, texts.length);
-    texts.push(chunkTexts.get(hash) ?? '');
+    texts.push(chunkTexts.get(hash) ?? "");
   }
 
   return { texts, hashToIndex };

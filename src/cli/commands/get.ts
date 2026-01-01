@@ -5,10 +5,11 @@
  * @module src/cli/commands/get
  */
 
-import type { DocumentRow, StorePort, StoreResult } from '../../store/types';
-import type { ParsedRef } from './ref-parser';
-import { parseRef } from './ref-parser';
-import { initStore } from './shared';
+import type { DocumentRow, StorePort, StoreResult } from "../../store/types";
+import type { ParsedRef } from "./ref-parser";
+
+import { parseRef } from "./ref-parser";
+import { initStore } from "./shared";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -68,11 +69,11 @@ function lookupDocument(
   parsed: ParsedRef
 ): Promise<StoreResult<DocumentRow | null>> {
   switch (parsed.type) {
-    case 'docid':
+    case "docid":
       return store.getDocumentByDocid(parsed.value);
-    case 'uri':
+    case "uri":
       return store.getDocumentByUri(parsed.value);
-    case 'collPath':
+    case "collPath":
       if (!(parsed.collection && parsed.relPath)) {
         return Promise.resolve({ ok: true as const, value: null });
       }
@@ -100,7 +101,7 @@ export async function get(
   }
 
   const parsed = parseRef(ref);
-  if ('error' in parsed) {
+  if ("error" in parsed) {
     return { success: false, error: parsed.error, isValidation: true };
   }
 
@@ -121,14 +122,14 @@ function validateOptions(options: GetCommandOptions): GetResult | null {
   if (options.from !== undefined && options.from <= 0) {
     return {
       success: false,
-      error: '--from must be a positive integer',
+      error: "--from must be a positive integer",
       isValidation: true,
     };
   }
   if (options.limit !== undefined && options.limit < 0) {
     return {
       success: false,
-      error: '-l/--limit cannot be negative',
+      error: "-l/--limit cannot be negative",
       isValidation: true,
     };
   }
@@ -152,19 +153,19 @@ async function fetchDocument(
 
   const doc = docResult.value;
   if (!doc?.active) {
-    return { success: false, error: 'Document not found' };
+    return { success: false, error: "Document not found" };
   }
 
   if (!doc.mirrorHash) {
     return {
       success: false,
-      error: 'Mirror content unavailable (conversion error)',
+      error: "Mirror content unavailable (conversion error)",
     };
   }
 
   const contentResult = await store.getContent(doc.mirrorHash);
   if (!contentResult.ok || contentResult.value === null) {
-    return { success: false, error: 'Mirror content unavailable' };
+    return { success: false, error: "Mirror content unavailable" };
   }
 
   return buildResponse({
@@ -186,7 +187,7 @@ interface BuildResponseContext {
 
 function buildResponse(ctx: BuildResponseContext): GetResult {
   const { doc, fullContent, parsed, options, config } = ctx;
-  const lines = fullContent.split('\n');
+  const lines = fullContent.split("\n");
   const totalLines = lines.length;
 
   // Handle -l 0 case - return empty content
@@ -197,7 +198,7 @@ function buildResponse(ctx: BuildResponseContext): GetResult {
         docid: doc.docid,
         uri: doc.uri,
         title: doc.title ?? undefined,
-        content: '',
+        content: "",
         totalLines,
         language: doc.languageHint ?? undefined,
         source: buildSourceMeta(doc, config),
@@ -215,7 +216,7 @@ function buildResponse(ctx: BuildResponseContext): GetResult {
   const clampedEnd = Math.min(clampedStart + limit - 1, totalLines);
 
   const selectedLines = lines.slice(clampedStart - 1, clampedEnd);
-  const content = selectedLines.join('\n');
+  const content = selectedLines.join("\n");
   const isPartial = clampedStart > 1 || clampedEnd < totalLines;
 
   return {
@@ -252,7 +253,7 @@ interface DocRow {
 function buildSourceMeta(
   doc: DocRow,
   config: ConfigLike
-): GetResponse['source'] {
+): GetResponse["source"] {
   const coll = config.collections.find((c) => c.name === doc.collection);
   const absPath = coll ? `${coll.path}/${doc.relPath}` : undefined;
 
@@ -274,7 +275,7 @@ interface ConversionDoc {
 
 function buildConversionMeta(
   doc: ConversionDoc
-): GetResponse['conversion'] | undefined {
+): GetResponse["conversion"] | undefined {
   if (!doc.converterId) {
     return;
   }
@@ -291,9 +292,9 @@ function buildConversionMeta(
 
 function addLineNumbers(text: string, startLine: number): string {
   return text
-    .split('\n')
+    .split("\n")
     .map((line, i) => `${startLine + i}: ${line}`)
-    .join('\n');
+    .join("\n");
 }
 
 function getContentWithLineNumbers(
@@ -317,7 +318,7 @@ export function formatGet(
   if (!result.success) {
     if (options.json) {
       return JSON.stringify({
-        error: { code: 'GET_FAILED', message: result.error },
+        error: { code: "GET_FAILED", message: result.error },
       });
     }
     return `Error: ${result.error}`;
@@ -340,7 +341,7 @@ export function formatGet(
 function formatMarkdown(data: GetResponse, options: GetCommandOptions): string {
   const lines: string[] = [];
   lines.push(`# ${data.title || data.source.relPath}`);
-  lines.push('');
+  lines.push("");
   lines.push(`- **URI**: \`${data.uri}\``);
   lines.push(`- **DocID**: \`${data.docid}\``);
   if (data.returnedLines) {
@@ -348,9 +349,9 @@ function formatMarkdown(data: GetResponse, options: GetCommandOptions): string {
       `- **Lines**: ${data.returnedLines.start}-${data.returnedLines.end} of ${data.totalLines}`
     );
   }
-  lines.push('');
-  lines.push('```');
+  lines.push("");
+  lines.push("```");
   lines.push(getContentWithLineNumbers(data, options));
-  lines.push('```');
-  return lines.join('\n');
+  lines.push("```");
+  return lines.join("\n");
 }

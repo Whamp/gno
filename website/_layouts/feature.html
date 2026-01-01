@@ -6,7 +6,9 @@ layout: default
   {% include breadcrumbs.html %}
   <article class="feature-page">
     <header class="feature-header">
-      <span class="feature-icon">{% include icons.html icon=page.icon size="64" %}</span>
+      <span class="feature-icon"
+        >{% include icons.html icon=page.icon size="64" %}</span
+      >
       <h1 class="feature-title">{{ page.headline }}</h1>
       <p class="feature-description">{{ page.description }}</p>
     </header>
@@ -35,8 +37,14 @@ layout: default
       <h2>Get Started</h2>
       <p>Ready to try {{ page.title }}?</p>
       <div class="hero-actions">
-        <a href="{{ '/docs/QUICKSTART/' | relative_url }}" class="btn btn-primary">Quick Start Guide</a>
-        <a href="{{ '/docs/CLI/' | relative_url }}" class="btn btn-secondary">CLI Reference</a>
+        <a
+          href="{{ '/docs/QUICKSTART/' | relative_url }}"
+          class="btn btn-primary"
+          >Quick Start Guide</a
+        >
+        <a href="{{ '/docs/CLI/' | relative_url }}" class="btn btn-secondary"
+          >CLI Reference</a
+        >
       </div>
     </section>
 
@@ -46,35 +54,41 @@ layout: default
   <aside class="other-features">
     <h2>Explore More Features</h2>
     <div class="features-grid">
-      {% for feature in site.data.features %}
-      {% unless feature.slug == page.slug %}
-      <a href="{{ '/features/' | append: feature.slug | append: '/' | relative_url }}" class="feature-card">
-        <div class="feature-card-icon">{% include icons.html icon=feature.icon size="24" %}</div>
+      {% for feature in site.data.features %} {% unless feature.slug ==
+      page.slug %}
+      <a
+        href="{{ '/features/' | append: feature.slug | append: '/' | relative_url }}"
+        class="feature-card"
+      >
+        <div class="feature-card-icon">
+          {% include icons.html icon=feature.icon size="24" %}
+        </div>
         <h3 class="feature-card-title">{{ feature.title }}</h3>
-        <p class="feature-card-description">{{ feature.description | truncate: 80 }}</p>
+        <p class="feature-card-description">
+          {{ feature.description | truncate: 80 }}
+        </p>
       </a>
-      {% endunless %}
-      {% endfor %}
+      {% endunless %} {% endfor %}
     </div>
   </aside>
 </div>
 
 <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "GNO - {{ page.title }}",
-  "applicationCategory": "DeveloperApplication",
-  "operatingSystem": "macOS, Linux, Windows",
-  "description": "{{ page.description | escape }}",
-  "url": "{{ page.url | absolute_url }}",
-  "featureList": [
-    {% for benefit in page.benefits %}"{{ benefit | escape }}"{% unless forloop.last %},{% endunless %}{% endfor %}
-  ],
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "USD"
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "GNO - {{ page.title }}",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "macOS, Linux, Windows",
+    "description": "{{ page.description | escape }}",
+    "url": "{{ page.url | absolute_url }}",
+    "featureList": [
+      {% for benefit in page.benefits %}"{{ benefit | escape }}"{% unless forloop.last %},{% endunless %}{% endfor %}
+    ],
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
   }
-}
 </script>

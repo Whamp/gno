@@ -6,7 +6,7 @@
  * @module src/cli/commands/context/add
  */
 
-import { loadConfig, parseScope, saveConfig } from '../../../config';
+import { loadConfig, parseScope, saveConfig } from "../../../config";
 
 /**
  * Exit codes

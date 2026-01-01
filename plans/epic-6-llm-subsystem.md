@@ -15,11 +15,13 @@ Implement local LLM inference via node-llama-cpp with GGUF models. No separate s
 ## Problem Statement
 
 GNO needs local inference for:
+
 - **Embeddings**: Vector semantic search (EPIC 7)
 - **Generation**: Query expansion, HyDE synthesis (EPIC 8)
 - **Reranking**: Cross-encoder scoring (EPIC 8)
 
 Must be:
+
 - Zero external runtime (no Ollama, no Python)
 - Auto-configured for hardware (Metal/CUDA/CPU)
 - Deterministic (temp=0, versioned prompts, cached results)
@@ -78,6 +80,7 @@ export type RerankPort = {
 ### Model Lifecycle Strategy
 
 Per node-llama-cpp best practices:
+
 - **Lazy loading**: Load model on first use
 - **Keep warm**: Cache loaded model in memory (configurable TTL)
 - **Explicit dispose**: `await model.dispose()` for MCP cleanup
@@ -94,6 +97,7 @@ Per node-llama-cpp best practices:
 #### 1.1 LLM Types and Errors
 
 **File:** `src/llm/types.ts`
+
 ```typescript
 export type ModelType = 'embed' | 'rerank' | 'gen';
 
@@ -118,6 +122,7 @@ export type ModelCacheEntry = {
 ```
 
 **File:** `src/llm/errors.ts`
+
 ```typescript
 export type LlmErrorCode =
   | 'MODEL_NOT_FOUND'
@@ -140,6 +145,7 @@ export type LlmError = {
 #### 1.2 Config Schema Extension
 
 **File:** `src/config/types.ts` (extend existing)
+
 ```typescript
 const ModelPresetSchema = z.object({
   id: z.string(),
@@ -176,6 +182,7 @@ const ModelConfigSchema = z.object({
 #### 1.3 Preset Registry
 
 **File:** `src/llm/registry.ts`
+
 ```typescript
 import type { Config, ModelPreset } from '../config/types';
 import type { LlmError } from './errors';
@@ -213,6 +220,7 @@ export function listPresets(config: Config): ModelPreset[] {
 #### 1.4 Model Lifecycle Manager
 
 **File:** `src/llm/nodeLlamaCpp/lifecycle.ts`
+
 ```typescript
 export class ModelManager {
   private llama: Llama | null = null;
@@ -254,6 +262,7 @@ export class ModelManager {
 #### 2.1 HF URI Parser
 
 **File:** `src/llm/cache.ts`
+
 ```typescript
 export type ParsedModelUri = {
   scheme: 'hf' | 'file';
@@ -280,6 +289,7 @@ export function parseModelUri(uri: string): Result<ParsedModelUri, string> {
 #### 2.2 Model Cache Manager
 
 **File:** `src/llm/cache.ts`
+
 ```typescript
 export class ModelCache {
   constructor(private cacheDir: string) {}
@@ -324,6 +334,7 @@ export class ModelCache {
 #### 3.1 Embedding Port
 
 **File:** `src/llm/nodeLlamaCpp/embedding.ts`
+
 ```typescript
 export class NodeLlamaCppEmbedding implements EmbeddingPort {
   private context: LlamaEmbeddingContext | null = null;
@@ -394,6 +405,7 @@ export class NodeLlamaCppEmbedding implements EmbeddingPort {
 #### 3.2 Generation Port
 
 **File:** `src/llm/nodeLlamaCpp/generation.ts`
+
 ```typescript
 export class NodeLlamaCppGeneration implements GenerationPort {
   async generate(prompt: string, params: GenParams): Promise<LlmResult<string>> {
@@ -420,6 +432,7 @@ export class NodeLlamaCppGeneration implements GenerationPort {
 #### 3.3 Rerank Port
 
 **File:** `src/llm/nodeLlamaCpp/rerank.ts`
+
 ```typescript
 export class NodeLlamaCppRerank implements RerankPort {
   async rerank(query: string, documents: string[]): Promise<LlmResult<RerankScore[]>> {
@@ -450,6 +463,7 @@ export class NodeLlamaCppRerank implements RerankPort {
 #### 4.1 gno models list
 
 **File:** `src/cli/commands/models/list.ts`
+
 ```typescript
 export type ModelsListResult = {
   embed: ModelStatus;
@@ -477,6 +491,7 @@ export async function modelsListCommand(opts: ModelsListOptions): Promise<Models
 #### 4.2 gno models pull
 
 **File:** `src/cli/commands/models/pull.ts`
+
 ```typescript
 export async function modelsPullCommand(opts: ModelsPullOptions): Promise<ModelsPullResult> {
   const config = await loadConfig(opts.configPath);
@@ -509,6 +524,7 @@ export async function modelsPullCommand(opts: ModelsPullOptions): Promise<Models
 #### 4.3 gno models clear
 
 **File:** `src/cli/commands/models/clear.ts`
+
 ```typescript
 export async function modelsClearCommand(opts: ModelsClearOptions): Promise<void> {
   const cache = new ModelCache(getModelsCachePath());
@@ -529,6 +545,7 @@ export async function modelsClearCommand(opts: ModelsClearOptions): Promise<void
 #### 4.4 gno models path
 
 **File:** `src/cli/commands/models/path.ts`
+
 ```typescript
 export async function modelsPathCommand(opts: ModelsPathOptions): Promise<string> {
   return getModelsCachePath();
@@ -538,6 +555,7 @@ export async function modelsPathCommand(opts: ModelsPathOptions): Promise<string
 ### Phase 5: Doctor Extension (T6.4)
 
 **File:** `src/cli/commands/doctor.ts` (extend)
+
 ```typescript
 async function checkModels(config: Config): Promise<DoctorCheck[]> {
   const checks: DoctorCheck[] = [];
@@ -630,13 +648,13 @@ async function checkModels(config: Config): Promise<DoctorCheck[]> {
 
 ## Risk Analysis & Mitigation
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Native compilation fails on some platforms | High | `gno doctor` diagnoses; document rebuild steps |
-| Model files are multi-GB | Medium | Progress bars; resume downloads |
-| node-llama-cpp API changes | Medium | Pin version; adapter isolation |
-| Out of memory on small machines | High | Auto-config; smaller quantizations |
-| Model version drift breaks determinism | Medium | Pin URIs to commits in presets |
+| Risk                                       | Impact | Mitigation                                     |
+| ------------------------------------------ | ------ | ---------------------------------------------- |
+| Native compilation fails on some platforms | High   | `gno doctor` diagnoses; document rebuild steps |
+| Model files are multi-GB                   | Medium | Progress bars; resume downloads                |
+| node-llama-cpp API changes                 | Medium | Pin version; adapter isolation                 |
+| Out of memory on small machines            | High   | Auto-config; smaller quantizations             |
+| Model version drift breaks determinism     | Medium | Pin URIs to commits in presets                 |
 
 ---
 
@@ -644,40 +662,40 @@ async function checkModels(config: Config): Promise<DoctorCheck[]> {
 
 ### New Files
 
-| Path | Description |
-|------|-------------|
-| `src/llm/types.ts` | Port interfaces, model types |
-| `src/llm/errors.ts` | LlmError helpers |
-| `src/llm/cache.ts` | Model cache resolver |
-| `src/llm/registry.ts` | Preset registry + getActivePreset() |
-| `src/llm/index.ts` | Module exports (front door) |
-| `src/llm/nodeLlamaCpp/adapter.ts` | Main adapter |
-| `src/llm/nodeLlamaCpp/embedding.ts` | EmbeddingPort impl |
-| `src/llm/nodeLlamaCpp/generation.ts` | GenerationPort impl |
-| `src/llm/nodeLlamaCpp/rerank.ts` | RerankPort impl |
-| `src/llm/nodeLlamaCpp/lifecycle.ts` | Model loading |
-| `src/llm/nodeLlamaCpp/versions.ts` | Version tracking |
-| `src/cli/commands/models/list.ts` | `gno models list` |
-| `src/cli/commands/models/pull.ts` | `gno models pull` |
-| `src/cli/commands/models/clear.ts` | `gno models clear` |
-| `src/cli/commands/models/path.ts` | `gno models path` |
-| `src/cli/commands/models/index.ts` | Command exports |
-| `spec/output-schemas/models-list.schema.json` | JSON schema |
-| `spec/output-schemas/doctor.schema.json` | JSON schema |
-| `test/llm/cache.test.ts` | Cache unit tests |
-| `test/llm/uri.test.ts` | URI parsing tests |
-| `test/spec/schemas/models-list.test.ts` | Contract tests |
+| Path                                          | Description                         |
+| --------------------------------------------- | ----------------------------------- |
+| `src/llm/types.ts`                            | Port interfaces, model types        |
+| `src/llm/errors.ts`                           | LlmError helpers                    |
+| `src/llm/cache.ts`                            | Model cache resolver                |
+| `src/llm/registry.ts`                         | Preset registry + getActivePreset() |
+| `src/llm/index.ts`                            | Module exports (front door)         |
+| `src/llm/nodeLlamaCpp/adapter.ts`             | Main adapter                        |
+| `src/llm/nodeLlamaCpp/embedding.ts`           | EmbeddingPort impl                  |
+| `src/llm/nodeLlamaCpp/generation.ts`          | GenerationPort impl                 |
+| `src/llm/nodeLlamaCpp/rerank.ts`              | RerankPort impl                     |
+| `src/llm/nodeLlamaCpp/lifecycle.ts`           | Model loading                       |
+| `src/llm/nodeLlamaCpp/versions.ts`            | Version tracking                    |
+| `src/cli/commands/models/list.ts`             | `gno models list`                   |
+| `src/cli/commands/models/pull.ts`             | `gno models pull`                   |
+| `src/cli/commands/models/clear.ts`            | `gno models clear`                  |
+| `src/cli/commands/models/path.ts`             | `gno models path`                   |
+| `src/cli/commands/models/index.ts`            | Command exports                     |
+| `spec/output-schemas/models-list.schema.json` | JSON schema                         |
+| `spec/output-schemas/doctor.schema.json`      | JSON schema                         |
+| `test/llm/cache.test.ts`                      | Cache unit tests                    |
+| `test/llm/uri.test.ts`                        | URI parsing tests                   |
+| `test/spec/schemas/models-list.test.ts`       | Contract tests                      |
 
 ### Modified Files
 
-| Path | Change |
-|------|--------|
-| `package.json` | Add `node-llama-cpp` dependency |
-| `src/config/types.ts` | Add `models` config section |
-| `src/config/defaults.ts` | Add model preset defaults |
-| `src/cli/commands/doctor.ts` | Extend with model checks |
-| `src/cli/index.ts` | Register models subcommands |
-| `spec/cli.md` | Add `--force` to models pull |
+| Path                         | Change                          |
+| ---------------------------- | ------------------------------- |
+| `package.json`               | Add `node-llama-cpp` dependency |
+| `src/config/types.ts`        | Add `models` config section     |
+| `src/config/defaults.ts`     | Add model preset defaults       |
+| `src/cli/commands/doctor.ts` | Extend with model checks        |
+| `src/cli/index.ts`           | Register models subcommands     |
+| `spec/cli.md`                | Add `--force` to models pull    |
 
 ---
 
@@ -745,7 +763,9 @@ test('modelsListCommand output matches schema', async () => {
 ## Design Decisions (from review)
 
 ### D1: First-run download behavior
+
 **Decision**: Commands requiring models fail gracefully with instructions. No auto-download.
+
 ```
 Error: Embedding model not cached
 
@@ -754,25 +774,33 @@ Then retry your command.
 ```
 
 ### D2: Default `pull` behavior
+
 **Decision**: `gno models pull` (no flags) = `--all` (download all models)
 
 ### D3: Model re-download policy
+
 **Decision**: Skip if checksum matches. Add `--force` flag to re-download. Update spec/cli.md.
 
 ### D4: Model unloading policy
+
 **Decision**: Keep warm for 5 min (configurable `warmModelTtl`), then dispose.
 
 ### D5: Scope of `llm_cache` table
+
 **Decision**:
+
 - **Model artifacts**: Filesystem manifest (`manifest.json` in cache dir)
 - **Inference result caching**: SQLite `llm_cache` table (for EPIC 8 query expansion/HyDE caching)
 - EPIC 6 only implements model artifact caching. EPIC 8 adds inference result caching.
 
 ### D6: `models list` output fields
+
 **Decision**: Update spec to include `cacheDir` and `totalSize`. Add schema to `spec/output-schemas/models-list.schema.json`.
 
 ### D7: Determinism implementation
+
 **Decision**: Add versioned prompt templates in EPIC 8 (query expansion). EPIC 6 provides:
+
 - `temperature: 0` default in GenParams
 - `seed: 42` default in GenParams
 - Port interfaces that enforce these defaults

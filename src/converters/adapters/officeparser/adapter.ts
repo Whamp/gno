@@ -3,23 +3,25 @@
  * Uses parseOfficeAsync() with Buffer for in-memory extraction.
  */
 
-import { parseOfficeAsync } from 'officeparser';
-import { adapterError, corruptError, tooLargeError } from '../../errors';
-import { basenameWithoutExt } from '../../path';
+import { parseOfficeAsync } from "officeparser";
+
 import type {
   Converter,
   ConvertInput,
   ConvertResult,
   ConvertWarning,
-} from '../../types';
-import { ADAPTER_VERSIONS } from '../../versions';
+} from "../../types";
 
-const CONVERTER_ID = 'adapter/officeparser' as const;
+import { adapterError, corruptError, tooLargeError } from "../../errors";
+import { basenameWithoutExt } from "../../path";
+import { ADAPTER_VERSIONS } from "../../versions";
+
+const CONVERTER_ID = "adapter/officeparser" as const;
 const CONVERTER_VERSION = ADAPTER_VERSIONS.officeparser;
 
 /** Supported MIME type */
 const PPTX_MIME =
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation";
 
 /**
  * Control character pattern built dynamically to avoid lint issues.
@@ -27,7 +29,7 @@ const PPTX_MIME =
  */
 const CONTROL_CHAR_PATTERN = new RegExp(
   `[${String.fromCharCode(0)}-${String.fromCharCode(31)}${String.fromCharCode(127)}]`,
-  'g'
+  "g"
 );
 
 /**
@@ -36,9 +38,9 @@ const CONTROL_CHAR_PATTERN = new RegExp(
  */
 function sanitizeTitle(title: string): string {
   return title
-    .replace(/[\r\n]/g, ' ')
-    .replace(CONTROL_CHAR_PATTERN, '')
-    .replace(/\s+/g, ' ')
+    .replace(/[\r\n]/g, " ")
+    .replace(CONTROL_CHAR_PATTERN, "")
+    .replace(/\s+/g, " ")
     .trim();
 }
 
@@ -62,7 +64,7 @@ export const officeparserAdapter: Converter = {
   version: CONVERTER_VERSION,
 
   canHandle(mime: string, ext: string): boolean {
-    return ext === '.pptx' || mime === PPTX_MIME;
+    return ext === ".pptx" || mime === PPTX_MIME;
   },
 
   async convert(input: ConvertInput): Promise<ConvertResult> {
@@ -75,14 +77,14 @@ export const officeparserAdapter: Converter = {
       // Zero-copy Buffer view (input.bytes is immutable by contract)
       const buffer = toBuffer(input.bytes);
       const text = await parseOfficeAsync(buffer, {
-        newlineDelimiter: '\n',
+        newlineDelimiter: "\n",
         ignoreNotes: false, // Include speaker notes
       });
 
       if (!text || text.trim().length === 0) {
         return {
           ok: false,
-          error: corruptError(input, CONVERTER_ID, 'Empty extraction result'),
+          error: corruptError(input, CONVERTER_ID, "Empty extraction result"),
         };
       }
 
@@ -95,7 +97,7 @@ export const officeparserAdapter: Converter = {
       // NOTE: Do NOT canonicalize here - pipeline.ts handles all normalization
       const warnings: ConvertWarning[] = [];
       if (markdown.length < 10 && input.bytes.length > 1000) {
-        warnings.push({ code: 'LOSSY', message: 'Suspiciously short output' });
+        warnings.push({ code: "LOSSY", message: "Suspiciously short output" });
       }
 
       return {
@@ -117,7 +119,7 @@ export const officeparserAdapter: Converter = {
         error: adapterError(
           input,
           CONVERTER_ID,
-          err instanceof Error ? err.message : 'Unknown error',
+          err instanceof Error ? err.message : "Unknown error",
           err
         ),
       };

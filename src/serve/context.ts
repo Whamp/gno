@@ -5,20 +5,21 @@
  * @module src/serve/context
  */
 
-import type { Config } from '../config/types';
-import type { CreatePortOptions } from '../llm/nodeLlamaCpp/adapter';
-import { LlmAdapter } from '../llm/nodeLlamaCpp/adapter';
-import { resolveDownloadPolicy } from '../llm/policy';
-import { getActivePreset } from '../llm/registry';
+import type { Config } from "../config/types";
+import type { CreatePortOptions } from "../llm/nodeLlamaCpp/adapter";
 import type {
   DownloadProgress,
   EmbeddingPort,
   GenerationPort,
   ModelType,
   RerankPort,
-} from '../llm/types';
-import type { SqliteAdapter } from '../store/sqlite/adapter';
-import { createVectorIndexPort, type VectorIndexPort } from '../store/vector';
+} from "../llm/types";
+import type { SqliteAdapter } from "../store/sqlite/adapter";
+
+import { LlmAdapter } from "../llm/nodeLlamaCpp/adapter";
+import { resolveDownloadPolicy } from "../llm/policy";
+import { getActivePreset } from "../llm/registry";
+import { createVectorIndexPort, type VectorIndexPort } from "../store/vector";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Download State (in-memory, single user)
@@ -108,7 +109,7 @@ export async function createServerContext(
     // Try to create embedding port
     const embedResult = await llm.createEmbeddingPort(
       preset.embed,
-      createPortOptions('embed')
+      createPortOptions("embed")
     );
     if (embedResult.ok) {
       embedPort = embedResult.value;
@@ -123,7 +124,7 @@ export async function createServerContext(
         });
         if (vectorResult.ok) {
           vectorIndex = vectorResult.value;
-          console.log('Vector search enabled');
+          console.log("Vector search enabled");
         }
       }
     }
@@ -131,21 +132,21 @@ export async function createServerContext(
     // Try to create generation port
     const genResult = await llm.createGenerationPort(
       preset.gen,
-      createPortOptions('gen')
+      createPortOptions("gen")
     );
     if (genResult.ok) {
       genPort = genResult.value;
-      console.log('AI answer generation enabled');
+      console.log("AI answer generation enabled");
     }
 
     // Try to create rerank port
     const rerankResult = await llm.createRerankPort(
       preset.rerank,
-      createPortOptions('rerank')
+      createPortOptions("rerank")
     );
     if (rerankResult.ok) {
       rerankPort = rerankResult.value;
-      console.log('Reranking enabled');
+      console.log("Reranking enabled");
     }
 
     // Reset download state after initialization
@@ -156,7 +157,7 @@ export async function createServerContext(
   } catch (e) {
     // Log but don't fail - models are optional
     console.log(
-      'LLM initialization skipped:',
+      "LLM initialization skipped:",
       e instanceof Error ? e.message : String(e)
     );
   }
@@ -185,9 +186,9 @@ export async function createServerContext(
  */
 export async function disposeServerContext(ctx: ServerContext): Promise<void> {
   const ports = [
-    { name: 'embed', port: ctx.embedPort },
-    { name: 'gen', port: ctx.genPort },
-    { name: 'rerank', port: ctx.rerankPort },
+    { name: "embed", port: ctx.embedPort },
+    { name: "gen", port: ctx.genPort },
+    { name: "rerank", port: ctx.rerankPort },
   ];
 
   for (const { name, port } of ports) {

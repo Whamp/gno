@@ -8,20 +8,20 @@ GNO command-line interface guide.
 
 ## Quick Reference
 
-| Command | Description |
-|---------|-------------|
-| `gno init` | Initialize config and database |
-| `gno update` | Index all collections |
-| `gno search` | BM25 full-text search |
-| `gno vsearch` | Vector similarity search |
-| `gno query` | Hybrid search (BM25 + vector) |
-| `gno ask` | Search with AI answer |
-| `gno get` | Retrieve document content |
-| `gno ls` | List indexed documents |
-| `gno serve` | Start web UI server |
-| `gno models` | Manage models (list, pull, use) |
-| `gno skill` | Install GNO skill for AI agents |
-| `gno doctor` | Check system health |
+| Command       | Description                     |
+| ------------- | ------------------------------- |
+| `gno init`    | Initialize config and database  |
+| `gno update`  | Index all collections           |
+| `gno search`  | BM25 full-text search           |
+| `gno vsearch` | Vector similarity search        |
+| `gno query`   | Hybrid search (BM25 + vector)   |
+| `gno ask`     | Search with AI answer           |
+| `gno get`     | Retrieve document content       |
+| `gno ls`      | List indexed documents          |
+| `gno serve`   | Start web UI server             |
+| `gno models`  | Manage models (list, pull, use) |
+| `gno skill`   | Install GNO skill for AI agents |
+| `gno doctor`  | Check system health             |
 
 ## Global Flags
 
@@ -59,6 +59,7 @@ gno search "meeting" --files
 **Snowball stemming**: "running" matches "run", "scored" matches "score", plurals match singulars.
 
 Options:
+
 - `-n, --limit <n>` - Limit results (default: 5; 20 with --json/--files)
 - `--min-score <n>` - Minimum score threshold (0-1)
 - `--full` - Show full document content (not just snippet)
@@ -90,17 +91,20 @@ gno query "auth" --thorough          # Full pipeline: ~5-8s
 ```
 
 **Search modes**:
+
 - **Default** (~2-3s): Skip expansion, with reranking. Best balance of speed and quality.
 - `--fast` (~0.7s): Skip both expansion and reranking. Use for quick lookups.
 - `--thorough` (~5-8s): Full pipeline with LLM expansion and reranking. Best recall.
 
 **Pipeline features**:
+
 - **Strong signal detection**: Skips expensive LLM expansion when BM25 has confident match
 - **2× weight for original query**: Prevents dilution by LLM-generated variants
 - **Tiered top-rank bonus**: +0.05 for #1, +0.02 for #2-3
 - **Chunk-level reranking**: Best chunk per doc (4K max) for 25× faster reranking
 
 Additional options:
+
 - `--fast` - Skip expansion and reranking (fastest, ~0.7s)
 - `--thorough` - Enable query expansion (slower, ~5-8s)
 - `--no-expand` - Disable query expansion
@@ -108,6 +112,7 @@ Additional options:
 - `--explain` - Show detailed scoring breakdown (to stderr)
 
 The `--explain` flag outputs:
+
 - BM25 scores per result
 - Vector similarity scores
 - RRF fusion scores (with variant weights)
@@ -134,6 +139,7 @@ gno ask "complex topic" --thorough       # Best recall
 **Preset requirement**: For documents with markdown tables or structured data, use the `quality` preset (`gno models use quality`). Smaller models cannot reliably parse tabular content. This only applies to standalone `--answer` usage—when AI agents (Claude Code, Codex) call GNO via MCP/skill/CLI, they handle answer generation.
 
 Options:
+
 - `--fast` - Skip expansion and reranking (fastest)
 - `--thorough` - Enable query expansion (slower, better recall)
 - `--answer` - Generate grounded AI answer (requires gen model)
@@ -149,6 +155,7 @@ Options:
 ### gno get
 
 Retrieve document content by reference. Supports multiple reference formats:
+
 - `#abc123` - Document ID (hash prefix)
 - `gno://collection/path/to/file` - Virtual URI
 - `collection/path` - Collection + relative path
@@ -161,6 +168,7 @@ gno get abc123 --from 50 -l 100  # Lines 50-150
 ```
 
 Options:
+
 - `--from <line>` - Start output at line number (1-indexed)
 - `-l, --limit <lines>` - Limit to N lines
 - `--line-numbers` - Prefix lines with numbers
@@ -176,6 +184,7 @@ gno multi-get abc123 def456 --max-bytes 10000
 ```
 
 Options:
+
 - `--max-bytes <n>` - Limit bytes per document (truncates long docs)
 
 ### gno ls
@@ -191,6 +200,7 @@ gno ls --files
 ```
 
 Options:
+
 - `[scope]` - Filter by collection name or URI prefix
 
 ## Collection Commands
@@ -205,6 +215,7 @@ gno collection add ~/code --name code --pattern "**/*.ts" --exclude node_modules
 ```
 
 Options:
+
 - `-n, --name <name>` - Collection identifier (required)
 - `--pattern <glob>` - File matching pattern
 - `--include <exts>` - Extension allowlist (CSV)
@@ -248,6 +259,7 @@ gno update --git-pull       # Pull git repos first
 ```
 
 Options:
+
 - `--git-pull` - Run `git pull` in git repositories
 
 Use `gno update` when you only need keyword search, or when you want to quickly sync changes and run `gno embed` separately.
@@ -264,6 +276,7 @@ gno index --git-pull        # Pull git repos first
 ```
 
 Options:
+
 - `--collection <name>` - Scope to single collection
 - `--no-embed` - Skip embedding phase
 - `--models-pull` - Download models if missing
@@ -378,6 +391,7 @@ gno skill install --force            # Overwrite existing
 ```
 
 Options:
+
 - `--scope <project|user>` - Installation scope (default: project)
 - `--target <claude|codex|all>` - Target agent (default: claude)
 - `--force` - Overwrite existing installation
@@ -393,6 +407,7 @@ gno skill uninstall --target all
 ```
 
 Options:
+
 - `-s, --scope <project|user>` - Scope to uninstall from (default: project)
 - `-t, --target <claude|codex|all>` - Target to uninstall from (default: claude)
 
@@ -407,6 +422,7 @@ gno skill show --all
 ```
 
 Options:
+
 - `--file <name>` - Show specific file only
 - `--all` - Show all skill files
 
@@ -459,14 +475,14 @@ gno reset --confirm
 
 ## Output Formats
 
-| Format | Flag | Use Case |
-|--------|------|----------|
-| Terminal | (default) | Human reading |
-| JSON | `--json` | Scripting, parsing |
-| Files | `--files` | Pipe to other tools |
-| CSV | `--csv` | Spreadsheet import |
-| Markdown | `--md` | Documentation |
-| XML | `--xml` | XML tooling |
+| Format   | Flag      | Use Case            |
+| -------- | --------- | ------------------- |
+| Terminal | (default) | Human reading       |
+| JSON     | `--json`  | Scripting, parsing  |
+| Files    | `--files` | Pipe to other tools |
+| CSV      | `--csv`   | Spreadsheet import  |
+| Markdown | `--md`    | Documentation       |
+| XML      | `--xml`   | XML tooling         |
 
 Example:
 
@@ -480,11 +496,11 @@ gno search "test" --json | jq '.results[].uri'
 
 ## Exit Codes
 
-| Code | Meaning |
-|------|---------|
-| 0 | Success |
-| 1 | Validation error (bad input) |
-| 2 | Runtime error (IO, DB, model) |
+| Code | Meaning                       |
+| ---- | ----------------------------- |
+| 0    | Success                       |
+| 1    | Validation error (bad input)  |
+| 2    | Runtime error (IO, DB, model) |
 
 ## Web UI
 
@@ -498,15 +514,18 @@ gno serve --port 8080
 ```
 
 Options:
+
 - `-p, --port <num>` - Port to listen on (default: 3000)
 
 **Features:**
+
 - **Dashboard** (`/`) - Index stats, collection overview, health status
 - **Search** (`/search`) - Full-text BM25 search with highlighted snippets
 - **Browse** (`/browse`) - Collection and document list with filtering
 - **Document View** (`/doc`) - Rendered document content with syntax highlighting
 
 **API Endpoints:**
+
 - `GET /api/health` - Health check
 - `GET /api/status` - Index status (documents, chunks, collections)
 - `GET /api/collections` - List collections
@@ -515,12 +534,14 @@ Options:
 - `POST /api/search` - Search (`{"query": "...", "limit": 10}`)
 
 **Security:**
+
 - Binds to `127.0.0.1` only (no LAN exposure)
 - Content Security Policy headers
 - CSRF protection for mutations
 - DNS rebinding protection
 
 **Example:**
+
 ```bash
 # Start server
 gno serve --port 3001

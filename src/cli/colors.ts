@@ -4,7 +4,7 @@
  * @module src/cli/colors
  */
 
-import pc from 'picocolors';
+import pc from "picocolors";
 
 // Track whether colors are enabled (global state for CLI lifetime)
 let colorsEnabled = true;

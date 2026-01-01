@@ -39,6 +39,7 @@ GNO becomes one tool in your AI assistant's toolkit. Combine it with:
 - **Custom skills** - "Fetch today's emails, summarize them, and check if any relate to open items in my notes"
 
 The workflow becomes:
+
 1. Claude reads your email
 2. Claude searches your notes for context
 3. Claude drafts a response with full background
@@ -221,6 +222,7 @@ After installation, restart your agent. It will automatically detect the GNO ski
 ![GNO Skill in Claude Code](../assets/screenshots/claudecodeskill.jpg)
 
 **What gets installed:**
+
 - `SKILL.md` - Instructions for the agent on how to use GNO
 - Tool definitions for search, query, and document retrieval
 
@@ -237,15 +239,19 @@ See [MCP Integration](MCP.md) for detailed setup.
 ### Workflow Patterns
 
 **Research-then-answer:**
+
 > "Search my notes for anything about the authentication system, then help me debug this login issue"
 
 **Documentation lookup:**
+
 > "Find my API docs and show me how the /users endpoint works"
 
 **Cross-reference:**
+
 > "Search for all mentions of 'database migration' across my projects"
 
 **Memory/recall:**
+
 > "What did I write last week about the deployment pipeline?"
 
 ### Best Practices

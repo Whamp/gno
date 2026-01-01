@@ -4,9 +4,10 @@
  * @module src/llm/nodeLlamaCpp/embedding
  */
 
-import { inferenceFailedError } from '../errors';
-import type { EmbeddingPort, LlmResult } from '../types';
-import type { ModelManager } from './lifecycle';
+import type { EmbeddingPort, LlmResult } from "../types";
+import type { ModelManager } from "./lifecycle";
+
+import { inferenceFailedError } from "../errors";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -15,12 +16,12 @@ import type { ModelManager } from './lifecycle';
 // LlamaModel type from node-llama-cpp
 type LlamaModel = Awaited<
   ReturnType<
-    Awaited<ReturnType<typeof import('node-llama-cpp').getLlama>>['loadModel']
+    Awaited<ReturnType<typeof import("node-llama-cpp").getLlama>>["loadModel"]
   >
 >;
 
 type LlamaEmbeddingContext = Awaited<
-  ReturnType<LlamaModel['createEmbeddingContext']>
+  ReturnType<LlamaModel["createEmbeddingContext"]>
 >;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -97,7 +98,7 @@ export class NodeLlamaCppEmbedding implements EmbeddingPort {
 
   dimensions(): number {
     if (this.dims === null) {
-      throw new Error('Call init() or embed() first to initialize dimensions');
+      throw new Error("Call init() or embed() first to initialize dimensions");
     }
     return this.dims;
   }
@@ -138,7 +139,7 @@ export class NodeLlamaCppEmbedding implements EmbeddingPort {
     const model = await this.manager.loadModel(
       this.modelPath,
       this.modelUri,
-      'embed'
+      "embed"
     );
     if (!model.ok) {
       this.contextPromise = null; // Allow retry
@@ -152,7 +153,7 @@ export class NodeLlamaCppEmbedding implements EmbeddingPort {
 
       // Cache dimensions from model (available without running embed)
       const size = llamaModel.embeddingVectorSize;
-      if (this.dims === null && typeof size === 'number' && size > 0) {
+      if (this.dims === null && typeof size === "number" && size > 0) {
         this.dims = size;
       }
 

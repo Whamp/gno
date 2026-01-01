@@ -5,11 +5,12 @@
  * @module src/cli/commands/models/list
  */
 
-import { getModelsCachePath } from '../../../app/constants';
-import { loadConfig } from '../../../config';
-import { ModelCache } from '../../../llm/cache';
-import { getActivePreset } from '../../../llm/registry';
-import type { ModelStatus } from '../../../llm/types';
+import type { ModelStatus } from "../../../llm/types";
+
+import { getModelsCachePath } from "../../../app/constants";
+import { loadConfig } from "../../../config";
+import { ModelCache } from "../../../llm/cache";
+import { getActivePreset } from "../../../llm/registry";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -73,8 +74,8 @@ export async function modelsList(
   options: ModelsListOptions = {}
 ): Promise<ModelsListResult> {
   // Load config (use defaults if not initialized)
-  const { createDefaultConfig } = await import('../../../config');
-  const { getModelConfig, listPresets } = await import('../../../llm/registry');
+  const { createDefaultConfig } = await import("../../../config");
+  const { getModelConfig, listPresets } = await import("../../../llm/registry");
   const configResult = await loadConfig(options.configPath);
   const config = configResult.ok ? configResult.value : createDefaultConfig();
 
@@ -110,10 +111,10 @@ export async function modelsList(
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) {
-    return '0 B';
+    return "0 B";
   }
   const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const sizes = ["B", "KB", "MB", "GB", "TB"];
   const i = Math.min(
     Math.floor(Math.log(bytes) / Math.log(k)),
     sizes.length - 1
@@ -125,58 +126,58 @@ function formatTerminal(result: ModelsListResult): string {
   const lines: string[] = [];
 
   // Show presets
-  lines.push('Presets:');
+  lines.push("Presets:");
   for (const p of result.presets) {
-    const marker = p.active ? '>' : ' ';
+    const marker = p.active ? ">" : " ";
     lines.push(`  ${marker} ${p.id}: ${p.name}`);
   }
-  lines.push('');
+  lines.push("");
 
   // Show models for active preset
   lines.push(`Models (${result.activePreset}):`);
 
-  const statusIcon = (s: ModelStatus) => (s.cached ? '✓' : '✗');
+  const statusIcon = (s: ModelStatus) => (s.cached ? "✓" : "✗");
 
   lines.push(
     `  embed:  ${statusIcon(result.embed)} ${result.embed.uri}` +
-      (result.embed.size ? ` (${formatBytes(result.embed.size)})` : '')
+      (result.embed.size ? ` (${formatBytes(result.embed.size)})` : "")
   );
   lines.push(
     `  rerank: ${statusIcon(result.rerank)} ${result.rerank.uri}` +
-      (result.rerank.size ? ` (${formatBytes(result.rerank.size)})` : '')
+      (result.rerank.size ? ` (${formatBytes(result.rerank.size)})` : "")
   );
   lines.push(
     `  gen:    ${statusIcon(result.gen)} ${result.gen.uri}` +
-      (result.gen.size ? ` (${formatBytes(result.gen.size)})` : '')
+      (result.gen.size ? ` (${formatBytes(result.gen.size)})` : "")
   );
 
-  lines.push('');
+  lines.push("");
   lines.push(`Cache: ${result.cacheDir}`);
   lines.push(`Total size: ${formatBytes(result.totalSize)}`);
 
   const allCached =
     result.embed.cached && result.rerank.cached && result.gen.cached;
   if (!allCached) {
-    lines.push('');
-    lines.push('Run: gno models pull --all');
+    lines.push("");
+    lines.push("Run: gno models pull --all");
   }
 
-  lines.push('');
-  lines.push('Switch preset: gno models use <preset>');
+  lines.push("");
+  lines.push("Switch preset: gno models use <preset>");
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 function formatMarkdown(result: ModelsListResult): string {
   const lines: string[] = [];
 
-  lines.push('# Models');
-  lines.push('');
-  lines.push('| Type | URI | Cached | Size |');
-  lines.push('|------|-----|--------|------|');
+  lines.push("# Models");
+  lines.push("");
+  lines.push("| Type | URI | Cached | Size |");
+  lines.push("|------|-----|--------|------|");
 
-  const status = (s: ModelStatus) => (s.cached ? '✓' : '✗');
-  const size = (s: ModelStatus) => (s.size ? formatBytes(s.size) : '-');
+  const status = (s: ModelStatus) => (s.cached ? "✓" : "✗");
+  const size = (s: ModelStatus) => (s.size ? formatBytes(s.size) : "-");
 
   lines.push(
     `| embed | ${result.embed.uri} | ${status(result.embed)} | ${size(result.embed)} |`
@@ -188,11 +189,11 @@ function formatMarkdown(result: ModelsListResult): string {
     `| gen | ${result.gen.uri} | ${status(result.gen)} | ${size(result.gen)} |`
   );
 
-  lines.push('');
+  lines.push("");
   lines.push(`**Cache**: ${result.cacheDir}`);
   lines.push(`**Total size**: ${formatBytes(result.totalSize)}`);
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**

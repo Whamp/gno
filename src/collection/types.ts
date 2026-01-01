@@ -4,7 +4,7 @@
  * @module src/collection/types
  */
 
-import type { Collection, Config } from '../config/types';
+import type { Collection, Config } from "../config/types";
 
 /**
  * Input for adding a collection.
@@ -57,11 +57,11 @@ export interface CollectionSuccess<T = Config> {
 export interface CollectionError {
   ok: false;
   code:
-    | 'VALIDATION'
-    | 'NOT_FOUND'
-    | 'DUPLICATE'
-    | 'PATH_NOT_FOUND'
-    | 'HAS_REFERENCES';
+    | "VALIDATION"
+    | "NOT_FOUND"
+    | "DUPLICATE"
+    | "PATH_NOT_FOUND"
+    | "HAS_REFERENCES";
   message: string;
 }
 

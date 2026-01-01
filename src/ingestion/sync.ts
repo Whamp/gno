@@ -5,21 +5,14 @@
  * @module src/ingestion/sync
  */
 
-import type { Collection } from '../config/types';
-import { getDefaultMimeDetector, type MimeDetector } from '../converters/mime';
-import {
-  type ConversionPipeline,
-  getDefaultPipeline,
-} from '../converters/pipeline';
-import { DEFAULT_LIMITS } from '../converters/types';
+import type { Collection } from "../config/types";
 import type {
   ChunkInput,
   DocumentRow,
   IngestErrorInput,
   StorePort,
   StoreResult,
-} from '../store/types';
-import { defaultChunker } from './chunker';
+} from "../store/types";
 import type {
   ChunkerPort,
   CollectionSyncResult,
@@ -29,9 +22,17 @@ import type {
   SyncResult,
   WalkEntry,
   WalkerPort,
-} from './types';
-import { collectionToWalkConfig, DEFAULT_CHUNK_PARAMS } from './types';
-import { defaultWalker } from './walker';
+} from "./types";
+
+import { getDefaultMimeDetector, type MimeDetector } from "../converters/mime";
+import {
+  type ConversionPipeline,
+  getDefaultPipeline,
+} from "../converters/pipeline";
+import { DEFAULT_LIMITS } from "../converters/types";
+import { defaultChunker } from "./chunker";
+import { collectionToWalkConfig, DEFAULT_CHUNK_PARAMS } from "./types";
+import { defaultWalker } from "./walker";
 
 /** Default concurrency for file processing */
 const DEFAULT_CONCURRENCY = 1;
@@ -52,28 +53,28 @@ function decideAction(
 ): ProcessDecision {
   // No existing doc - must process
   if (!existing) {
-    return { kind: 'process', reason: 'new file' };
+    return { kind: "process", reason: "new file" };
   }
 
   // Source hash changed - must process
   if (existing.sourceHash !== sourceHash) {
-    return { kind: 'process', reason: 'content changed' };
+    return { kind: "process", reason: "content changed" };
   }
 
   // Source unchanged, but check for repair cases:
 
   // 1. Previous conversion failed (mirrorHash is null)
   if (!existing.mirrorHash) {
-    return { kind: 'repair', reason: 'previous conversion failed' };
+    return { kind: "repair", reason: "previous conversion failed" };
   }
 
   // 2. Document has error recorded
   if (existing.lastErrorCode) {
-    return { kind: 'repair', reason: 'previous error recorded' };
+    return { kind: "repair", reason: "previous error recorded" };
   }
 
   // All good - skip
-  return { kind: 'skip', reason: 'unchanged' };
+  return { kind: "skip", reason: "unchanged" };
 }
 
 /**
@@ -188,7 +189,7 @@ export class SyncService {
    * Process a single file through the ingestion pipeline.
    * All store operations are checked and errors are propagated.
    */
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: file processing with multiple extraction and embedding paths
+  // oxlint-disable-next-line max-lines-per-function -- file processing with multiple extraction paths
   private async processFile(
     collection: Collection,
     entry: WalkEntry,
@@ -207,9 +208,9 @@ export class SyncService {
       const bytes = await Bun.file(entry.absPath).bytes();
 
       // 2. Compute sourceHash
-      const hasher = new Bun.CryptoHasher('sha256');
+      const hasher = new Bun.CryptoHasher("sha256");
       hasher.update(bytes);
-      const sourceHash = hasher.digest('hex');
+      const sourceHash = hasher.digest("hex");
 
       // 3. Check existing doc for skip/repair decision
       const existingResult = await store.getDocument(
@@ -219,8 +220,8 @@ export class SyncService {
       const existing = existingResult.ok ? existingResult.value : null;
       const decision = decideAction(existing, sourceHash);
 
-      if (decision.kind === 'skip') {
-        return { relPath: entry.relPath, status: 'unchanged' };
+      if (decision.kind === "skip") {
+        return { relPath: entry.relPath, status: "unchanged" };
       }
 
       // 4. Detect MIME (bytes is already Uint8Array from Bun.file().bytes())
@@ -268,15 +269,15 @@ export class SyncService {
         if (!upsertResult.ok) {
           return {
             relPath: entry.relPath,
-            status: 'error',
-            errorCode: 'STORE_ERROR',
+            status: "error",
+            errorCode: "STORE_ERROR",
             errorMessage: upsertResult.error.message,
           };
         }
 
         return {
           relPath: entry.relPath,
-          status: 'error',
+          status: "error",
           errorCode: convertResult.error.code,
           errorMessage: convertResult.error.message,
         };
@@ -303,7 +304,7 @@ export class SyncService {
         lastErrorMessage: undefined,
       });
 
-      const docid = mustOk(docidResult, 'upsertDocument', {
+      const docid = mustOk(docidResult, "upsertDocument", {
         collection: collection.name,
         relPath: entry.relPath,
       });
@@ -313,7 +314,7 @@ export class SyncService {
         artifact.mirrorHash,
         artifact.markdown
       );
-      mustOk(contentResult, 'upsertContent', {
+      mustOk(contentResult, "upsertContent", {
         mirrorHash: artifact.mirrorHash,
       });
 
@@ -340,18 +341,18 @@ export class SyncService {
         artifact.mirrorHash,
         chunkInputs
       );
-      mustOk(chunksResult, 'upsertChunks', {
+      mustOk(chunksResult, "upsertChunks", {
         mirrorHash: artifact.mirrorHash,
         chunkCount: chunkInputs.length,
       });
 
       // 11. Rebuild FTS for this hash - CHECKED
       const ftsResult = await store.rebuildFtsForHash(artifact.mirrorHash);
-      mustOk(ftsResult, 'rebuildFtsForHash', {
+      mustOk(ftsResult, "rebuildFtsForHash", {
         mirrorHash: artifact.mirrorHash,
       });
 
-      const status = existing ? 'updated' : 'added';
+      const status = existing ? "updated" : "added";
       return {
         relPath: entry.relPath,
         status,
@@ -359,13 +360,13 @@ export class SyncService {
         mirrorHash: artifact.mirrorHash,
       };
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
+      const message = error instanceof Error ? error.message : "Unknown error";
       // Distinguish store errors from other internal errors
       const isStoreError =
-        message.startsWith('Store operation failed:') ||
+        message.startsWith("Store operation failed:") ||
         (error instanceof Error &&
           (error as Error & { context?: unknown }).context !== undefined);
-      const code = isStoreError ? 'STORE_ERROR' : 'INTERNAL';
+      const code = isStoreError ? "STORE_ERROR" : "INTERNAL";
 
       // Record internal error to store (best-effort)
       try {
@@ -403,7 +404,7 @@ export class SyncService {
 
       return {
         relPath: entry.relPath,
-        status: 'error',
+        status: "error",
         errorCode: code,
         errorMessage: message,
       };
@@ -413,7 +414,7 @@ export class SyncService {
   /**
    * Sync a single collection.
    */
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: sync orchestration with git integration and progress tracking
+  // oxlint-disable-next-line max-lines-per-function -- sync orchestration with git and progress
   async syncCollection(
     collection: Collection,
     store: StorePort,
@@ -443,31 +444,31 @@ export class SyncService {
     // a previously-included file, that doc SHOULD be marked inactive
     const seenPaths = new Set<string>();
     for (const skip of skipped) {
-      if (skip.reason === 'TOO_LARGE') {
+      if (skip.reason === "TOO_LARGE") {
         seenPaths.add(skip.relPath);
       }
     }
 
     // 3. Record TOO_LARGE errors and track in seenPaths
     for (const skip of skipped) {
-      if (skip.reason === 'TOO_LARGE') {
+      if (skip.reason === "TOO_LARGE") {
         const recordResult = await store.recordError({
           collection: collection.name,
           relPath: skip.relPath,
-          code: 'TOO_LARGE',
+          code: "TOO_LARGE",
           message: `File size ${skip.size} exceeds limit ${maxBytes}`,
         });
         // Log failure but continue
         if (!recordResult.ok) {
           errors.push({
             relPath: skip.relPath,
-            code: 'STORE_ERROR',
+            code: "STORE_ERROR",
             message: `Failed to record error: ${recordResult.error.message}`,
           });
         }
         errors.push({
           relPath: skip.relPath,
-          code: 'TOO_LARGE',
+          code: "TOO_LARGE",
           message: `File size ${skip.size} exceeds limit ${maxBytes}`,
         });
       }
@@ -499,16 +500,16 @@ export class SyncService {
               options
             );
             switch (result.status) {
-              case 'added':
+              case "added":
                 added += 1;
                 break;
-              case 'updated':
+              case "updated":
                 updated += 1;
                 break;
-              case 'unchanged':
+              case "unchanged":
                 unchanged += 1;
                 break;
-              case 'error':
+              case "error":
                 errored += 1;
                 if (result.errorCode && result.errorMessage) {
                   errors.push({
@@ -530,7 +531,7 @@ export class SyncService {
           const txResult = await store.withTransaction(runBatch);
           if (!txResult.ok) {
             errors.push({
-              relPath: '(transaction batch)',
+              relPath: "(transaction batch)",
               code: txResult.error.code,
               message: txResult.error.message,
             });
@@ -566,16 +567,16 @@ export class SyncService {
       // Aggregate results
       for (const result of results) {
         switch (result.status) {
-          case 'added':
+          case "added":
             added += 1;
             break;
-          case 'updated':
+          case "updated":
             updated += 1;
             break;
-          case 'unchanged':
+          case "unchanged":
             unchanged += 1;
             break;
-          case 'error':
+          case "error":
             errored += 1;
             if (result.errorCode && result.errorMessage) {
               errors.push({

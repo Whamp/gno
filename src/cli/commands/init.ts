@@ -5,8 +5,9 @@
  * @module src/cli/commands/init
  */
 
-import { basename } from 'node:path';
-import { getIndexDbPath } from '../../app/constants';
+import { basename } from "node:path";
+
+import { getIndexDbPath } from "../../app/constants";
 import {
   type Collection,
   createDefaultConfig,
@@ -22,7 +23,7 @@ import {
   pathExists,
   saveConfig,
   toAbsolutePath,
-} from '../../config';
+} from "../../config";
 
 /** Pattern to replace invalid chars in collection names with hyphens */
 const INVALID_NAME_CHARS = /[^a-z0-9_-]/g;
@@ -98,7 +99,7 @@ async function handleAlreadyInitialized(
       configPath: paths.configFile,
       dataDir: paths.dataDir,
       dbPath,
-      error: 'Config exists but could not be loaded',
+      error: "Config exists but could not be loaded",
     };
   }
 
@@ -165,7 +166,7 @@ export async function init(options: InitOptions = {}): Promise<InitResult> {
       configPath: paths.configFile,
       dataDir: paths.dataDir,
       dbPath: getIndexDbPath(),
-      error: `Invalid tokenizer: ${options.tokenizer}. Valid: ${FTS_TOKENIZERS.join(', ')}`,
+      error: `Invalid tokenizer: ${options.tokenizer}. Valid: ${FTS_TOKENIZERS.join(", ")}`,
     };
   }
 
@@ -211,7 +212,7 @@ export async function init(options: InitOptions = {}): Promise<InitResult> {
   const dbExists = await dbFile.exists();
   if (!dbExists) {
     try {
-      await Bun.write(dbPath, '');
+      await Bun.write(dbPath, "");
     } catch (error) {
       return {
         success: false,
@@ -242,7 +243,7 @@ async function addCollectionToConfig(
   { success: true; collectionName: string } | { success: false; error: string }
 > {
   if (!options.path) {
-    return { success: false, error: 'Path is required' };
+    return { success: false, error: "Path is required" };
   }
 
   // Convert to absolute path
@@ -260,17 +261,17 @@ async function addCollectionToConfig(
   // Determine collection name
   let collectionName =
     options.name ??
-    basename(absolutePath).toLowerCase().replace(INVALID_NAME_CHARS, '-');
+    basename(absolutePath).toLowerCase().replace(INVALID_NAME_CHARS, "-");
 
   // Ensure name starts with alphanumeric (strip leading non-alphanumeric)
-  collectionName = collectionName.replace(LEADING_NON_ALPHANUMERIC, '');
+  collectionName = collectionName.replace(LEADING_NON_ALPHANUMERIC, "");
 
   // Validate derived name
   if (!collectionName || collectionName.length > 64) {
     return {
       success: false,
       error:
-        'Cannot derive valid collection name from path. Please specify --name explicitly.',
+        "Cannot derive valid collection name from path. Please specify --name explicitly.",
     };
   }
 
@@ -285,14 +286,14 @@ async function addCollectionToConfig(
   // Parse include/exclude CSV if provided (filter empty entries)
   const include = options.include
     ? options.include
-        .split(',')
+        .split(",")
         .map((ext) => ext.trim())
         .filter(Boolean)
     : [];
 
   const exclude = options.exclude
     ? options.exclude
-        .split(',')
+        .split(",")
         .map((pattern) => pattern.trim())
         .filter(Boolean)
     : [...DEFAULT_EXCLUDES];

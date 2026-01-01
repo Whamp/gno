@@ -5,10 +5,11 @@
  * @module src/cli/commands/cleanup
  */
 
-import { getIndexDbPath } from '../../app/constants';
-import { isInitialized, loadConfig } from '../../config';
-import { SqliteAdapter } from '../../store/sqlite/adapter';
-import type { CleanupStats } from '../../store/types';
+import type { CleanupStats } from "../../store/types";
+
+import { getIndexDbPath } from "../../app/constants";
+import { isInitialized, loadConfig } from "../../config";
+import { SqliteAdapter } from "../../store/sqlite/adapter";
 
 /**
  * Options for cleanup command.
@@ -34,7 +35,7 @@ export async function cleanup(
   // Check if initialized
   const initialized = await isInitialized(options.configPath);
   if (!initialized) {
-    return { success: false, error: 'GNO not initialized. Run: gno init' };
+    return { success: false, error: "GNO not initialized. Run: gno init" };
   }
 
   // Load config
@@ -81,10 +82,10 @@ export function formatCleanup(result: CleanupResult): string {
     stats.expiredCache;
 
   if (total === 0) {
-    return 'No orphans found. Index is clean.';
+    return "No orphans found. Index is clean.";
   }
 
-  const lines: string[] = ['Cleanup complete:'];
+  const lines: string[] = ["Cleanup complete:"];
 
   if (stats.orphanedContent > 0) {
     lines.push(`  Orphaned content: ${stats.orphanedContent}`);
@@ -101,5 +102,5 @@ export function formatCleanup(result: CleanupResult): string {
 
   lines.push(`Total removed: ${total}`);
 
-  return lines.join('\n');
+  return lines.join("\n");
 }

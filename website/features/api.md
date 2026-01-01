@@ -53,17 +53,17 @@ curl http://localhost:3000/api/status | jq
 
 ## Available Endpoints
 
-| Endpoint | Method | Description |
-|:---------|:-------|:------------|
-| `/api/status` | GET | Index statistics |
-| `/api/search` | POST | BM25 keyword search |
-| `/api/query` | POST | Hybrid search (recommended) |
-| `/api/ask` | POST | AI-powered Q&A |
-| `/api/docs` | GET | List documents |
-| `/api/doc` | GET | Get document content |
-| `/api/presets` | GET/POST | Model preset management |
-| `/api/models/pull` | POST | Download models |
-| `/api/models/status` | GET | Download progress |
+| Endpoint             | Method   | Description                 |
+| :------------------- | :------- | :-------------------------- |
+| `/api/status`        | GET      | Index statistics            |
+| `/api/search`        | POST     | BM25 keyword search         |
+| `/api/query`         | POST     | Hybrid search (recommended) |
+| `/api/ask`           | POST     | AI-powered Q&A              |
+| `/api/docs`          | GET      | List documents              |
+| `/api/doc`           | GET      | Get document content        |
+| `/api/presets`       | GET/POST | Model preset management     |
+| `/api/models/pull`   | POST     | Download models             |
+| `/api/models/status` | GET      | Download progress           |
 
 ## Language Integrations
 

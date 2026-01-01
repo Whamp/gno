@@ -5,11 +5,13 @@
  * @module src/mcp/server
  */
 
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { MCP_SERVER_NAME, VERSION } from '../app/constants';
-import type { Collection, Config } from '../config/types';
-import type { SqliteAdapter } from '../store/sqlite/adapter';
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+
+import type { Collection, Config } from "../config/types";
+import type { SqliteAdapter } from "../store/sqlite/adapter";
+
+import { MCP_SERVER_NAME, VERSION } from "../app/constants";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Simple Promise Mutex (avoids async-mutex dependency)
@@ -78,7 +80,7 @@ export async function startMcpServer(options: McpServerOptions): Promise<void> {
   let protocolMode = false;
 
   // Stdout wrapper - redirect to stderr during init
-  // biome-ignore lint/suspicious/noExplicitAny: overloaded write signature
+  // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- overloaded write signature
   (process.stdout as any).write = (
     chunk: string | Uint8Array,
     encodingOrCb?: BufferEncoding | ((err?: Error | null) => void),
@@ -86,20 +88,20 @@ export async function startMcpServer(options: McpServerOptions): Promise<void> {
   ): boolean => {
     if (!protocolMode) {
       // During init, redirect to stderr
-      if (typeof encodingOrCb === 'function') {
+      if (typeof encodingOrCb === "function") {
         return process.stderr.write(chunk, encodingOrCb);
       }
       return process.stderr.write(chunk, encodingOrCb, cb);
     }
     // After transport connected, allow JSON-RPC only
-    if (typeof encodingOrCb === 'function') {
+    if (typeof encodingOrCb === "function") {
       return originalStdoutWrite(chunk, encodingOrCb);
     }
     return originalStdoutWrite(chunk, encodingOrCb, cb);
   };
 
   // Lazy import to avoid pulling in all deps on --help
-  const { initStore } = await import('../cli/commands/shared.js');
+  const { initStore } = await import("../cli/commands/shared.js");
 
   // Open DB once with index/config threading
   const init = await initStore({
@@ -108,7 +110,7 @@ export async function startMcpServer(options: McpServerOptions): Promise<void> {
   });
 
   if (!init.ok) {
-    console.error('Failed to initialize:', init.error);
+    console.error("Failed to initialize:", init.error);
     process.exit(1);
   }
 
@@ -145,11 +147,11 @@ export async function startMcpServer(options: McpServerOptions): Promise<void> {
   };
 
   // Register tools (T10.2)
-  const { registerTools } = await import('./tools/index.js');
+  const { registerTools } = await import("./tools/index.js");
   registerTools(server, ctx);
 
   // Register resources (T10.3)
-  const { registerResources } = await import('./resources/index.js');
+  const { registerResources } = await import("./resources/index.js");
   registerResources(server, ctx);
 
   if (options.verbose) {
@@ -167,7 +169,7 @@ export async function startMcpServer(options: McpServerOptions): Promise<void> {
     }
     shuttingDown = true;
 
-    console.error('[MCP] Shutting down...');
+    console.error("[MCP] Shutting down...");
 
     // 1. Wait for current handler (no timeout - correctness over speed)
     // If we timeout and close DB while tool is running, we risk corruption
@@ -188,8 +190,8 @@ export async function startMcpServer(options: McpServerOptions): Promise<void> {
     process.exit(0);
   };
 
-  process.on('SIGTERM', shutdown);
-  process.on('SIGINT', shutdown);
+  process.on("SIGTERM", shutdown);
+  process.on("SIGINT", shutdown);
 
   // ========================================
   // CONSOLE REDIRECT (CRITICAL for stdout purity)
@@ -200,10 +202,10 @@ export async function startMcpServer(options: McpServerOptions): Promise<void> {
   const _origInfo = console.info;
   const _origDebug = console.debug;
   const _origWarn = console.warn;
-  console.log = (...args: unknown[]) => console.error('[log]', ...args);
-  console.info = (...args: unknown[]) => console.error('[info]', ...args);
-  console.debug = (...args: unknown[]) => console.error('[debug]', ...args);
-  console.warn = (...args: unknown[]) => console.error('[warn]', ...args);
+  console.log = (...args: unknown[]) => console.error("[log]", ...args);
+  console.info = (...args: unknown[]) => console.error("[info]", ...args);
+  console.debug = (...args: unknown[]) => console.error("[debug]", ...args);
+  console.warn = (...args: unknown[]) => console.error("[warn]", ...args);
 
   // Connect transport
   const transport = new StdioServerTransport();
@@ -216,12 +218,12 @@ export async function startMcpServer(options: McpServerOptions): Promise<void> {
   // Block forever until shutdown signal or stdin closes
   // This prevents the CLI from exiting after startMcpServer() returns
   await new Promise<void>((resolve) => {
-    process.stdin.on('end', () => {
-      console.error('[MCP] stdin ended');
+    process.stdin.on("end", () => {
+      console.error("[MCP] stdin ended");
       resolve();
     });
-    process.stdin.on('close', () => {
-      console.error('[MCP] stdin closed');
+    process.stdin.on("close", () => {
+      console.error("[MCP] stdin closed");
       resolve();
     });
     // Also resolve on SIGTERM/SIGINT (already handled by shutdown())

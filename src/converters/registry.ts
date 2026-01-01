@@ -3,8 +3,9 @@
  * PRD §8.6 - Converter registry
  */
 
-import { unsupportedError } from './errors';
-import type { Converter, ConvertInput, ConvertResult } from './types';
+import type { Converter, ConvertInput, ConvertResult } from "./types";
+
+import { unsupportedError } from "./errors";
 
 export class ConverterRegistry {
   private readonly converters: Converter[] = [];
@@ -57,12 +58,11 @@ export async function createDefaultRegistry(): Promise<ConverterRegistry> {
   const registry = new ConverterRegistry();
 
   // Import converters dynamically to avoid circular deps
-  const { markdownConverter } = await import('./native/markdown');
-  const { plaintextConverter } = await import('./native/plaintext');
-  const { markitdownAdapter } = await import('./adapters/markitdownTs/adapter');
-  const { officeparserAdapter } = await import(
-    './adapters/officeparser/adapter'
-  );
+  const { markdownConverter } = await import("./native/markdown");
+  const { plaintextConverter } = await import("./native/plaintext");
+  const { markitdownAdapter } = await import("./adapters/markitdownTs/adapter");
+  const { officeparserAdapter } =
+    await import("./adapters/officeparser/adapter");
 
   // Register in priority order
   registry.register(markdownConverter);

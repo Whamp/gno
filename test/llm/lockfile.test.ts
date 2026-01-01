@@ -2,16 +2,17 @@
  * Tests for cross-process lockfile.
  */
 
-import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
-import { mkdir, rm, stat } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { mkdir, rm, stat } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import {
   acquireLock,
   getLockPath,
   getManifestLockPath,
   withLock,
-} from '../../src/llm/lockfile';
+} from "../../src/llm/lockfile";
 
 let testDir: string;
 
@@ -24,9 +25,9 @@ afterEach(async () => {
   await rm(testDir, { recursive: true, force: true });
 });
 
-describe('acquireLock', () => {
-  test('acquires lock on fresh path', async () => {
-    const lockPath = join(testDir, 'test.lock');
+describe("acquireLock", () => {
+  test("acquires lock on fresh path", async () => {
+    const lockPath = join(testDir, "test.lock");
     const lock = await acquireLock(lockPath);
 
     expect(lock).not.toBeNull();
@@ -41,8 +42,8 @@ describe('acquireLock', () => {
     await lock?.release();
   });
 
-  test('releases lock properly', async () => {
-    const lockPath = join(testDir, 'test.lock');
+  test("releases lock properly", async () => {
+    const lockPath = join(testDir, "test.lock");
     const lock = await acquireLock(lockPath);
     expect(lock).not.toBeNull();
 
@@ -55,8 +56,8 @@ describe('acquireLock', () => {
     expect(exists).toBe(false);
   });
 
-  test('blocks concurrent acquisition', async () => {
-    const lockPath = join(testDir, 'test.lock');
+  test("blocks concurrent acquisition", async () => {
+    const lockPath = join(testDir, "test.lock");
 
     // Acquire first lock
     const lock1 = await acquireLock(lockPath);
@@ -72,8 +73,8 @@ describe('acquireLock', () => {
     await lock1?.release();
   });
 
-  test('succeeds after previous lock released', async () => {
-    const lockPath = join(testDir, 'test.lock');
+  test("succeeds after previous lock released", async () => {
+    const lockPath = join(testDir, "test.lock");
 
     // Acquire and release
     const lock1 = await acquireLock(lockPath);
@@ -86,8 +87,8 @@ describe('acquireLock', () => {
     await lock2?.release();
   });
 
-  test('recovers stale lock', async () => {
-    const lockPath = join(testDir, 'test.lock');
+  test("recovers stale lock", async () => {
+    const lockPath = join(testDir, "test.lock");
 
     // Acquire lock
     const lock1 = await acquireLock(lockPath);
@@ -106,18 +107,18 @@ describe('acquireLock', () => {
   });
 });
 
-describe('withLock', () => {
-  test('executes function while holding lock', async () => {
-    const lockPath = join(testDir, 'test.lock');
+describe("withLock", () => {
+  test("executes function while holding lock", async () => {
+    const lockPath = join(testDir, "test.lock");
     let executed = false;
 
     const result = await withLock(lockPath, () => {
       executed = true;
-      return Promise.resolve('success');
+      return Promise.resolve("success");
     });
 
     expect(executed).toBe(true);
-    expect(result).toBe('success');
+    expect(result).toBe("success");
 
     // Lock should be released
     const exists = await stat(lockPath)
@@ -126,12 +127,12 @@ describe('withLock', () => {
     expect(exists).toBe(false);
   });
 
-  test('releases lock even on error', async () => {
-    const lockPath = join(testDir, 'test.lock');
+  test("releases lock even on error", async () => {
+    const lockPath = join(testDir, "test.lock");
 
     try {
       await withLock(lockPath, () => {
-        return Promise.reject(new Error('test error'));
+        return Promise.reject(new Error("test error"));
       });
     } catch {
       // Expected
@@ -144,15 +145,15 @@ describe('withLock', () => {
     expect(exists).toBe(false);
   });
 
-  test('returns null when lock unavailable', async () => {
-    const lockPath = join(testDir, 'test.lock');
+  test("returns null when lock unavailable", async () => {
+    const lockPath = join(testDir, "test.lock");
 
     // Hold lock
     const lock = await acquireLock(lockPath);
     expect(lock).not.toBeNull();
 
     // withLock should fail
-    const result = await withLock(lockPath, async () => 'success', {
+    const result = await withLock(lockPath, async () => "success", {
       maxRetries: 2,
       retryDelayMs: 10,
     });
@@ -162,14 +163,14 @@ describe('withLock', () => {
   });
 });
 
-describe('path helpers', () => {
-  test('getLockPath appends .lock', () => {
-    expect(getLockPath('/path/to/model.gguf')).toBe('/path/to/model.gguf.lock');
+describe("path helpers", () => {
+  test("getLockPath appends .lock", () => {
+    expect(getLockPath("/path/to/model.gguf")).toBe("/path/to/model.gguf.lock");
   });
 
-  test('getManifestLockPath returns manifest.lock in dir', () => {
-    expect(getManifestLockPath('/path/to/cache')).toBe(
-      '/path/to/cache/manifest.lock'
+  test("getManifestLockPath returns manifest.lock in dir", () => {
+    expect(getManifestLockPath("/path/to/cache")).toBe(
+      "/path/to/cache/manifest.lock"
     );
   });
 });

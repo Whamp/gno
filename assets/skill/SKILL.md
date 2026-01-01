@@ -41,21 +41,21 @@ gno search "your query"
 
 ### Indexing
 
-| Command | Description |
-|---------|-------------|
-| `gno init` | Initialize GNO in current directory |
-| `gno collection add <path> --name <name>` | Add folder to index |
-| `gno index` | Full index (ingest + embed) |
-| `gno update` | Sync files without embedding |
+| Command                                   | Description                         |
+| ----------------------------------------- | ----------------------------------- |
+| `gno init`                                | Initialize GNO in current directory |
+| `gno collection add <path> --name <name>` | Add folder to index                 |
+| `gno index`                               | Full index (ingest + embed)         |
+| `gno update`                              | Sync files without embedding        |
 
 ### Searching
 
-| Command | Description |
-|---------|-------------|
-| `gno search <query>` | BM25 keyword search |
-| `gno vsearch <query>` | Vector semantic search |
-| `gno query <query>` | Hybrid search (BM25 + vector + rerank) |
-| `gno ask <question>` | AI-powered Q&A with citations |
+| Command               | Description                            |
+| --------------------- | -------------------------------------- |
+| `gno search <query>`  | BM25 keyword search                    |
+| `gno vsearch <query>` | Vector semantic search                 |
+| `gno query <query>`   | Hybrid search (BM25 + vector + rerank) |
+| `gno ask <question>`  | AI-powered Q&A with citations          |
 
 ### Common Options
 

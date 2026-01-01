@@ -5,7 +5,7 @@
  * @module src/store/sqlite/types
  */
 
-import type { Database } from 'bun:sqlite';
+import type { Database } from "bun:sqlite";
 
 /**
  * Type guard interface for accessing raw SQLite DB.
@@ -21,8 +21,8 @@ export interface SqliteDbProvider {
 export function isSqliteDbProvider(store: unknown): store is SqliteDbProvider {
   return (
     store !== null &&
-    typeof store === 'object' &&
-    'getRawDb' in store &&
-    typeof (store as SqliteDbProvider).getRawDb === 'function'
+    typeof store === "object" &&
+    "getRawDb" in store &&
+    typeof (store as SqliteDbProvider).getRawDb === "function"
   );
 }

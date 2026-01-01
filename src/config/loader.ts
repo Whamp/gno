@@ -5,9 +5,10 @@
  * @module src/config/loader
  */
 
-import type { ZodError } from 'zod';
-import { configExists, expandPath, getConfigPaths } from './paths';
-import { CONFIG_VERSION, type Config, ConfigSchema } from './types';
+import type { ZodError } from "zod";
+
+import { configExists, expandPath, getConfigPaths } from "./paths";
+import { CONFIG_VERSION, type Config, ConfigSchema } from "./types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Result Types
@@ -18,16 +19,16 @@ export type LoadResult<T> =
   | { ok: false; error: LoadError };
 
 export type LoadError =
-  | { code: 'NOT_FOUND'; message: string; path: string }
-  | { code: 'PARSE_ERROR'; message: string; details: string }
-  | { code: 'VALIDATION_ERROR'; message: string; issues: ZodError['issues'] }
+  | { code: "NOT_FOUND"; message: string; path: string }
+  | { code: "PARSE_ERROR"; message: string; details: string }
+  | { code: "VALIDATION_ERROR"; message: string; issues: ZodError["issues"] }
   | {
-      code: 'VERSION_MISMATCH';
+      code: "VERSION_MISMATCH";
       message: string;
       found: string;
       expected: string;
     }
-  | { code: 'IO_ERROR'; message: string; cause: Error };
+  | { code: "IO_ERROR"; message: string; cause: Error };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Loading Functions
@@ -58,7 +59,7 @@ export async function loadConfigFromPath(
     return {
       ok: false,
       error: {
-        code: 'NOT_FOUND',
+        code: "NOT_FOUND",
         message: `Config file not found: ${filePath}`,
         path: filePath,
       },
@@ -73,7 +74,7 @@ export async function loadConfigFromPath(
     return {
       ok: false,
       error: {
-        code: 'IO_ERROR',
+        code: "IO_ERROR",
         message: `Failed to read config file: ${filePath}`,
         cause: cause instanceof Error ? cause : new Error(String(cause)),
       },
@@ -88,8 +89,8 @@ export async function loadConfigFromPath(
     return {
       ok: false,
       error: {
-        code: 'PARSE_ERROR',
-        message: 'Invalid YAML syntax',
+        code: "PARSE_ERROR",
+        message: "Invalid YAML syntax",
         details: cause instanceof Error ? cause.message : String(cause),
       },
     };
@@ -97,15 +98,15 @@ export async function loadConfigFromPath(
 
   // Check version before full validation
   if (
-    typeof parsed === 'object' &&
+    typeof parsed === "object" &&
     parsed !== null &&
-    'version' in parsed &&
+    "version" in parsed &&
     parsed.version !== CONFIG_VERSION
   ) {
     return {
       ok: false,
       error: {
-        code: 'VERSION_MISMATCH',
+        code: "VERSION_MISMATCH",
         message: `Config version mismatch. Found "${String(parsed.version)}", expected "${CONFIG_VERSION}"`,
         found: String(parsed.version),
         expected: CONFIG_VERSION,
@@ -120,8 +121,8 @@ export async function loadConfigFromPath(
     return {
       ok: false,
       error: {
-        code: 'VALIDATION_ERROR',
-        message: 'Config validation failed',
+        code: "VALIDATION_ERROR",
+        message: "Config validation failed",
         issues: result.error.issues,
       },
     };
@@ -140,7 +141,7 @@ export async function loadConfigOrNull(
   const result = await loadConfig(configPath);
 
   if (!result.ok) {
-    if (result.error.code === 'NOT_FOUND') {
+    if (result.error.code === "NOT_FOUND") {
       return null;
     }
     throw new Error(result.error.message);

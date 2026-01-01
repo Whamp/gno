@@ -3,14 +3,15 @@
  * Simply reads .md files and extracts title from first heading.
  */
 
-import type { Converter, ConvertInput, ConvertResult } from '../types';
-import { NATIVE_VERSIONS } from '../versions';
+import type { Converter, ConvertInput, ConvertResult } from "../types";
 
-const CONVERTER_ID = 'native/markdown' as const;
+import { NATIVE_VERSIONS } from "../versions";
+
+const CONVERTER_ID = "native/markdown" as const;
 const CONVERTER_VERSION = NATIVE_VERSIONS.markdown;
 
 /** UTF-8 BOM character */
-const BOM = '\uFEFF';
+const BOM = "\uFEFF";
 
 /** Regex to match # heading at line start */
 const HEADING_PATTERN = /^\s*#\s+(.+)/;
@@ -46,15 +47,15 @@ function isClosingFence(
  * Returns undefined if no heading found.
  */
 function extractFirstHeading(markdown: string): string | undefined {
-  const lines = markdown.split('\n');
-  let fenceChar = '';
+  const lines = markdown.split("\n");
+  let fenceChar = "";
   let fenceLen = 0;
 
   for (const line of lines) {
     // If inside a fence, check for closing
     if (fenceLen > 0) {
       if (isClosingFence(line, fenceChar, fenceLen)) {
-        fenceChar = '';
+        fenceChar = "";
         fenceLen = 0;
       }
       continue;
@@ -83,12 +84,12 @@ export const markdownConverter: Converter = {
   version: CONVERTER_VERSION,
 
   canHandle(mime: string, ext: string): boolean {
-    return mime === 'text/markdown' || ext === '.md';
+    return mime === "text/markdown" || ext === ".md";
   },
 
   convert(input: ConvertInput): Promise<ConvertResult> {
     // Decode bytes to string (assumes UTF-8)
-    let text = new TextDecoder('utf-8', { fatal: false }).decode(input.bytes);
+    let text = new TextDecoder("utf-8", { fatal: false }).decode(input.bytes);
 
     // Strip BOM if present (ensures consistent hashes)
     if (text.startsWith(BOM)) {

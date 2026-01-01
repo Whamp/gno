@@ -5,26 +5,28 @@
  * @module src/cli/commands/doctor
  */
 
-import { Database } from 'bun:sqlite';
-import { stat } from 'node:fs/promises';
+import { Database } from "bun:sqlite";
+import { stat } from "node:fs/promises";
 // node:os: arch/platform detection (no Bun equivalent)
-import { arch, platform } from 'node:os';
-import { getIndexDbPath, getModelsCachePath } from '../../app/constants';
-import { getConfigPaths, isInitialized, loadConfig } from '../../config';
-import type { Config } from '../../config/types';
-import { ModelCache } from '../../llm/cache';
-import { getActivePreset } from '../../llm/registry';
+import { arch, platform } from "node:os";
+
+import type { Config } from "../../config/types";
+
+import { getIndexDbPath, getModelsCachePath } from "../../app/constants";
+import { getConfigPaths, isInitialized, loadConfig } from "../../config";
+import { ModelCache } from "../../llm/cache";
+import { getActivePreset } from "../../llm/registry";
 import {
   getCustomSqlitePath,
   getExtensionLoadingMode,
   getLoadAttempts,
-} from '../../store/sqlite/setup';
+} from "../../store/sqlite/setup";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type DoctorCheckStatus = 'ok' | 'warn' | 'error';
+export type DoctorCheckStatus = "ok" | "warn" | "error";
 
 export interface DoctorCheck {
   name: string;
@@ -56,25 +58,25 @@ async function checkConfig(configPath?: string): Promise<DoctorCheck> {
   const initialized = await isInitialized(configPath);
   if (!initialized) {
     return {
-      name: 'config',
-      status: 'error',
-      message: 'Config not found. Run: gno init',
+      name: "config",
+      status: "error",
+      message: "Config not found. Run: gno init",
     };
   }
 
   const configResult = await loadConfig(configPath);
   if (!configResult.ok) {
     return {
-      name: 'config',
-      status: 'error',
+      name: "config",
+      status: "error",
       message: `Config invalid: ${configResult.error.message}`,
     };
   }
 
   const paths = getConfigPaths();
   return {
-    name: 'config',
-    status: 'ok',
+    name: "config",
+    status: "ok",
     message: `Config loaded: ${paths.configFile}`,
   };
 }
@@ -85,15 +87,15 @@ async function checkDatabase(): Promise<DoctorCheck> {
   try {
     await stat(dbPath);
     return {
-      name: 'database',
-      status: 'ok',
+      name: "database",
+      status: "ok",
       message: `Database found: ${dbPath}`,
     };
   } catch {
     return {
-      name: 'database',
-      status: 'warn',
-      message: 'Database not found. Run: gno init',
+      name: "database",
+      status: "warn",
+      message: "Database not found. Run: gno init",
     };
   }
 }
@@ -103,13 +105,13 @@ async function checkModels(config: Config): Promise<DoctorCheck[]> {
   const cache = new ModelCache(getModelsCachePath());
   const preset = getActivePreset(config);
 
-  for (const type of ['embed', 'rerank', 'gen'] as const) {
+  for (const type of ["embed", "rerank", "gen"] as const) {
     const uri = preset[type];
     const cached = await cache.isCached(uri);
 
     checks.push({
       name: `${type}-model`,
-      status: cached ? 'ok' : 'warn',
+      status: cached ? "ok" : "warn",
       message: cached
         ? `${type} model cached`
         : `${type} model not cached. Run: gno models pull --${type}`,
@@ -121,19 +123,19 @@ async function checkModels(config: Config): Promise<DoctorCheck[]> {
 
 async function checkNodeLlamaCpp(): Promise<DoctorCheck> {
   try {
-    const { getLlama } = await import('node-llama-cpp');
+    const { getLlama } = await import("node-llama-cpp");
     // Just check that we can get the llama instance
     await getLlama();
     return {
-      name: 'node-llama-cpp',
-      status: 'ok',
-      message: 'node-llama-cpp loaded successfully',
+      name: "node-llama-cpp",
+      status: "ok",
+      message: "node-llama-cpp loaded successfully",
     };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     return {
-      name: 'node-llama-cpp',
-      status: 'error',
+      name: "node-llama-cpp",
+      status: "error",
       message: `node-llama-cpp failed: ${message}`,
     };
   }
@@ -143,7 +145,7 @@ async function checkNodeLlamaCpp(): Promise<DoctorCheck> {
  * Check SQLite extension support (FTS5, sqlite-vec).
  * Uses runtime capability probes instead of compile_options strings.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: diagnostic checks with platform-specific handling
+// oxlint-disable-next-line max-lines-per-function -- diagnostic checks with platform-specific handling
 async function checkSqliteExtensions(): Promise<DoctorCheck[]> {
   const checks: DoctorCheck[] = [];
   const plat = platform();
@@ -153,10 +155,10 @@ async function checkSqliteExtensions(): Promise<DoctorCheck[]> {
   const attempts = getLoadAttempts();
 
   // Platform/mode info
-  let modeDesc = 'unavailable';
-  if (mode === 'native') {
-    modeDesc = 'native (bundled SQLite supports extensions)';
-  } else if (mode === 'custom') {
+  let modeDesc = "unavailable";
+  if (mode === "native") {
+    modeDesc = "native (bundled SQLite supports extensions)";
+  } else if (mode === "custom") {
     modeDesc = `custom (${customPath})`;
   }
 
@@ -167,18 +169,18 @@ async function checkSqliteExtensions(): Promise<DoctorCheck[]> {
 
   // Add load attempt details if there were failures
   if (attempts.length > 0) {
-    details.push('Load attempts:');
+    details.push("Load attempts:");
     for (const attempt of attempts) {
       details.push(`  ${attempt.path}: ${attempt.error}`);
     }
   }
 
   // Create in-memory DB for probes
-  const db = new Database(':memory:');
-  let version = 'unknown';
+  const db = new Database(":memory:");
+  let version = "unknown";
 
   try {
-    const row = db.query('SELECT sqlite_version() as v').get() as { v: string };
+    const row = db.query("SELECT sqlite_version() as v").get() as { v: string };
     version = row.v;
     details.push(`SQLite version: ${version}`);
   } catch {
@@ -188,20 +190,20 @@ async function checkSqliteExtensions(): Promise<DoctorCheck[]> {
   // Probe FTS5 capability
   let fts5Available = false;
   try {
-    db.exec('CREATE VIRTUAL TABLE _fts5_probe USING fts5(x)');
-    db.exec('DROP TABLE _fts5_probe');
+    db.exec("CREATE VIRTUAL TABLE _fts5_probe USING fts5(x)");
+    db.exec("DROP TABLE _fts5_probe");
     fts5Available = true;
   } catch {
     // FTS5 not available
   }
 
   checks.push({
-    name: 'sqlite-fts5',
-    status: fts5Available ? 'ok' : 'error',
-    message: fts5Available ? 'FTS5 available' : 'FTS5 not available (required)',
+    name: "sqlite-fts5",
+    status: fts5Available ? "ok" : "error",
+    message: fts5Available ? "FTS5 available" : "FTS5 not available (required)",
     details: fts5Available
       ? undefined
-      : ['Full-text search requires FTS5 support'],
+      : ["Full-text search requires FTS5 support"],
   });
 
   // Probe JSON capability
@@ -214,22 +216,22 @@ async function checkSqliteExtensions(): Promise<DoctorCheck[]> {
   }
 
   checks.push({
-    name: 'sqlite-json',
-    status: jsonAvailable ? 'ok' : 'warn',
-    message: jsonAvailable ? 'JSON1 available' : 'JSON1 not available',
+    name: "sqlite-json",
+    status: jsonAvailable ? "ok" : "warn",
+    message: jsonAvailable ? "JSON1 available" : "JSON1 not available",
   });
 
   // Probe sqlite-vec extension
   let sqliteVecAvailable = false;
-  let sqliteVecVersion = '';
-  let sqliteVecError = '';
+  let sqliteVecVersion = "";
+  let sqliteVecError = "";
   try {
-    const sqliteVec = await import('sqlite-vec');
+    const sqliteVec = await import("sqlite-vec");
     sqliteVec.load(db);
     sqliteVecAvailable = true;
     // Try to get version
     try {
-      const vrow = db.query('SELECT vec_version() as v').get() as { v: string };
+      const vrow = db.query("SELECT vec_version() as v").get() as { v: string };
       sqliteVecVersion = vrow.v;
     } catch {
       // No version available
@@ -242,27 +244,27 @@ async function checkSqliteExtensions(): Promise<DoctorCheck[]> {
   if (sqliteVecAvailable) {
     vecMessage = sqliteVecVersion
       ? `sqlite-vec loaded (v${sqliteVecVersion})`
-      : 'sqlite-vec loaded';
-  } else if (mode === 'unavailable') {
+      : "sqlite-vec loaded";
+  } else if (mode === "unavailable") {
     vecMessage =
-      'sqlite-vec unavailable (no extension support on macOS without Homebrew)';
+      "sqlite-vec unavailable (no extension support on macOS without Homebrew)";
   } else {
     vecMessage = sqliteVecError
       ? `sqlite-vec failed: ${sqliteVecError}`
-      : 'sqlite-vec failed to load';
+      : "sqlite-vec failed to load";
   }
 
   const vecDetails = [...details];
-  if (!sqliteVecAvailable && plat === 'darwin' && mode === 'unavailable') {
-    vecDetails.push('Install Homebrew SQLite: brew install sqlite3');
+  if (!sqliteVecAvailable && plat === "darwin" && mode === "unavailable") {
+    vecDetails.push("Install Homebrew SQLite: brew install sqlite3");
   }
   if (sqliteVecError) {
     vecDetails.push(`Load error: ${sqliteVecError}`);
   }
 
   checks.push({
-    name: 'sqlite-vec',
-    status: sqliteVecAvailable ? 'ok' : 'warn',
+    name: "sqlite-vec",
+    status: sqliteVecAvailable ? "ok" : "warn",
     message: vecMessage,
     details: vecDetails,
   });
@@ -290,7 +292,7 @@ export async function doctor(
   checks.push(await checkDatabase());
 
   // Load config for model checks (if available)
-  const { createDefaultConfig } = await import('../../config');
+  const { createDefaultConfig } = await import("../../config");
   const configResult = await loadConfig(options.configPath);
   const config = configResult.ok ? configResult.value : createDefaultConfig();
 
@@ -306,7 +308,7 @@ export async function doctor(
   checks.push(...sqliteChecks);
 
   // Determine overall health
-  const hasErrors = checks.some((c) => c.status === 'error');
+  const hasErrors = checks.some((c) => c.status === "error");
 
   return {
     healthy: !hasErrors,
@@ -320,50 +322,50 @@ export async function doctor(
 
 function statusIcon(status: DoctorCheckStatus): string {
   switch (status) {
-    case 'ok':
-      return '✓';
-    case 'warn':
-      return '!';
-    case 'error':
-      return '✗';
+    case "ok":
+      return "✓";
+    case "warn":
+      return "!";
+    case "error":
+      return "✗";
     default:
-      return '?';
+      return "?";
   }
 }
 
 function formatTerminal(result: DoctorResult): string {
   const lines: string[] = [];
 
-  lines.push('GNO Health Check');
-  lines.push('');
+  lines.push("GNO Health Check");
+  lines.push("");
 
   for (const check of result.checks) {
     lines.push(`  ${statusIcon(check.status)} ${check.name}: ${check.message}`);
     // Show details for non-ok checks
-    if (check.details && check.status !== 'ok') {
+    if (check.details && check.status !== "ok") {
       for (const detail of check.details) {
         lines.push(`      ${detail}`);
       }
     }
   }
 
-  lines.push('');
-  lines.push(`Overall: ${result.healthy ? 'HEALTHY' : 'UNHEALTHY'}`);
+  lines.push("");
+  lines.push(`Overall: ${result.healthy ? "HEALTHY" : "UNHEALTHY"}`);
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 function formatMarkdown(result: DoctorResult): string {
   const lines: string[] = [];
 
-  lines.push('# GNO Health Check');
-  lines.push('');
-  lines.push(`**Status**: ${result.healthy ? '✓ Healthy' : '✗ Unhealthy'}`);
-  lines.push('');
-  lines.push('## Checks');
-  lines.push('');
-  lines.push('| Check | Status | Message |');
-  lines.push('|-------|--------|---------|');
+  lines.push("# GNO Health Check");
+  lines.push("");
+  lines.push(`**Status**: ${result.healthy ? "✓ Healthy" : "✗ Unhealthy"}`);
+  lines.push("");
+  lines.push("## Checks");
+  lines.push("");
+  lines.push("| Check | Status | Message |");
+  lines.push("|-------|--------|---------|");
 
   for (const check of result.checks) {
     lines.push(
@@ -371,7 +373,7 @@ function formatMarkdown(result: DoctorResult): string {
     );
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**

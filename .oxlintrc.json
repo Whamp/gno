@@ -1,6 +1,17 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "ignorePatterns": [
+    "node_modules/**",
+    "dist/**",
+    "tmp/**",
+    "evals/**",
+    "src/serve/public/components/ui/**",
+    "src/serve/public/components/ai-elements/**",
+    "website/**"
+  ],
   "rules": {
-    "eslint/no-control-regex": "warn"
-  }
+    "eslint/no-control-regex": "warn",
+    "max-lines-per-function": "off"
+  },
+  "extends": ["ultracite/oxlint/core", "ultracite/oxlint/react"]
 }

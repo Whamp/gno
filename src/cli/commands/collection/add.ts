@@ -2,14 +2,14 @@
  * gno collection add - Add a new collection
  */
 
-import { addCollection } from '../../../collection';
+import { addCollection } from "../../../collection";
 import {
   loadConfig,
   pathExists,
   saveConfig,
   toAbsolutePath,
-} from '../../../config';
-import { CliError } from '../../errors';
+} from "../../../config";
+import { CliError } from "../../errors";
 
 interface AddOptions {
   name?: string;
@@ -25,21 +25,21 @@ export async function collectionAdd(
 ): Promise<void> {
   // Validate required name
   if (!options.name) {
-    throw new CliError('VALIDATION', '--name is required');
+    throw new CliError("VALIDATION", "--name is required");
   }
 
   // Validate path exists BEFORE loading config (user-friendly error ordering)
   const absolutePath = toAbsolutePath(path);
   const exists = await pathExists(absolutePath);
   if (!exists) {
-    throw new CliError('VALIDATION', `Path does not exist: ${absolutePath}`);
+    throw new CliError("VALIDATION", `Path does not exist: ${absolutePath}`);
   }
 
   // Load config
   const configResult = await loadConfig();
   if (!configResult.ok) {
     throw new CliError(
-      'RUNTIME',
+      "RUNTIME",
       `Failed to load config: ${configResult.error.message}`
     );
   }
@@ -57,11 +57,11 @@ export async function collectionAdd(
   if (!result.ok) {
     // Map collection error codes to CLI error codes
     const cliCode =
-      result.code === 'VALIDATION' ||
-      result.code === 'PATH_NOT_FOUND' ||
-      result.code === 'DUPLICATE'
-        ? 'VALIDATION'
-        : 'RUNTIME';
+      result.code === "VALIDATION" ||
+      result.code === "PATH_NOT_FOUND" ||
+      result.code === "DUPLICATE"
+        ? "VALIDATION"
+        : "RUNTIME";
     throw new CliError(cliCode, result.message);
   }
 
@@ -69,7 +69,7 @@ export async function collectionAdd(
   const saveResult = await saveConfig(result.config);
   if (!saveResult.ok) {
     throw new CliError(
-      'RUNTIME',
+      "RUNTIME",
       `Failed to save config: ${saveResult.error.message}`
     );
   }

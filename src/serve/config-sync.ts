@@ -5,10 +5,11 @@
  * @module src/serve/config-sync
  */
 
-import { loadConfig, saveConfig } from '../config';
-import type { Config } from '../config/types';
-import type { SqliteAdapter } from '../store/sqlite/adapter';
-import type { ContextHolder } from './routes/api';
+import type { Config } from "../config/types";
+import type { SqliteAdapter } from "../store/sqlite/adapter";
+import type { ContextHolder } from "./routes/api";
+
+import { loadConfig, saveConfig } from "../config";
 
 export interface ConfigSyncResult {
   ok: true;
@@ -77,7 +78,7 @@ export async function applyConfigChange(
       return {
         ok: false,
         error: loadResult.error.message,
-        code: 'LOAD_ERROR',
+        code: "LOAD_ERROR",
       };
     }
 
@@ -98,7 +99,7 @@ export async function applyConfigChange(
       return {
         ok: false,
         error: saveResult.error.message,
-        code: 'SAVE_ERROR',
+        code: "SAVE_ERROR",
       };
     }
 
@@ -112,7 +113,7 @@ export async function applyConfigChange(
       return {
         ok: false,
         error: `DB sync failed: ${syncCollResult.error.message}`,
-        code: 'SYNC_ERROR',
+        code: "SYNC_ERROR",
       };
     }
 
@@ -124,7 +125,7 @@ export async function applyConfigChange(
       return {
         ok: false,
         error: `Context sync failed: ${syncCtxResult.error.message}`,
-        code: 'SYNC_ERROR',
+        code: "SYNC_ERROR",
       };
     }
 

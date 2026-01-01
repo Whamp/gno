@@ -42,11 +42,11 @@ See your index at a glance:
 
 Choose the right tool for the job:
 
-| Mode | Best For |
-|:-----|:---------|
-| **BM25** | Exact terms, code identifiers |
-| **Vector** | Concepts, natural language |
-| **Hybrid** | Best accuracy (recommended) |
+| Mode       | Best For                      |
+| :--------- | :---------------------------- |
+| **BM25**   | Exact terms, code identifiers |
+| **Vector** | Concepts, natural language    |
+| **Hybrid** | Best accuracy (recommended)   |
 
 ### AI Answers
 

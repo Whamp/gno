@@ -5,10 +5,12 @@
  * @module src/cli/commands/mcp/config
  */
 
-import { copyFile, mkdir, rename, stat, unlink } from 'node:fs/promises';
-import { dirname } from 'node:path';
-import { CliError } from '../../errors.js';
-import type { McpConfigFormat } from './paths.js';
+import { copyFile, mkdir, rename, stat, unlink } from "node:fs/promises";
+import { dirname } from "node:path";
+
+import type { McpConfigFormat } from "./paths.js";
+
+import { CliError } from "../../errors.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -22,7 +24,7 @@ export interface StandardMcpEntry {
 
 /** OpenCode mcp entry (command is array, has type and enabled) */
 export interface OpenCodeMcpEntry {
-  type: 'local';
+  type: "local";
   command: string[];
   enabled: boolean;
 }
@@ -47,7 +49,7 @@ export interface OpenCodeConfig {
 
 /** Amp config with amp.mcpServers key */
 export interface AmpConfig {
-  'amp.mcpServers'?: Record<string, StandardMcpEntry>;
+  "amp.mcpServers"?: Record<string, StandardMcpEntry>;
   [key: string]: unknown;
 }
 
@@ -64,19 +66,19 @@ export type AnyMcpConfig = McpConfig | ZedConfig | OpenCodeConfig | AmpConfig;
  */
 async function checkConfigPath(
   configPath: string
-): Promise<'file' | 'missing'> {
+): Promise<"file" | "missing"> {
   try {
     const stats = await stat(configPath);
     if (!stats.isFile()) {
       throw new CliError(
-        'RUNTIME',
+        "RUNTIME",
         `Config path exists but is not a file: ${configPath}`
       );
     }
-    return 'file';
+    return "file";
   } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
-      return 'missing';
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+      return "missing";
     }
     throw err;
   }
@@ -94,7 +96,7 @@ export async function readMcpConfig(
 ): Promise<McpConfig | null> {
   const pathStatus = await checkConfigPath(configPath);
 
-  if (pathStatus === 'missing') {
+  if (pathStatus === "missing") {
     return options?.returnNullOnMissing ? null : {};
   }
 
@@ -112,9 +114,9 @@ export async function readMcpConfig(
     }
     return JSON.parse(content) as McpConfig;
   } catch {
-    const format = options?.yaml ? 'YAML' : 'JSON';
+    const format = options?.yaml ? "YAML" : "JSON";
     throw new CliError(
-      'RUNTIME',
+      "RUNTIME",
       `Malformed ${format} in ${configPath}. Please fix or backup and delete the file.`
     );
   }
@@ -175,20 +177,20 @@ export async function writeMcpConfig(
  */
 export function getServersKey(
   format: McpConfigFormat
-): 'mcpServers' | 'context_servers' | 'mcp' | 'amp.mcpServers' {
+): "mcpServers" | "context_servers" | "mcp" | "amp.mcpServers" {
   switch (format) {
-    case 'standard':
-    case 'yaml_standard':
-      return 'mcpServers';
-    case 'context_servers':
-      return 'context_servers';
-    case 'mcp':
-      return 'mcp';
-    case 'amp_mcp':
-      return 'amp.mcpServers';
+    case "standard":
+    case "yaml_standard":
+      return "mcpServers";
+    case "context_servers":
+      return "context_servers";
+    case "mcp":
+      return "mcp";
+    case "amp_mcp":
+      return "amp.mcpServers";
     default: {
       const _exhaustive: never = format;
-      throw new Error(`Unknown format: ${_exhaustive}`);
+      throw new Error(`Unknown format: ${String(_exhaustive)}`);
     }
   }
 }
@@ -197,7 +199,7 @@ export function getServersKey(
  * Check if format uses YAML.
  */
 export function isYamlFormat(format: McpConfigFormat): boolean {
-  return format === 'yaml_standard';
+  return format === "yaml_standard";
 }
 
 /**
@@ -236,10 +238,10 @@ export function buildEntry(
   args: string[],
   format: McpConfigFormat
 ): StandardMcpEntry | OpenCodeMcpEntry {
-  if (format === 'mcp') {
+  if (format === "mcp") {
     // OpenCode: command is array [command, ...args]
     return {
-      type: 'local',
+      type: "local",
       command: [command, ...args],
       enabled: true,
     };

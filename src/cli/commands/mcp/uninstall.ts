@@ -4,15 +4,15 @@
  * @module src/cli/commands/mcp/uninstall
  */
 
-import { CliError } from '../../errors.js';
-import { getGlobals } from '../../program.js';
+import { CliError } from "../../errors.js";
+import { getGlobals } from "../../program.js";
 import {
   type AnyMcpConfig,
   isYamlFormat,
   readMcpConfig,
   removeServerEntry,
   writeMcpConfig,
-} from './config.js';
+} from "./config.js";
 import {
   getTargetDisplayName,
   MCP_SERVER_NAME,
@@ -20,7 +20,7 @@ import {
   type McpTarget,
   resolveMcpConfigPath,
   TARGETS_WITH_PROJECT_SCOPE,
-} from './paths.js';
+} from "./paths.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -43,7 +43,7 @@ interface UninstallResult {
   target: McpTarget;
   scope: McpScope;
   configPath: string;
-  action: 'removed' | 'not_found';
+  action: "removed" | "not_found";
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -75,7 +75,7 @@ async function uninstallFromTarget(
 
   // File doesn't exist
   if (config === null) {
-    return { target, scope, configPath, action: 'not_found' };
+    return { target, scope, configPath, action: "not_found" };
   }
 
   // Try to remove entry using format-aware helper
@@ -86,13 +86,13 @@ async function uninstallFromTarget(
   );
 
   if (!removed) {
-    return { target, scope, configPath, action: 'not_found' };
+    return { target, scope, configPath, action: "not_found" };
   }
 
   // Write back
   await writeMcpConfig(configPath, config as AnyMcpConfig, { yaml: useYaml });
 
-  return { target, scope, configPath, action: 'removed' };
+  return { target, scope, configPath, action: "removed" };
 }
 
 /**
@@ -110,16 +110,16 @@ function safeGetGlobals(): { json: boolean; quiet: boolean } {
  * Uninstall gno MCP server.
  */
 export async function uninstallMcp(opts: UninstallOptions = {}): Promise<void> {
-  const target = opts.target ?? 'claude-desktop';
-  const scope = opts.scope ?? 'user';
+  const target = opts.target ?? "claude-desktop";
+  const scope = opts.scope ?? "user";
   const globals = safeGetGlobals();
   const json = opts.json ?? globals.json;
   const quiet = opts.quiet ?? globals.quiet;
 
   // Validate scope - only some targets support project scope
-  if (scope === 'project' && !TARGETS_WITH_PROJECT_SCOPE.includes(target)) {
+  if (scope === "project" && !TARGETS_WITH_PROJECT_SCOPE.includes(target)) {
     throw new CliError(
-      'VALIDATION',
+      "VALIDATION",
       `${getTargetDisplayName(target)} does not support project scope.`
     );
   }
@@ -141,7 +141,7 @@ export async function uninstallMcp(opts: UninstallOptions = {}): Promise<void> {
     return;
   }
 
-  if (result.action === 'not_found') {
+  if (result.action === "not_found") {
     process.stdout.write(
       `gno is not configured in ${getTargetDisplayName(target)}.\n`
     );

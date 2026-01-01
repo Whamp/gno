@@ -4,14 +4,14 @@
  * @module src/cli/commands/mcp/status
  */
 
-import { getGlobals } from '../../program.js';
+import { getGlobals } from "../../program.js";
 import {
   type AnyMcpConfig,
   getServerEntry,
   isYamlFormat,
   type OpenCodeMcpEntry,
   type StandardMcpEntry,
-} from './config.js';
+} from "./config.js";
 import {
   getTargetDisplayName,
   MCP_SERVER_NAME,
@@ -20,15 +20,15 @@ import {
   type McpTarget,
   resolveMcpConfigPath,
   TARGETS_WITH_PROJECT_SCOPE,
-} from './paths.js';
+} from "./paths.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface StatusOptions {
-  target?: McpTarget | 'all';
-  scope?: McpScope | 'all';
+  target?: McpTarget | "all";
+  scope?: McpScope | "all";
   /** Override cwd (testing) */
   cwd?: string;
   /** Override home dir (testing) */
@@ -64,9 +64,9 @@ interface StatusResult {
 function normalizeEntry(
   entry: StandardMcpEntry | OpenCodeMcpEntry
 ): StandardMcpEntry {
-  if ('type' in entry && entry.type === 'local') {
+  if ("type" in entry && entry.type === "local") {
     // OpenCode format: command is array [command, ...args]
-    const [command = '', ...args] = entry.command;
+    const [command = "", ...args] = entry.command;
     return { command, args };
   }
   return entry as StandardMcpEntry;
@@ -112,7 +112,7 @@ async function checkTargetStatus(
 
     return { target, scope, configPath, configured: false };
   } catch {
-    const format = isYamlFormat(configFormat) ? 'YAML' : 'JSON';
+    const format = isYamlFormat(configFormat) ? "YAML" : "JSON";
     return {
       target,
       scope,
@@ -141,15 +141,15 @@ function safeGetGlobals(): { json: boolean } {
 /**
  * Show MCP installation status.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: status display with multiple targets and scopes
+// oxlint-disable-next-line max-lines-per-function -- status display with multiple targets and scopes
 export async function statusMcp(opts: StatusOptions = {}): Promise<void> {
-  const targetFilter = opts.target ?? 'all';
-  const scopeFilter = opts.scope ?? 'all';
+  const targetFilter = opts.target ?? "all";
+  const scopeFilter = opts.scope ?? "all";
   const globals = safeGetGlobals();
   const json = opts.json ?? globals.json;
 
   const targets: McpTarget[] =
-    targetFilter === 'all' ? MCP_TARGETS : [targetFilter];
+    targetFilter === "all" ? MCP_TARGETS : [targetFilter];
 
   const results: TargetStatus[] = [];
 
@@ -159,7 +159,7 @@ export async function statusMcp(opts: StatusOptions = {}): Promise<void> {
     if (supportsProject) {
       // Targets that support both scopes
       const scopes: McpScope[] =
-        scopeFilter === 'all' ? ['user', 'project'] : [scopeFilter];
+        scopeFilter === "all" ? ["user", "project"] : [scopeFilter];
 
       for (const scope of scopes) {
         results.push(
@@ -169,10 +169,10 @@ export async function statusMcp(opts: StatusOptions = {}): Promise<void> {
           })
         );
       }
-    } else if (scopeFilter === 'all' || scopeFilter === 'user') {
+    } else if (scopeFilter === "all" || scopeFilter === "user") {
       // User scope only - skip if filtering by project
       results.push(
-        await checkTargetStatus(target, 'user', {
+        await checkTargetStatus(target, "user", {
           cwd: opts.cwd,
           homeDir: opts.homeDir,
         })
@@ -193,14 +193,14 @@ export async function statusMcp(opts: StatusOptions = {}): Promise<void> {
   }
 
   // Terminal output
-  process.stdout.write('MCP Server Status\n');
-  process.stdout.write(`${'─'.repeat(50)}\n\n`);
+  process.stdout.write("MCP Server Status\n");
+  process.stdout.write(`${"─".repeat(50)}\n\n`);
 
   for (const status of results) {
     const targetName = getTargetDisplayName(status.target);
-    const scopeLabel = status.scope === 'project' ? ' (project)' : '';
-    const statusIcon = status.configured ? '✓' : '✗';
-    const statusText = status.configured ? 'configured' : 'not configured';
+    const scopeLabel = status.scope === "project" ? " (project)" : "";
+    const statusIcon = status.configured ? "✓" : "✗";
+    const statusText = status.configured ? "configured" : "not configured";
 
     process.stdout.write(
       `${statusIcon} ${targetName}${scopeLabel}: ${statusText}\n`
@@ -208,7 +208,7 @@ export async function statusMcp(opts: StatusOptions = {}): Promise<void> {
 
     if (status.configured && status.serverEntry) {
       process.stdout.write(`    Command: ${status.serverEntry.command}\n`);
-      process.stdout.write(`    Args: ${status.serverEntry.args.join(' ')}\n`);
+      process.stdout.write(`    Args: ${status.serverEntry.args.join(" ")}\n`);
     }
 
     if (status.error) {

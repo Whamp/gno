@@ -5,11 +5,14 @@
  * @module src/store/vector/sqliteVec
  */
 
-import type { Database } from 'bun:sqlite';
-import { createHash } from 'node:crypto';
-import type { StoreResult } from '../types';
-import { err, ok } from '../types';
-import type { VectorIndexPort, VectorRow, VectorSearchResult } from './types';
+import type { Database } from "bun:sqlite";
+
+import { createHash } from "node:crypto";
+
+import type { StoreResult } from "../types";
+import type { VectorIndexPort, VectorRow, VectorSearchResult } from "./types";
+
+import { err, ok } from "../types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BLOB Encoding Helpers (avoid Buffer.buffer footgun)
@@ -49,7 +52,7 @@ export function decodeEmbedding(blob: Uint8Array): Float32Array {
  * First 8 chars of SHA256 hash.
  */
 function modelTableName(modelUri: string): string {
-  const hash = createHash('sha256').update(modelUri).digest('hex').slice(0, 8);
+  const hash = createHash("sha256").update(modelUri).digest("hex").slice(0, 8);
   return `vec_${hash}`;
 }
 
@@ -60,7 +63,7 @@ function modelTableName(modelUri: string): string {
 export interface VectorIndexOptions {
   model: string;
   dimensions: number;
-  distanceMetric?: 'cosine' | 'l2';
+  distanceMetric?: "cosine" | "l2";
 }
 
 /**
@@ -71,14 +74,14 @@ export async function createVectorIndexPort(
   db: Database,
   options: VectorIndexOptions
 ): Promise<StoreResult<VectorIndexPort>> {
-  const { model, dimensions, distanceMetric = 'cosine' } = options;
+  const { model, dimensions, distanceMetric = "cosine" } = options;
   const tableName = modelTableName(model);
 
   // Try loading sqlite-vec extension (ESM dynamic import)
   let searchAvailable = false;
   let loadError: string | undefined;
   try {
-    const sqliteVec = await import('sqlite-vec');
+    const sqliteVec = await import("sqlite-vec");
     sqliteVec.load(db);
     searchAvailable = true;
   } catch (e) {
@@ -155,7 +158,7 @@ export async function createVectorIndexPort(
       } catch (e) {
         return Promise.resolve(
           err(
-            'VECTOR_WRITE_FAILED',
+            "VECTOR_WRITE_FAILED",
             `Vector write failed: ${e instanceof Error ? e.message : String(e)}`
           )
         );
@@ -186,7 +189,7 @@ export async function createVectorIndexPort(
       } catch (e) {
         return Promise.resolve(
           err(
-            'VECTOR_DELETE_FAILED',
+            "VECTOR_DELETE_FAILED",
             `Vector delete failed: ${e instanceof Error ? e.message : String(e)}`
           )
         );
@@ -212,8 +215,8 @@ export async function createVectorIndexPort(
       if (!(searchAvailable && searchStmt)) {
         return Promise.resolve(
           err(
-            'VEC_SEARCH_UNAVAILABLE',
-            'Vector search requires sqlite-vec. Embeddings stored but KNN search disabled.'
+            "VEC_SEARCH_UNAVAILABLE",
+            "Vector search requires sqlite-vec. Embeddings stored but KNN search disabled."
           )
         );
       }
@@ -235,9 +238,9 @@ export async function createVectorIndexPort(
         return Promise.resolve(
           ok(
             filtered.map((r) => {
-              const parts = r.chunk_id.split(':');
-              const mirrorHash = parts[0] ?? '';
-              const seqStr = parts[1] ?? '0';
+              const parts = r.chunk_id.split(":");
+              const mirrorHash = parts[0] ?? "";
+              const seqStr = parts[1] ?? "0";
               return {
                 mirrorHash,
                 seq: Number.parseInt(seqStr, 10),
@@ -249,7 +252,7 @@ export async function createVectorIndexPort(
       } catch (e) {
         return Promise.resolve(
           err(
-            'VEC_SEARCH_FAILED',
+            "VEC_SEARCH_FAILED",
             `Vector search failed: ${e instanceof Error ? e.message : String(e)}`
           )
         );
@@ -274,7 +277,7 @@ export async function createVectorIndexPort(
         // Repopulate from content_vectors
         const rows = db
           .prepare(
-            'SELECT mirror_hash, seq, embedding FROM content_vectors WHERE model = ?'
+            "SELECT mirror_hash, seq, embedding FROM content_vectors WHERE model = ?"
           )
           .all(model) as {
           mirror_hash: string;
@@ -297,7 +300,7 @@ export async function createVectorIndexPort(
       } catch (e) {
         return Promise.resolve(
           err(
-            'VEC_REBUILD_FAILED',
+            "VEC_REBUILD_FAILED",
             `Vec rebuild failed: ${e instanceof Error ? e.message : String(e)}`
           )
         );
@@ -363,7 +366,7 @@ export async function createVectorIndexPort(
       } catch (e) {
         return Promise.resolve(
           err(
-            'VEC_SYNC_FAILED',
+            "VEC_SYNC_FAILED",
             `Vec sync failed: ${e instanceof Error ? e.message : String(e)}`
           )
         );

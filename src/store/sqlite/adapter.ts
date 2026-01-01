@@ -8,11 +8,10 @@
  */
 
 // CRITICAL: Import setup FIRST to configure custom SQLite before any Database use
-import './setup';
-import { Database } from 'bun:sqlite';
-import { buildUri, deriveDocid } from '../../app/constants';
-import type { Collection, Context, FtsTokenizer } from '../../config/types';
-import { migrations, runMigrations } from '../migrations';
+import "./setup";
+import { Database } from "bun:sqlite";
+
+import type { Collection, Context, FtsTokenizer } from "../../config/types";
 import type {
   ChunkInput,
   ChunkRow,
@@ -29,10 +28,13 @@ import type {
   MigrationResult,
   StorePort,
   StoreResult,
-} from '../types';
-import { err, ok } from '../types';
-import { loadFts5Snowball } from './fts5-snowball';
-import type { SqliteDbProvider } from './types';
+} from "../types";
+import type { SqliteDbProvider } from "./types";
+
+import { buildUri, deriveDocid } from "../../app/constants";
+import { migrations, runMigrations } from "../migrations";
+import { err, ok } from "../types";
+import { loadFts5Snowball } from "./fts5-snowball";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FTS5 Query Escaping
@@ -56,7 +58,7 @@ function escapeFts5Query(query: string): string {
       const escaped = token.replace(/"/g, '""');
       return `"${escaped}"`;
     })
-    .join(' ');
+    .join(" ");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -71,9 +73,9 @@ const INDEX_PREFIX_REGEX = /^index-/;
 
 export class SqliteAdapter implements StorePort, SqliteDbProvider {
   private db: Database | null = null;
-  private dbPath = '';
-  private ftsTokenizer: FtsTokenizer = 'unicode61';
-  private configPath = ''; // Set by CLI layer for status output
+  private dbPath = "";
+  private ftsTokenizer: FtsTokenizer = "unicode61";
+  private configPath = ""; // Set by CLI layer for status output
   private txDepth = 0; // Transaction nesting depth
   private txCounter = 0; // Savepoint counter for unique names
 
@@ -91,27 +93,27 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       this.ftsTokenizer = ftsTokenizer;
 
       // Enable pragmas for performance and safety
-      this.db.exec('PRAGMA foreign_keys = ON');
-      this.db.exec('PRAGMA busy_timeout = 5000');
+      this.db.exec("PRAGMA foreign_keys = ON");
+      this.db.exec("PRAGMA busy_timeout = 5000");
 
       // CI mode: trade durability for speed (no fsync, memory journal)
       // Safe for tests since we don't need crash recovery
       if (process.env.CI) {
-        this.db.exec('PRAGMA journal_mode = MEMORY');
-        this.db.exec('PRAGMA synchronous = OFF');
-        this.db.exec('PRAGMA temp_store = MEMORY');
+        this.db.exec("PRAGMA journal_mode = MEMORY");
+        this.db.exec("PRAGMA synchronous = OFF");
+        this.db.exec("PRAGMA temp_store = MEMORY");
       } else {
-        this.db.exec('PRAGMA journal_mode = WAL');
+        this.db.exec("PRAGMA journal_mode = WAL");
       }
 
       // Load fts5-snowball extension if using snowball tokenizer
-      if (ftsTokenizer.startsWith('snowball')) {
+      if (ftsTokenizer.startsWith("snowball")) {
         const snowballResult = loadFts5Snowball(this.db);
         if (!snowballResult.loaded) {
           this.db.close();
           this.db = null;
           return err(
-            'EXTENSION_LOAD_FAILED',
+            "EXTENSION_LOAD_FAILED",
             `Failed to load fts5-snowball: ${snowballResult.error}`
           );
         }
@@ -128,8 +130,8 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       return result;
     } catch (cause) {
       const message =
-        cause instanceof Error ? cause.message : 'Failed to open database';
-      return err('CONNECTION_FAILED', message, cause);
+        cause instanceof Error ? cause.message : "Failed to open database";
+      return err("CONNECTION_FAILED", message, cause);
     }
   }
 
@@ -160,7 +162,7 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
     try {
       if (isOuter) {
         // IMMEDIATE reduces lock churn for bulk writes
-        db.exec('BEGIN IMMEDIATE');
+        db.exec("BEGIN IMMEDIATE");
       } else {
         db.exec(`SAVEPOINT ${savepoint}`);
       }
@@ -170,7 +172,7 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       this.txDepth -= 1;
 
       if (isOuter) {
-        db.exec('COMMIT');
+        db.exec("COMMIT");
       } else {
         db.exec(`RELEASE ${savepoint}`);
       }
@@ -181,7 +183,7 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
 
       try {
         if (isOuter) {
-          db.exec('ROLLBACK');
+          db.exec("ROLLBACK");
         } else {
           db.exec(`ROLLBACK TO ${savepoint}`);
           db.exec(`RELEASE ${savepoint}`);
@@ -191,8 +193,8 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       }
 
       const message =
-        cause instanceof Error ? cause.message : 'Transaction failed';
-      return err('TRANSACTION_FAILED', message, cause);
+        cause instanceof Error ? cause.message : "Transaction failed";
+      return err("TRANSACTION_FAILED", message, cause);
     }
   }
 
@@ -213,7 +215,7 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
 
   private ensureOpen(): Database {
     if (!this.db) {
-      throw new Error('Database not open');
+      throw new Error("Database not open");
     }
     return this.db;
   }
@@ -230,7 +232,7 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
         // Get existing collection names
         const existing = new Set(
           db
-            .query<{ name: string }, []>('SELECT name FROM collections')
+            .query<{ name: string }, []>("SELECT name FROM collections")
             .all()
             .map((r) => r.name)
         );
@@ -240,7 +242,7 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
         // Delete removed collections
         for (const name of existing) {
           if (!incoming.has(name)) {
-            db.run('DELETE FROM collections WHERE name = ?', [name]);
+            db.run("DELETE FROM collections WHERE name = ?", [name]);
           }
         }
 
@@ -275,8 +277,8 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       return ok(undefined);
     } catch (cause) {
       return err(
-        'QUERY_FAILED',
-        cause instanceof Error ? cause.message : 'Failed to sync collections',
+        "QUERY_FAILED",
+        cause instanceof Error ? cause.message : "Failed to sync collections",
         cause
       );
     }
@@ -288,7 +290,7 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
 
       const transaction = db.transaction(() => {
         // Delete all and re-insert (contexts are small)
-        db.run('DELETE FROM contexts');
+        db.run("DELETE FROM contexts");
 
         const stmt = db.prepare(`
           INSERT INTO contexts (scope_type, scope_key, text, synced_at)
@@ -304,8 +306,8 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       return ok(undefined);
     } catch (cause) {
       return err(
-        'QUERY_FAILED',
-        cause instanceof Error ? cause.message : 'Failed to sync contexts',
+        "QUERY_FAILED",
+        cause instanceof Error ? cause.message : "Failed to sync contexts",
         cause
       );
     }
@@ -315,14 +317,14 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
     try {
       const db = this.ensureOpen();
       const rows = db
-        .query<DbCollectionRow, []>('SELECT * FROM collections')
+        .query<DbCollectionRow, []>("SELECT * FROM collections")
         .all();
 
       return ok(rows.map(mapCollectionRow));
     } catch (cause) {
       return err(
-        'QUERY_FAILED',
-        cause instanceof Error ? cause.message : 'Failed to get collections',
+        "QUERY_FAILED",
+        cause instanceof Error ? cause.message : "Failed to get collections",
         cause
       );
     }
@@ -331,13 +333,13 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
   async getContexts(): Promise<StoreResult<ContextRow[]>> {
     try {
       const db = this.ensureOpen();
-      const rows = db.query<DbContextRow, []>('SELECT * FROM contexts').all();
+      const rows = db.query<DbContextRow, []>("SELECT * FROM contexts").all();
 
       return ok(rows.map(mapContextRow));
     } catch (cause) {
       return err(
-        'QUERY_FAILED',
-        cause instanceof Error ? cause.message : 'Failed to get contexts',
+        "QUERY_FAILED",
+        cause instanceof Error ? cause.message : "Failed to get contexts",
         cause
       );
     }
@@ -404,8 +406,8 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       return ok(docid);
     } catch (cause) {
       return err(
-        'QUERY_FAILED',
-        cause instanceof Error ? cause.message : 'Failed to upsert document',
+        "QUERY_FAILED",
+        cause instanceof Error ? cause.message : "Failed to upsert document",
         cause
       );
     }
@@ -419,15 +421,15 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       const db = this.ensureOpen();
       const row = db
         .query<DbDocumentRow, [string, string]>(
-          'SELECT * FROM documents WHERE collection = ? AND rel_path = ?'
+          "SELECT * FROM documents WHERE collection = ? AND rel_path = ?"
         )
         .get(collection, relPath);
 
       return ok(row ? mapDocumentRow(row) : null);
     } catch (cause) {
       return err(
-        'QUERY_FAILED',
-        cause instanceof Error ? cause.message : 'Failed to get document',
+        "QUERY_FAILED",
+        cause instanceof Error ? cause.message : "Failed to get document",
         cause
       );
     }
@@ -440,17 +442,17 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       const db = this.ensureOpen();
       const row = db
         .query<DbDocumentRow, [string]>(
-          'SELECT * FROM documents WHERE docid = ?'
+          "SELECT * FROM documents WHERE docid = ?"
         )
         .get(docid);
 
       return ok(row ? mapDocumentRow(row) : null);
     } catch (cause) {
       return err(
-        'QUERY_FAILED',
+        "QUERY_FAILED",
         cause instanceof Error
           ? cause.message
-          : 'Failed to get document by docid',
+          : "Failed to get document by docid",
         cause
       );
     }
@@ -462,16 +464,16 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
     try {
       const db = this.ensureOpen();
       const row = db
-        .query<DbDocumentRow, [string]>('SELECT * FROM documents WHERE uri = ?')
+        .query<DbDocumentRow, [string]>("SELECT * FROM documents WHERE uri = ?")
         .get(uri);
 
       return ok(row ? mapDocumentRow(row) : null);
     } catch (cause) {
       return err(
-        'QUERY_FAILED',
+        "QUERY_FAILED",
         cause instanceof Error
           ? cause.message
-          : 'Failed to get document by uri',
+          : "Failed to get document by uri",
         cause
       );
     }
@@ -486,16 +488,16 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       const rows = collection
         ? db
             .query<DbDocumentRow, [string]>(
-              'SELECT * FROM documents WHERE collection = ?'
+              "SELECT * FROM documents WHERE collection = ?"
             )
             .all(collection)
-        : db.query<DbDocumentRow, []>('SELECT * FROM documents').all();
+        : db.query<DbDocumentRow, []>("SELECT * FROM documents").all();
 
       return ok(rows.map(mapDocumentRow));
     } catch (cause) {
       return err(
-        'QUERY_FAILED',
-        cause instanceof Error ? cause.message : 'Failed to list documents',
+        "QUERY_FAILED",
+        cause instanceof Error ? cause.message : "Failed to list documents",
         cause
       );
     }
@@ -514,12 +516,12 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       const countRow = collection
         ? db
             .query<{ count: number }, [string]>(
-              'SELECT COUNT(*) as count FROM documents WHERE collection = ?'
+              "SELECT COUNT(*) as count FROM documents WHERE collection = ?"
             )
             .get(collection)
         : db
             .query<{ count: number }, []>(
-              'SELECT COUNT(*) as count FROM documents'
+              "SELECT COUNT(*) as count FROM documents"
             )
             .get();
 
@@ -529,20 +531,20 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       const rows = collection
         ? db
             .query<DbDocumentRow, [string, number, number]>(
-              'SELECT * FROM documents WHERE collection = ? ORDER BY updated_at DESC LIMIT ? OFFSET ?'
+              "SELECT * FROM documents WHERE collection = ? ORDER BY updated_at DESC LIMIT ? OFFSET ?"
             )
             .all(collection, limit, offset)
         : db
             .query<DbDocumentRow, [number, number]>(
-              'SELECT * FROM documents ORDER BY updated_at DESC LIMIT ? OFFSET ?'
+              "SELECT * FROM documents ORDER BY updated_at DESC LIMIT ? OFFSET ?"
             )
             .all(limit, offset);
 
       return ok({ documents: rows.map(mapDocumentRow), total });
     } catch (cause) {
       return err(
-        'QUERY_FAILED',
-        cause instanceof Error ? cause.message : 'Failed to list documents',
+        "QUERY_FAILED",
+        cause instanceof Error ? cause.message : "Failed to list documents",
         cause
       );
     }
@@ -559,7 +561,7 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
         return ok(0);
       }
 
-      const placeholders = relPaths.map(() => '?').join(',');
+      const placeholders = relPaths.map(() => "?").join(",");
       const result = db.run(
         `UPDATE documents SET active = 0, updated_at = datetime('now')
          WHERE collection = ? AND rel_path IN (${placeholders})`,
@@ -569,10 +571,10 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       return ok(result.changes);
     } catch (cause) {
       return err(
-        'QUERY_FAILED',
+        "QUERY_FAILED",
         cause instanceof Error
           ? cause.message
-          : 'Failed to mark documents inactive',
+          : "Failed to mark documents inactive",
         cause
       );
     }
@@ -599,8 +601,8 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       return ok(undefined);
     } catch (cause) {
       return err(
-        'QUERY_FAILED',
-        cause instanceof Error ? cause.message : 'Failed to upsert content',
+        "QUERY_FAILED",
+        cause instanceof Error ? cause.message : "Failed to upsert content",
         cause
       );
     }
@@ -612,15 +614,15 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
 
       const row = db
         .query<{ markdown: string }, [string]>(
-          'SELECT markdown FROM content WHERE mirror_hash = ?'
+          "SELECT markdown FROM content WHERE mirror_hash = ?"
         )
         .get(mirrorHash);
 
       return ok(row?.markdown ?? null);
     } catch (cause) {
       return err(
-        'QUERY_FAILED',
-        cause instanceof Error ? cause.message : 'Failed to get content',
+        "QUERY_FAILED",
+        cause instanceof Error ? cause.message : "Failed to get content",
         cause
       );
     }
@@ -639,7 +641,7 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
 
       const transaction = db.transaction(() => {
         // Delete existing chunks for this hash
-        db.run('DELETE FROM content_chunks WHERE mirror_hash = ?', [
+        db.run("DELETE FROM content_chunks WHERE mirror_hash = ?", [
           mirrorHash,
         ]);
 
@@ -667,8 +669,8 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       return ok(undefined);
     } catch (cause) {
       return err(
-        'QUERY_FAILED',
-        cause instanceof Error ? cause.message : 'Failed to upsert chunks',
+        "QUERY_FAILED",
+        cause instanceof Error ? cause.message : "Failed to upsert chunks",
         cause
       );
     }
@@ -680,15 +682,15 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
 
       const rows = db
         .query<DbChunkRow, [string]>(
-          'SELECT * FROM content_chunks WHERE mirror_hash = ? ORDER BY seq'
+          "SELECT * FROM content_chunks WHERE mirror_hash = ? ORDER BY seq"
         )
         .all(mirrorHash);
 
       return ok(rows.map(mapChunkRow));
     } catch (cause) {
       return err(
-        'QUERY_FAILED',
-        cause instanceof Error ? cause.message : 'Failed to get chunks',
+        "QUERY_FAILED",
+        cause instanceof Error ? cause.message : "Failed to get chunks",
         cause
       );
     }
@@ -721,7 +723,7 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       // Batch queries to respect SQLite parameter limit
       for (let i = 0; i < uniqueHashes.length; i += SQLITE_MAX_PARAMS) {
         const batch = uniqueHashes.slice(i, i + SQLITE_MAX_PARAMS);
-        const placeholders = batch.map(() => '?').join(',');
+        const placeholders = batch.map(() => "?").join(",");
         const sql = `SELECT * FROM content_chunks
                      WHERE mirror_hash IN (${placeholders})
                      ORDER BY mirror_hash, seq`;
@@ -739,8 +741,8 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       return ok(result);
     } catch (cause) {
       return err(
-        'QUERY_FAILED',
-        cause instanceof Error ? cause.message : 'Failed to get chunks batch',
+        "QUERY_FAILED",
+        cause instanceof Error ? cause.message : "Failed to get chunks batch",
         cause
       );
     }
@@ -766,7 +768,7 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
           d.mirror_hash,
           0 as seq,
           bm25(documents_fts) as score,
-          ${options.snippet ? "snippet(documents_fts, 2, '<mark>', '</mark>', '...', 32) as snippet," : ''}
+          ${options.snippet ? "snippet(documents_fts, 2, '<mark>', '</mark>', '...', 32) as snippet," : ""}
           d.docid,
           d.uri,
           d.title,
@@ -780,7 +782,7 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
         FROM documents_fts fts
         JOIN documents d ON d.id = fts.rowid AND d.active = 1
         WHERE documents_fts MATCH ?
-        ${options.collection ? 'AND d.collection = ?' : ''}
+        ${options.collection ? "AND d.collection = ?" : ""}
         ORDER BY bm25(documents_fts)
         LIMIT ?
       `;
@@ -829,15 +831,15 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
         }))
       );
     } catch (cause) {
-      const message = cause instanceof Error ? cause.message : '';
+      const message = cause instanceof Error ? cause.message : "";
       // Detect FTS5 syntax errors and return INVALID_INPUT for consistent handling
       const isSyntaxError =
-        message.includes('malformed MATCH') ||
-        message.includes('fts5: syntax error') ||
-        message.includes('fts5:');
+        message.includes("malformed MATCH") ||
+        message.includes("fts5: syntax error") ||
+        message.includes("fts5:");
       return err(
-        isSyntaxError ? 'INVALID_INPUT' : 'QUERY_FAILED',
-        message || 'Failed to search FTS',
+        isSyntaxError ? "INVALID_INPUT" : "QUERY_FAILED",
+        message || "Failed to search FTS",
         cause
       );
     }
@@ -878,13 +880,13 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
         }
 
         // Delete existing FTS entry for this doc
-        db.run('DELETE FROM documents_fts WHERE rowid = ?', [doc.id]);
+        db.run("DELETE FROM documents_fts WHERE rowid = ?", [doc.id]);
 
         // Insert new FTS entry if we have content
         if (doc.markdown) {
           db.run(
-            'INSERT INTO documents_fts (rowid, filepath, title, body) VALUES (?, ?, ?, ?)',
-            [doc.id, doc.rel_path, doc.title ?? '', doc.markdown]
+            "INSERT INTO documents_fts (rowid, filepath, title, body) VALUES (?, ?, ?, ?)",
+            [doc.id, doc.rel_path, doc.title ?? "", doc.markdown]
           );
         }
       });
@@ -893,8 +895,8 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       return ok(undefined);
     } catch (cause) {
       return err(
-        'QUERY_FAILED',
-        cause instanceof Error ? cause.message : 'Failed to sync document FTS',
+        "QUERY_FAILED",
+        cause instanceof Error ? cause.message : "Failed to sync document FTS",
         cause
       );
     }
@@ -911,7 +913,7 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
 
       const transaction = db.transaction(() => {
         // Clear FTS table
-        db.run('DELETE FROM documents_fts');
+        db.run("DELETE FROM documents_fts");
 
         // Get all active documents with content
         interface DocWithContent {
@@ -932,11 +934,11 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
 
         // Insert FTS entries
         const stmt = db.prepare(
-          'INSERT INTO documents_fts (rowid, filepath, title, body) VALUES (?, ?, ?, ?)'
+          "INSERT INTO documents_fts (rowid, filepath, title, body) VALUES (?, ?, ?, ?)"
         );
 
         for (const doc of docs) {
-          stmt.run(doc.id, doc.rel_path, doc.title ?? '', doc.markdown);
+          stmt.run(doc.id, doc.rel_path, doc.title ?? "", doc.markdown);
           count++;
         }
       });
@@ -945,10 +947,10 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       return ok(count);
     } catch (cause) {
       return err(
-        'QUERY_FAILED',
+        "QUERY_FAILED",
         cause instanceof Error
           ? cause.message
-          : 'Failed to rebuild documents FTS',
+          : "Failed to rebuild documents FTS",
         cause
       );
     }
@@ -972,14 +974,14 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
 
         const docs = db
           .query<DocInfo, [string]>(
-            'SELECT id, rel_path, title FROM documents WHERE mirror_hash = ? AND active = 1'
+            "SELECT id, rel_path, title FROM documents WHERE mirror_hash = ? AND active = 1"
           )
           .all(mirrorHash);
 
         // Get content
         const content = db
           .query<{ markdown: string }, [string]>(
-            'SELECT markdown FROM content WHERE mirror_hash = ?'
+            "SELECT markdown FROM content WHERE mirror_hash = ?"
           )
           .get(mirrorHash);
 
@@ -989,10 +991,10 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
 
         // Update FTS for each document using this hash
         for (const doc of docs) {
-          db.run('DELETE FROM documents_fts WHERE rowid = ?', [doc.id]);
+          db.run("DELETE FROM documents_fts WHERE rowid = ?", [doc.id]);
           db.run(
-            'INSERT INTO documents_fts (rowid, filepath, title, body) VALUES (?, ?, ?, ?)',
-            [doc.id, doc.rel_path, doc.title ?? '', content.markdown]
+            "INSERT INTO documents_fts (rowid, filepath, title, body) VALUES (?, ?, ?, ?)",
+            [doc.id, doc.rel_path, doc.title ?? "", content.markdown]
           );
         }
       });
@@ -1001,8 +1003,8 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       return ok(undefined);
     } catch (cause) {
       return err(
-        'QUERY_FAILED',
-        cause instanceof Error ? cause.message : 'Failed to rebuild FTS',
+        "QUERY_FAILED",
+        cause instanceof Error ? cause.message : "Failed to rebuild FTS",
         cause
       );
     }
@@ -1022,15 +1024,15 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
           "SELECT value FROM schema_meta WHERE key = 'version'"
         )
         .get();
-      const version = versionRow?.value ?? '0';
+      const version = versionRow?.value ?? "0";
 
       // Derive indexName from dbPath (basename without extension)
       const indexName =
         this.dbPath
-          .split('/')
+          .split("/")
           .pop()
-          ?.replace(SQLITE_EXT_REGEX, '')
-          ?.replace(INDEX_PREFIX_REGEX, '') || 'default';
+          ?.replace(SQLITE_EXT_REGEX, "")
+          ?.replace(INDEX_PREFIX_REGEX, "") || "default";
 
       // Get collection stats with chunk counts
       interface CollectionStat {
@@ -1082,7 +1084,7 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       const chunkCount =
         db
           .query<{ count: number }, []>(
-            'SELECT COUNT(*) as count FROM content_chunks'
+            "SELECT COUNT(*) as count FROM content_chunks"
           )
           .get()?.count ?? 0;
 
@@ -1117,7 +1119,7 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       // Last updated (max updated_at from documents)
       const lastUpdatedRow = db
         .query<{ last_updated: string | null }, []>(
-          'SELECT MAX(updated_at) as last_updated FROM documents'
+          "SELECT MAX(updated_at) as last_updated FROM documents"
         )
         .get();
 
@@ -1151,8 +1153,8 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       });
     } catch (cause) {
       return err(
-        'QUERY_FAILED',
-        cause instanceof Error ? cause.message : 'Failed to get status',
+        "QUERY_FAILED",
+        cause instanceof Error ? cause.message : "Failed to get status",
         cause
       );
     }
@@ -1181,8 +1183,8 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       return ok(undefined);
     } catch (cause) {
       return err(
-        'QUERY_FAILED',
-        cause instanceof Error ? cause.message : 'Failed to record error',
+        "QUERY_FAILED",
+        cause instanceof Error ? cause.message : "Failed to record error",
         cause
       );
     }
@@ -1194,15 +1196,15 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
 
       const rows = db
         .query<DbIngestErrorRow, [number]>(
-          'SELECT * FROM ingest_errors ORDER BY occurred_at DESC LIMIT ?'
+          "SELECT * FROM ingest_errors ORDER BY occurred_at DESC LIMIT ?"
         )
         .all(limit);
 
       return ok(rows.map(mapIngestErrorRow));
     } catch (cause) {
       return err(
-        'QUERY_FAILED',
-        cause instanceof Error ? cause.message : 'Failed to get recent errors',
+        "QUERY_FAILED",
+        cause instanceof Error ? cause.message : "Failed to get recent errors",
         cause
       );
     }
@@ -1270,8 +1272,8 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       });
     } catch (cause) {
       return err(
-        'QUERY_FAILED',
-        cause instanceof Error ? cause.message : 'Failed to cleanup orphans',
+        "QUERY_FAILED",
+        cause instanceof Error ? cause.message : "Failed to cleanup orphans",
         cause
       );
     }
@@ -1294,7 +1296,7 @@ interface DbCollectionRow {
 }
 
 interface DbContextRow {
-  scope_type: 'global' | 'collection' | 'prefix';
+  scope_type: "global" | "collection" | "prefix";
   scope_key: string;
   text: string;
   synced_at: string;

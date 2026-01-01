@@ -5,10 +5,11 @@
  * @module src/cli/run
  */
 
-import { CommanderError } from 'commander';
-import { CLI_NAME, PRODUCT_NAME } from '../app/constants';
-import { CliError, exitCodeFor, formatErrorForOutput } from './errors';
-import { createProgram, resetGlobals } from './program';
+import { CommanderError } from "commander";
+
+import { CLI_NAME, PRODUCT_NAME } from "../app/constants";
+import { CliError, exitCodeFor, formatErrorForOutput } from "./errors";
+import { createProgram, resetGlobals } from "./program";
 
 /**
  * Check if argv contains --json flag (before end-of-options marker).
@@ -16,10 +17,10 @@ import { createProgram, resetGlobals } from './program';
  */
 function argvWantsJson(argv: string[]): boolean {
   for (const arg of argv) {
-    if (arg === '--') {
+    if (arg === "--") {
       break; // Stop at end-of-options marker
     }
-    if (arg === '--json') {
+    if (arg === "--json") {
       return true;
     }
   }
@@ -28,18 +29,18 @@ function argvWantsJson(argv: string[]): boolean {
 
 // Known global flags (boolean) - includes both --no-color and --color (negatable)
 const KNOWN_BOOL_FLAGS = new Set([
-  '--color',
-  '--no-color',
-  '--verbose',
-  '--yes',
-  '-q',
-  '--quiet',
-  '--json',
-  '--offline',
+  "--color",
+  "--no-color",
+  "--verbose",
+  "--yes",
+  "-q",
+  "--quiet",
+  "--json",
+  "--offline",
 ]);
 
 // Known global flags that take values (--flag value or --flag=value)
-const KNOWN_VALUE_FLAGS = ['--index', '--config'] as const;
+const KNOWN_VALUE_FLAGS = ["--index", "--config"] as const;
 
 /**
  * Check if arg is a known value flag (--index, --config, or --index=val form).
@@ -70,7 +71,7 @@ function hasNoSubcommand(argv: string[]): boolean {
     const arg = argv[i] as string; // Guaranteed by loop bounds
 
     // End of options marker
-    if (arg === '--') {
+    if (arg === "--") {
       // Only "no subcommand" if nothing comes after --
       return i === argv.length - 1;
     }
@@ -81,7 +82,7 @@ function hasNoSubcommand(argv: string[]): boolean {
     }
 
     // Known value flag with = syntax (--index=foo)
-    if (isKnownValueFlag(arg) && arg.includes('=')) {
+    if (isKnownValueFlag(arg) && arg.includes("=")) {
       continue;
     }
 
@@ -89,7 +90,7 @@ function hasNoSubcommand(argv: string[]): boolean {
     if (isKnownValueFlag(arg)) {
       const nextArg = argv[i + 1];
       // Missing value or next is a flag → let Commander handle/error
-      if (nextArg === undefined || nextArg.startsWith('-')) {
+      if (nextArg === undefined || nextArg.startsWith("-")) {
         return false;
       }
       i += 1; // Skip the value
@@ -181,9 +182,9 @@ export async function runCli(argv: string[]): Promise<number> {
       // commander.help: help subcommand (e.g., help collection)
       // commander.version: --version or -V flag
       if (
-        err.code === 'commander.helpDisplayed' ||
-        err.code === 'commander.help' ||
-        err.code === 'commander.version'
+        err.code === "commander.helpDisplayed" ||
+        err.code === "commander.help" ||
+        err.code === "commander.version"
       ) {
         return 0;
       }
@@ -191,7 +192,7 @@ export async function runCli(argv: string[]): Promise<number> {
       // Validation errors (missing args, unknown options)
       // Always emit JSON envelope in JSON mode (Commander stderr suppressed above)
       if (isJson) {
-        const cliErr = new CliError('VALIDATION', err.message, {
+        const cliErr = new CliError("VALIDATION", err.message, {
           commanderCode: err.code,
         });
         const output = formatErrorForOutput(cliErr, { json: true });
@@ -203,7 +204,7 @@ export async function runCli(argv: string[]): Promise<number> {
     // Unexpected errors
     const message = err instanceof Error ? err.message : String(err);
     if (isJson) {
-      const cliErr = new CliError('RUNTIME', message);
+      const cliErr = new CliError("RUNTIME", message);
       const output = formatErrorForOutput(cliErr, { json: true });
       process.stderr.write(`${output}\n`);
     } else {

@@ -56,15 +56,15 @@ Collections define what gets indexed.
 
 ### Collection Fields
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `name` | string | required | Unique identifier (lowercase) |
-| `path` | string | required | Absolute path to directory |
-| `pattern` | glob | `**/*` | File matching pattern |
-| `include` | array | `[]` | Extension allowlist |
-| `exclude` | array | see below | Patterns to skip |
-| `updateCmd` | string | - | Shell command before indexing |
-| `languageHint` | string | - | BCP-47 language code |
+| Field          | Type   | Default   | Description                   |
+| -------------- | ------ | --------- | ----------------------------- |
+| `name`         | string | required  | Unique identifier (lowercase) |
+| `path`         | string | required  | Absolute path to directory    |
+| `pattern`      | glob   | `**/*`    | File matching pattern         |
+| `include`      | array  | `[]`      | Extension allowlist           |
+| `exclude`      | array  | see below | Patterns to skip              |
+| `updateCmd`    | string | -         | Shell command before indexing |
+| `languageHint` | string | -         | BCP-47 language code          |
 
 ### Default Excludes
 
@@ -129,11 +129,11 @@ Contexts add semantic hints to improve search relevance.
 
 ### Scope Types
 
-| Type | Key Format | Example |
-|------|------------|---------|
-| `global` | `/` | Applies to all documents |
-| `collection` | `name:` | Applies to collection |
-| `prefix` | `gno://collection/path` | Applies to path prefix |
+| Type         | Key Format              | Example                  |
+| ------------ | ----------------------- | ------------------------ |
+| `global`     | `/`                     | Applies to all documents |
+| `collection` | `name:`                 | Applies to collection    |
+| `prefix`     | `gno://collection/path` | Applies to path prefix   |
 
 ### Examples
 
@@ -161,25 +161,26 @@ Model configuration for embeddings and AI answers.
 
 ### Presets
 
-| Preset | Disk | Best For |
-|--------|------|----------|
-| `slim` | ~1GB | Fast responses, lower quality |
-| `balanced` | ~2GB | Good balance (default) |
-| `quality` | ~2.5GB | Best answers, complex content |
+| Preset     | Disk   | Best For                      |
+| ---------- | ------ | ----------------------------- |
+| `slim`     | ~1GB   | Fast responses, lower quality |
+| `balanced` | ~2GB   | Good balance (default)        |
+| `quality`  | ~2.5GB | Best answers, complex content |
 
 > **Note**: When using GNO standalone with `--answer`, the **quality** preset is required for documents containing Markdown tables or other structured content. The smaller models in slim/balanced presets cannot reliably parse tabular data. When GNO is used via MCP, skill, or CLI by AI agents (Claude Code, Codex, etc.), the agent handles answer generation—so any preset works for retrieval.
 
 ### Model Details
 
 All presets use:
+
 - **bge-m3** for embeddings (1024 dimensions, multilingual)
 - **Qwen3-Reranker-0.6B** for reranking (32K context, full documents)
 
-| Preset | Embed | Rerank | Gen |
-|--------|-------|--------|-----|
-| slim | bge-m3-Q4 | Qwen3-Reranker-0.6B-Q8 | Qwen3-1.7B-Q4 |
+| Preset   | Embed     | Rerank                 | Gen           |
+| -------- | --------- | ---------------------- | ------------- |
+| slim     | bge-m3-Q4 | Qwen3-Reranker-0.6B-Q8 | Qwen3-1.7B-Q4 |
 | balanced | bge-m3-Q4 | Qwen3-Reranker-0.6B-Q8 | SmolLM3-3B-Q4 |
-| quality | bge-m3-Q4 | Qwen3-Reranker-0.6B-Q8 | Qwen3-4B-Q4 |
+| quality  | bge-m3-Q4 | Qwen3-Reranker-0.6B-Q8 | Qwen3-4B-Q4   |
 
 The reranker's 32K context window allows scoring complete documents—tables, code, all sections—rather than truncated snippets.
 
@@ -197,6 +198,7 @@ models:
 ```
 
 Model URIs support:
+
 - `hf:org/repo/file.gguf` - Hugging Face download
 - `file:/path/to/model.gguf` - Local file
 
@@ -213,12 +215,12 @@ models:
 
 Set at `gno init`, cannot be changed without rebuilding.
 
-| Tokenizer | Description |
-|-----------|-------------|
+| Tokenizer          | Description                               |
+| ------------------ | ----------------------------------------- |
 | `snowball english` | Snowball stemmer (default, 20+ languages) |
-| `unicode61` | Unicode-aware, no stemming |
-| `porter` | English-only stemming (legacy) |
-| `trigram` | Substring matching |
+| `unicode61`        | Unicode-aware, no stemming                |
+| `porter`           | English-only stemming (legacy)            |
+| `trigram`          | Substring matching                        |
 
 The Snowball stemmer enables matching across word forms: "running" matches "run", "scored" matches "score", plurals match singulars.
 
@@ -231,11 +233,11 @@ gno init --tokenizer unicode61
 
 Override paths (applied before platform defaults):
 
-| Variable | Description |
-|----------|-------------|
-| `GNO_CONFIG_DIR` | Override config directory |
-| `GNO_DATA_DIR` | Override database directory |
-| `GNO_CACHE_DIR` | Override model cache |
+| Variable         | Description                 |
+| ---------------- | --------------------------- |
+| `GNO_CONFIG_DIR` | Override config directory   |
+| `GNO_DATA_DIR`   | Override database directory |
+| `GNO_CACHE_DIR`  | Override model cache        |
 
 ## File Locations
 

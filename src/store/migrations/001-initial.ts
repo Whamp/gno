@@ -5,13 +5,14 @@
  * @module src/store/migrations/001_initial
  */
 
-import type { Database } from 'bun:sqlite';
-import type { FtsTokenizer } from '../../config/types';
-import type { Migration } from './runner';
+import type { Database } from "bun:sqlite";
+
+import type { FtsTokenizer } from "../../config/types";
+import type { Migration } from "./runner";
 
 export const migration: Migration = {
   version: 1,
-  name: 'initial_schema',
+  name: "initial_schema",
 
   up(db: Database, ftsTokenizer: FtsTokenizer): void {
     // Collections (synced from YAML config)
@@ -78,18 +79,18 @@ export const migration: Migration = {
     `);
 
     db.exec(
-      'CREATE INDEX IF NOT EXISTS idx_documents_collection ON documents(collection)'
+      "CREATE INDEX IF NOT EXISTS idx_documents_collection ON documents(collection)"
     );
     db.exec(
-      'CREATE INDEX IF NOT EXISTS idx_documents_active ON documents(active)'
+      "CREATE INDEX IF NOT EXISTS idx_documents_active ON documents(active)"
     );
     db.exec(
-      'CREATE INDEX IF NOT EXISTS idx_documents_mirror_hash ON documents(mirror_hash)'
+      "CREATE INDEX IF NOT EXISTS idx_documents_mirror_hash ON documents(mirror_hash)"
     );
     db.exec(
-      'CREATE INDEX IF NOT EXISTS idx_documents_docid ON documents(docid)'
+      "CREATE INDEX IF NOT EXISTS idx_documents_docid ON documents(docid)"
     );
-    db.exec('CREATE INDEX IF NOT EXISTS idx_documents_uri ON documents(uri)');
+    db.exec("CREATE INDEX IF NOT EXISTS idx_documents_uri ON documents(uri)");
 
     // Content (content-addressed markdown mirrors)
     db.exec(`
@@ -118,7 +119,7 @@ export const migration: Migration = {
     `);
 
     db.exec(
-      'CREATE INDEX IF NOT EXISTS idx_chunks_mirror_hash ON content_chunks(mirror_hash)'
+      "CREATE INDEX IF NOT EXISTS idx_chunks_mirror_hash ON content_chunks(mirror_hash)"
     );
 
     // FTS5 virtual table with configurable tokenizer
@@ -143,7 +144,7 @@ export const migration: Migration = {
     `);
 
     db.exec(
-      'CREATE INDEX IF NOT EXISTS idx_vectors_model ON content_vectors(model)'
+      "CREATE INDEX IF NOT EXISTS idx_vectors_model ON content_vectors(model)"
     );
 
     // LLM cache (EPIC 6+)
@@ -157,7 +158,7 @@ export const migration: Migration = {
     `);
 
     db.exec(
-      'CREATE INDEX IF NOT EXISTS idx_llm_cache_expires ON llm_cache(expires_at)'
+      "CREATE INDEX IF NOT EXISTS idx_llm_cache_expires ON llm_cache(expires_at)"
     );
 
     // Ingest errors
@@ -174,23 +175,23 @@ export const migration: Migration = {
     `);
 
     db.exec(
-      'CREATE INDEX IF NOT EXISTS idx_ingest_errors_occurred ON ingest_errors(occurred_at DESC)'
+      "CREATE INDEX IF NOT EXISTS idx_ingest_errors_occurred ON ingest_errors(occurred_at DESC)"
     );
     db.exec(
-      'CREATE INDEX IF NOT EXISTS idx_ingest_errors_collection ON ingest_errors(collection, rel_path)'
+      "CREATE INDEX IF NOT EXISTS idx_ingest_errors_collection ON ingest_errors(collection, rel_path)"
     );
   },
 
   down(db: Database): void {
     // Drop in reverse order of creation
-    db.exec('DROP TABLE IF EXISTS ingest_errors');
-    db.exec('DROP TABLE IF EXISTS llm_cache');
-    db.exec('DROP TABLE IF EXISTS content_vectors');
-    db.exec('DROP TABLE IF EXISTS content_fts');
-    db.exec('DROP TABLE IF EXISTS content_chunks');
-    db.exec('DROP TABLE IF EXISTS content');
-    db.exec('DROP TABLE IF EXISTS documents');
-    db.exec('DROP TABLE IF EXISTS contexts');
-    db.exec('DROP TABLE IF EXISTS collections');
+    db.exec("DROP TABLE IF EXISTS ingest_errors");
+    db.exec("DROP TABLE IF EXISTS llm_cache");
+    db.exec("DROP TABLE IF EXISTS content_vectors");
+    db.exec("DROP TABLE IF EXISTS content_fts");
+    db.exec("DROP TABLE IF EXISTS content_chunks");
+    db.exec("DROP TABLE IF EXISTS content");
+    db.exec("DROP TABLE IF EXISTS documents");
+    db.exec("DROP TABLE IF EXISTS contexts");
+    db.exec("DROP TABLE IF EXISTS collections");
   },
 };

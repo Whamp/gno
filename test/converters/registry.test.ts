@@ -2,169 +2,171 @@
  * Tests for converter registry.
  */
 
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from "bun:test";
+
+import type { Converter, ConvertInput } from "../../src/converters/types";
+
 import {
   ConverterRegistry,
   createDefaultRegistry,
-} from '../../src/converters/registry';
-import type { Converter, ConvertInput } from '../../src/converters/types';
-import { DEFAULT_LIMITS } from '../../src/converters/types';
+} from "../../src/converters/registry";
+import { DEFAULT_LIMITS } from "../../src/converters/types";
 
 function makeInput(overrides: Partial<ConvertInput>): ConvertInput {
   return {
-    sourcePath: '/test/file.md',
-    relativePath: 'file.md',
-    collection: 'test',
+    sourcePath: "/test/file.md",
+    relativePath: "file.md",
+    collection: "test",
     bytes: new Uint8Array(0),
-    mime: 'text/markdown',
-    ext: '.md',
+    mime: "text/markdown",
+    ext: ".md",
     limits: DEFAULT_LIMITS,
     ...overrides,
   };
 }
 
 const mockConverter: Converter = {
-  id: 'test/mock',
-  version: '1.0.0',
-  canHandle: (mime, ext) => mime === 'test/mock' || ext === '.mock',
+  id: "test/mock",
+  version: "1.0.0",
+  canHandle: (mime, ext) => mime === "test/mock" || ext === ".mock",
   convert: async () => ({
     ok: true,
     value: {
-      markdown: '# Mock Output',
+      markdown: "# Mock Output",
       meta: {
-        converterId: 'test/mock',
-        converterVersion: '1.0.0',
-        sourceMime: 'test/mock',
+        converterId: "test/mock",
+        converterVersion: "1.0.0",
+        sourceMime: "test/mock",
       },
     },
   }),
 };
 
-describe('ConverterRegistry', () => {
-  test('register and select converter', () => {
+describe("ConverterRegistry", () => {
+  test("register and select converter", () => {
     const registry = new ConverterRegistry();
     registry.register(mockConverter);
 
-    const selected = registry.select('test/mock', '.mock');
+    const selected = registry.select("test/mock", ".mock");
     expect(selected).toBe(mockConverter);
   });
 
-  test('select returns undefined for unknown type', () => {
+  test("select returns undefined for unknown type", () => {
     const registry = new ConverterRegistry();
     registry.register(mockConverter);
 
-    const selected = registry.select('unknown/type', '.unknown');
+    const selected = registry.select("unknown/type", ".unknown");
     expect(selected).toBeUndefined();
   });
 
-  test('first matching converter wins', () => {
+  test("first matching converter wins", () => {
     const registry = new ConverterRegistry();
     const firstConverter: Converter = {
       ...mockConverter,
-      id: 'first',
+      id: "first",
       canHandle: () => true,
     };
     const secondConverter: Converter = {
       ...mockConverter,
-      id: 'second',
+      id: "second",
       canHandle: () => true,
     };
 
     registry.register(firstConverter);
     registry.register(secondConverter);
 
-    const selected = registry.select('any', '.any');
-    expect(selected?.id).toBe('first');
+    const selected = registry.select("any", ".any");
+    expect(selected?.id).toBe("first");
   });
 
-  test('listConverters returns all registered IDs', () => {
+  test("listConverters returns all registered IDs", () => {
     const registry = new ConverterRegistry();
     registry.register(mockConverter);
-    registry.register({ ...mockConverter, id: 'test/other' });
+    registry.register({ ...mockConverter, id: "test/other" });
 
     const ids = registry.listConverters();
-    expect(ids).toEqual(['test/mock', 'test/other']);
+    expect(ids).toEqual(["test/mock", "test/other"]);
   });
 
-  test('convert invokes matching converter', async () => {
+  test("convert invokes matching converter", async () => {
     const registry = new ConverterRegistry();
     registry.register(mockConverter);
 
-    const input = makeInput({ mime: 'test/mock', ext: '.mock' });
+    const input = makeInput({ mime: "test/mock", ext: ".mock" });
     const result = await registry.convert(input);
 
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.value.markdown).toBe('# Mock Output');
+      expect(result.value.markdown).toBe("# Mock Output");
     }
   });
 
-  test('convert returns UNSUPPORTED for unknown type', async () => {
+  test("convert returns UNSUPPORTED for unknown type", async () => {
     const registry = new ConverterRegistry();
 
-    const input = makeInput({ mime: 'unknown/type', ext: '.unknown' });
+    const input = makeInput({ mime: "unknown/type", ext: ".unknown" });
     const result = await registry.convert(input);
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error.code).toBe('UNSUPPORTED');
+      expect(result.error.code).toBe("UNSUPPORTED");
     }
   });
 });
 
-describe('createDefaultRegistry', () => {
-  test('includes all MVP converters', async () => {
+describe("createDefaultRegistry", () => {
+  test("includes all MVP converters", async () => {
     const registry = await createDefaultRegistry();
     const ids = registry.listConverters();
 
-    expect(ids).toContain('native/markdown');
-    expect(ids).toContain('native/plaintext');
-    expect(ids).toContain('adapter/markitdown-ts');
-    expect(ids).toContain('adapter/officeparser');
+    expect(ids).toContain("native/markdown");
+    expect(ids).toContain("native/plaintext");
+    expect(ids).toContain("adapter/markitdown-ts");
+    expect(ids).toContain("adapter/officeparser");
   });
 
-  test('selects markdown converter for .md', async () => {
+  test("selects markdown converter for .md", async () => {
     const registry = await createDefaultRegistry();
-    const converter = registry.select('text/markdown', '.md');
-    expect(converter?.id).toBe('native/markdown');
+    const converter = registry.select("text/markdown", ".md");
+    expect(converter?.id).toBe("native/markdown");
   });
 
-  test('selects plaintext converter for .txt', async () => {
+  test("selects plaintext converter for .txt", async () => {
     const registry = await createDefaultRegistry();
-    const converter = registry.select('text/plain', '.txt');
-    expect(converter?.id).toBe('native/plaintext');
+    const converter = registry.select("text/plain", ".txt");
+    expect(converter?.id).toBe("native/plaintext");
   });
 
-  test('selects markitdown for .pdf', async () => {
+  test("selects markitdown for .pdf", async () => {
     const registry = await createDefaultRegistry();
-    const converter = registry.select('application/pdf', '.pdf');
-    expect(converter?.id).toBe('adapter/markitdown-ts');
+    const converter = registry.select("application/pdf", ".pdf");
+    expect(converter?.id).toBe("adapter/markitdown-ts");
   });
 
-  test('selects markitdown for .docx', async () => {
-    const registry = await createDefaultRegistry();
-    const converter = registry.select(
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      '.docx'
-    );
-    expect(converter?.id).toBe('adapter/markitdown-ts');
-  });
-
-  test('selects markitdown for .xlsx', async () => {
+  test("selects markitdown for .docx", async () => {
     const registry = await createDefaultRegistry();
     const converter = registry.select(
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      '.xlsx'
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ".docx"
     );
-    expect(converter?.id).toBe('adapter/markitdown-ts');
+    expect(converter?.id).toBe("adapter/markitdown-ts");
   });
 
-  test('selects officeparser for .pptx', async () => {
+  test("selects markitdown for .xlsx", async () => {
     const registry = await createDefaultRegistry();
     const converter = registry.select(
-      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-      '.pptx'
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      ".xlsx"
     );
-    expect(converter?.id).toBe('adapter/officeparser');
+    expect(converter?.id).toBe("adapter/markitdown-ts");
+  });
+
+  test("selects officeparser for .pptx", async () => {
+    const registry = await createDefaultRegistry();
+    const converter = registry.select(
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      ".pptx"
+    );
+    expect(converter?.id).toBe("adapter/officeparser");
   });
 });

@@ -5,26 +5,27 @@
  * @module src/app/constants
  */
 
-import { homedir, platform } from 'node:os';
-import { join } from 'node:path';
+import { homedir, platform } from "node:os";
+import { join } from "node:path";
+
 // Bun supports JSON imports natively - version single source of truth
-import pkg from '../../package.json';
+import pkg from "../../package.json";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Brand / Product Identity
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Product name (display) */
-export const PRODUCT_NAME = 'GNO';
+export const PRODUCT_NAME = "GNO";
 
 /** CLI binary name */
-export const CLI_NAME = 'gno';
+export const CLI_NAME = "gno";
 
 /** Version from package.json (single source of truth) */
 export const VERSION = pkg.version;
 
 /** Virtual URI scheme for document references */
-export const URI_SCHEME = 'gno';
+export const URI_SCHEME = "gno";
 
 /** Full URI prefix including :// */
 export const URI_PREFIX = `${URI_SCHEME}://`;
@@ -34,56 +35,56 @@ export const URI_PREFIX = `${URI_SCHEME}://`;
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** MCP server name */
-export const MCP_SERVER_NAME = 'gno';
+export const MCP_SERVER_NAME = "gno";
 
 /** MCP tool namespace prefix (tools are gno.search, gno.query, etc.) */
-export const MCP_TOOL_PREFIX = 'gno';
+export const MCP_TOOL_PREFIX = "gno";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Documentation & Support
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Documentation URL */
-export const DOCS_URL = 'https://github.com/gmickel/gno#readme';
+export const DOCS_URL = "https://github.com/gmickel/gno#readme";
 
 /** Issue tracker URL */
-export const ISSUES_URL = 'https://github.com/gmickel/gno/issues';
+export const ISSUES_URL = "https://github.com/gmickel/gno/issues";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Environment Variable Names (for directory overrides)
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Env var to override config directory */
-export const ENV_CONFIG_DIR = 'GNO_CONFIG_DIR';
+export const ENV_CONFIG_DIR = "GNO_CONFIG_DIR";
 
 /** Env var to override data directory */
-export const ENV_DATA_DIR = 'GNO_DATA_DIR';
+export const ENV_DATA_DIR = "GNO_DATA_DIR";
 
 /** Env var to override cache directory */
-export const ENV_CACHE_DIR = 'GNO_CACHE_DIR';
+export const ENV_CACHE_DIR = "GNO_CACHE_DIR";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Directory Names
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Directory name used within platform-specific locations */
-export const DIR_NAME = 'gno';
+export const DIR_NAME = "gno";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Index Defaults
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Default index name when not specified via --index */
-export const DEFAULT_INDEX_NAME = 'default';
+export const DEFAULT_INDEX_NAME = "default";
 
 /** Config filename */
-export const CONFIG_FILENAME = 'index.yml';
+export const CONFIG_FILENAME = "index.yml";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Platform Detection
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type Platform = 'darwin' | 'win32' | 'linux';
+export type Platform = "darwin" | "win32" | "linux";
 
 /**
  * Get current platform, normalized to supported types.
@@ -91,13 +92,13 @@ export type Platform = 'darwin' | 'win32' | 'linux';
  */
 export function getPlatform(): Platform {
   const p = platform();
-  if (p === 'darwin') {
-    return 'darwin';
+  if (p === "darwin") {
+    return "darwin";
   }
-  if (p === 'win32') {
-    return 'win32';
+  if (p === "win32") {
+    return "win32";
   }
-  return 'linux';
+  return "linux";
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -132,9 +133,9 @@ interface PlatformPaths {
 
 function getLinuxPaths(): PlatformPaths {
   const home = homedir();
-  const xdgConfig = process.env.XDG_CONFIG_HOME ?? join(home, '.config');
-  const xdgData = process.env.XDG_DATA_HOME ?? join(home, '.local', 'share');
-  const xdgCache = process.env.XDG_CACHE_HOME ?? join(home, '.cache');
+  const xdgConfig = process.env.XDG_CONFIG_HOME ?? join(home, ".config");
+  const xdgData = process.env.XDG_DATA_HOME ?? join(home, ".local", "share");
+  const xdgCache = process.env.XDG_CACHE_HOME ?? join(home, ".cache");
 
   return {
     config: join(xdgConfig, DIR_NAME),
@@ -145,24 +146,24 @@ function getLinuxPaths(): PlatformPaths {
 
 function getDarwinPaths(): PlatformPaths {
   const home = homedir();
-  const appSupport = join(home, 'Library', 'Application Support', DIR_NAME);
+  const appSupport = join(home, "Library", "Application Support", DIR_NAME);
 
   return {
-    config: join(appSupport, 'config'),
-    data: join(appSupport, 'data'),
-    cache: join(home, 'Library', 'Caches', DIR_NAME),
+    config: join(appSupport, "config"),
+    data: join(appSupport, "data"),
+    cache: join(home, "Library", "Caches", DIR_NAME),
   };
 }
 
 function getWin32Paths(): PlatformPaths {
-  const appData = process.env.APPDATA ?? join(homedir(), 'AppData', 'Roaming');
+  const appData = process.env.APPDATA ?? join(homedir(), "AppData", "Roaming");
   const localAppData =
-    process.env.LOCALAPPDATA ?? join(homedir(), 'AppData', 'Local');
+    process.env.LOCALAPPDATA ?? join(homedir(), "AppData", "Local");
 
   return {
-    config: join(appData, DIR_NAME, 'config'),
-    data: join(localAppData, DIR_NAME, 'data'),
-    cache: join(localAppData, DIR_NAME, 'cache'),
+    config: join(appData, DIR_NAME, "config"),
+    data: join(localAppData, DIR_NAME, "data"),
+    cache: join(localAppData, DIR_NAME, "cache"),
   };
 }
 
@@ -171,9 +172,9 @@ function getWin32Paths(): PlatformPaths {
  */
 export function getPlatformPaths(p: Platform = getPlatform()): PlatformPaths {
   switch (p) {
-    case 'darwin':
+    case "darwin":
       return getDarwinPaths();
-    case 'win32':
+    case "win32":
       return getWin32Paths();
     default:
       return getLinuxPaths();
@@ -231,7 +232,7 @@ export function getConfigPath(dirs: ResolvedDirs = resolveDirs()): string {
  * Get path to models cache directory.
  */
 export function getModelsCachePath(dirs: ResolvedDirs = resolveDirs()): string {
-  return join(dirs.cache, 'models');
+  return join(dirs.cache, "models");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -244,9 +245,9 @@ export function getModelsCachePath(dirs: ResolvedDirs = resolveDirs()): string {
 export function buildUri(collection: string, relativePath: string): string {
   // URL-encode special chars in path segments but preserve slashes
   const encodedPath = relativePath
-    .split('/')
+    .split("/")
     .map((segment) => encodeURIComponent(segment))
-    .join('/');
+    .join("/");
   return `${URI_PREFIX}${collection}/${encodedPath}`;
 }
 
@@ -262,11 +263,11 @@ export function parseUri(
   }
 
   const rest = uri.slice(URI_PREFIX.length);
-  const slashIndex = rest.indexOf('/');
+  const slashIndex = rest.indexOf("/");
 
   if (slashIndex === -1) {
     // gno://collection (no path)
-    return { collection: rest, path: '' };
+    return { collection: rest, path: "" };
   }
 
   const collection = rest.slice(0, slashIndex);
@@ -285,7 +286,7 @@ export function parseUri(
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** docid prefix */
-export const DOCID_PREFIX = '#';
+export const DOCID_PREFIX = "#";
 
 /** docid hex length (8 chars = 32 bits, ~4B unique values) */
 export const DOCID_LENGTH = 8;

@@ -10,17 +10,17 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type LlmErrorCode =
-  | 'MODEL_NOT_FOUND'
-  | 'MODEL_NOT_CACHED'
-  | 'MODEL_DOWNLOAD_FAILED'
-  | 'MODEL_LOAD_FAILED'
-  | 'MODEL_CORRUPTED'
-  | 'INFERENCE_FAILED'
-  | 'TIMEOUT'
-  | 'OUT_OF_MEMORY'
-  | 'INVALID_URI'
-  | 'LOCK_FAILED'
-  | 'AUTO_DOWNLOAD_DISABLED';
+  | "MODEL_NOT_FOUND"
+  | "MODEL_NOT_CACHED"
+  | "MODEL_DOWNLOAD_FAILED"
+  | "MODEL_LOAD_FAILED"
+  | "MODEL_CORRUPTED"
+  | "INFERENCE_FAILED"
+  | "TIMEOUT"
+  | "OUT_OF_MEMORY"
+  | "INVALID_URI"
+  | "LOCK_FAILED"
+  | "AUTO_DOWNLOAD_DISABLED";
 
 export interface LlmError {
   code: LlmErrorCode;
@@ -59,19 +59,23 @@ function normalizeCause(
     return { name: cause.name, message };
   }
 
-  if (typeof cause === 'string') {
+  if (typeof cause === "string") {
     return cause.length > MAX_CAUSE_LENGTH
       ? `${cause.slice(0, MAX_CAUSE_LENGTH)}...`
       : cause;
   }
 
   try {
-    const str = String(cause);
+    // Handle objects with custom toString, otherwise use JSON
+    const str =
+      typeof cause === "object" && cause !== null
+        ? JSON.stringify(cause)
+        : String(cause as string | number | boolean);
     return str.length > MAX_CAUSE_LENGTH
       ? `${str.slice(0, MAX_CAUSE_LENGTH)}...`
       : str;
   } catch {
-    return '[unserializable cause]';
+    return "[unserializable cause]";
   }
 }
 
@@ -80,7 +84,7 @@ function normalizeCause(
  */
 export function llmError(
   code: LlmErrorCode,
-  opts: Omit<LlmError, 'code'>
+  opts: Omit<LlmError, "code">
 ): LlmError {
   return {
     code,
@@ -94,10 +98,10 @@ export function llmError(
  */
 export function isRetryable(code: LlmErrorCode): boolean {
   return [
-    'MODEL_DOWNLOAD_FAILED',
-    'TIMEOUT',
-    'INFERENCE_FAILED',
-    'LOCK_FAILED',
+    "MODEL_DOWNLOAD_FAILED",
+    "TIMEOUT",
+    "INFERENCE_FAILED",
+    "LOCK_FAILED",
   ].includes(code);
 }
 
@@ -106,7 +110,7 @@ export function isRetryable(code: LlmErrorCode): boolean {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function modelNotFoundError(uri: string, details?: string): LlmError {
-  return llmError('MODEL_NOT_FOUND', {
+  return llmError("MODEL_NOT_FOUND", {
     message: details
       ? `Model not found: ${details}`
       : `Model not found: ${uri}`,
@@ -117,9 +121,9 @@ export function modelNotFoundError(uri: string, details?: string): LlmError {
 
 export function modelNotCachedError(
   uri: string,
-  modelType: 'embed' | 'rerank' | 'gen'
+  modelType: "embed" | "rerank" | "gen"
 ): LlmError {
-  return llmError('MODEL_NOT_CACHED', {
+  return llmError("MODEL_NOT_CACHED", {
     message: `${modelType} model not cached`,
     modelUri: uri,
     retryable: false,
@@ -128,7 +132,7 @@ export function modelNotCachedError(
 }
 
 export function downloadFailedError(uri: string, cause?: unknown): LlmError {
-  return llmError('MODEL_DOWNLOAD_FAILED', {
+  return llmError("MODEL_DOWNLOAD_FAILED", {
     message: `Failed to download model: ${uri}`,
     modelUri: uri,
     retryable: true,
@@ -137,27 +141,27 @@ export function downloadFailedError(uri: string, cause?: unknown): LlmError {
 }
 
 export function loadFailedError(uri: string, cause?: unknown): LlmError {
-  return llmError('MODEL_LOAD_FAILED', {
+  return llmError("MODEL_LOAD_FAILED", {
     message: `Failed to load model: ${uri}`,
     modelUri: uri,
     retryable: false,
     cause,
-    suggestion: 'Run: gno doctor',
+    suggestion: "Run: gno doctor",
   });
 }
 
 export function corruptedError(uri: string, cause?: unknown): LlmError {
-  return llmError('MODEL_CORRUPTED', {
+  return llmError("MODEL_CORRUPTED", {
     message: `Model file corrupted: ${uri}`,
     modelUri: uri,
     retryable: false,
     cause,
-    suggestion: 'Run: gno models clear && gno models pull',
+    suggestion: "Run: gno models clear && gno models pull",
   });
 }
 
 export function inferenceFailedError(uri: string, cause?: unknown): LlmError {
-  return llmError('INFERENCE_FAILED', {
+  return llmError("INFERENCE_FAILED", {
     message: `Inference failed for model: ${uri}`,
     modelUri: uri,
     retryable: true,
@@ -167,10 +171,10 @@ export function inferenceFailedError(uri: string, cause?: unknown): LlmError {
 
 export function timeoutError(
   uri: string,
-  operation: 'load' | 'inference',
+  operation: "load" | "inference",
   timeoutMs: number
 ): LlmError {
-  return llmError('TIMEOUT', {
+  return llmError("TIMEOUT", {
     message: `${operation} timed out after ${timeoutMs}ms`,
     modelUri: uri,
     retryable: true,
@@ -178,17 +182,17 @@ export function timeoutError(
 }
 
 export function outOfMemoryError(uri: string, cause?: unknown): LlmError {
-  return llmError('OUT_OF_MEMORY', {
+  return llmError("OUT_OF_MEMORY", {
     message: `Out of memory loading model: ${uri}`,
     modelUri: uri,
     retryable: false,
     cause,
-    suggestion: 'Try a smaller quantization (Q4_K_M) or close other apps',
+    suggestion: "Try a smaller quantization (Q4_K_M) or close other apps",
   });
 }
 
 export function invalidUriError(uri: string, details: string): LlmError {
-  return llmError('INVALID_URI', {
+  return llmError("INVALID_URI", {
     message: `Invalid model URI: ${details}`,
     modelUri: uri,
     retryable: false,
@@ -196,16 +200,16 @@ export function invalidUriError(uri: string, details: string): LlmError {
 }
 
 export function lockFailedError(uri: string): LlmError {
-  return llmError('LOCK_FAILED', {
+  return llmError("LOCK_FAILED", {
     message: `Failed to acquire lock for model download: ${uri}`,
     modelUri: uri,
     retryable: true,
-    suggestion: 'Another process may be downloading. Wait and retry.',
+    suggestion: "Another process may be downloading. Wait and retry.",
   });
 }
 
 export function autoDownloadDisabledError(uri: string): LlmError {
-  return llmError('AUTO_DOWNLOAD_DISABLED', {
+  return llmError("AUTO_DOWNLOAD_DISABLED", {
     message: `Model not cached and auto-download disabled: ${uri}`,
     modelUri: uri,
     retryable: false,

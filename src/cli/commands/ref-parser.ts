@@ -9,7 +9,7 @@
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type RefType = 'docid' | 'uri' | 'collPath';
+export type RefType = "docid" | "uri" | "collPath";
 
 export interface ParsedRef {
   type: RefType;
@@ -45,14 +45,14 @@ const GLOB_PATTERN = /[*?[\]]/;
  */
 export function parseRef(ref: string): ParseRefResult {
   // 1. DocID: starts with #, validate pattern
-  if (ref.startsWith('#')) {
-    if (ref.includes(':')) {
-      return { error: 'Docid refs cannot have :line suffix' };
+  if (ref.startsWith("#")) {
+    if (ref.includes(":")) {
+      return { error: "Docid refs cannot have :line suffix" };
     }
     if (!DOCID_PATTERN.test(ref)) {
       return { error: `Invalid docid format: ${ref}` };
     }
-    return { type: 'docid', value: ref };
+    return { type: "docid", value: ref };
   }
 
   // 2. Parse optional :line suffix for URI and collPath
@@ -69,19 +69,19 @@ export function parseRef(ref: string): ParseRefResult {
   }
 
   // 3. URI: starts with gno://
-  if (baseRef.startsWith('gno://')) {
-    return { type: 'uri', value: baseRef, line };
+  if (baseRef.startsWith("gno://")) {
+    return { type: "uri", value: baseRef, line };
   }
 
   // 4. Collection/path: must contain /
-  const slashIdx = baseRef.indexOf('/');
+  const slashIdx = baseRef.indexOf("/");
   if (slashIdx === -1) {
     return { error: `Invalid ref format (missing /): ${ref}` };
   }
   const collection = baseRef.slice(0, slashIdx);
   const relPath = baseRef.slice(slashIdx + 1);
 
-  return { type: 'collPath', value: baseRef, collection, relPath, line };
+  return { type: "collPath", value: baseRef, collection, relPath, line };
 }
 
 /**
@@ -90,7 +90,7 @@ export function parseRef(ref: string): ParseRefResult {
 export function splitRefs(refs: string[]): string[] {
   const result: string[] = [];
   for (const r of refs) {
-    for (const part of r.split(',')) {
+    for (const part of r.split(",")) {
       const trimmed = part.trim();
       if (trimmed) {
         result.push(trimmed);

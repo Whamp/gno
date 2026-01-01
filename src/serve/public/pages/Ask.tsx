@@ -4,20 +4,21 @@ import {
   CornerDownLeft,
   FileText,
   Sparkles,
-} from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { Loader } from '../components/ai-elements/loader';
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+
+import { Loader } from "../components/ai-elements/loader";
 import {
   Source,
   Sources,
   SourcesContent,
   SourcesTrigger,
-} from '../components/ai-elements/sources';
-import { Badge } from '../components/ui/badge';
-import { Button } from '../components/ui/button';
-import { Card, CardContent } from '../components/ui/card';
-import { Textarea } from '../components/ui/textarea';
-import { apiFetch } from '../hooks/use-api';
+} from "../components/ai-elements/sources";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
+import { Textarea } from "../components/ui/textarea";
+import { apiFetch } from "../hooks/use-api";
 
 interface PageProps {
   navigate: (to: string | number) => void;
@@ -89,7 +90,7 @@ function renderAnswer(
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
-  // biome-ignore lint/suspicious/noAssignInExpressions: Standard regex match pattern
+  // oxlint-disable-next-line no-cond-assign -- Standard regex match pattern
   while ((match = citationRegex.exec(answer)) !== null) {
     // Add text before citation
     if (match.index > lastIndex) {
@@ -128,7 +129,7 @@ function renderAnswer(
 }
 
 export default function Ask({ navigate }: PageProps) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [conversation, setConversation] = useState<ConversationEntry[]>([]);
   const [capabilities, setCapabilities] = useState<Capabilities | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -137,17 +138,17 @@ export default function Ask({ navigate }: PageProps) {
   // Fetch capabilities on mount
   useEffect(() => {
     async function fetchCapabilities() {
-      const { data } = await apiFetch<Capabilities>('/api/capabilities');
+      const { data } = await apiFetch<Capabilities>("/api/capabilities");
       if (data) {
         setCapabilities(data);
       }
     }
-    fetchCapabilities();
+    void fetchCapabilities();
   }, []);
 
   // Scroll to bottom when conversation updates
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -164,11 +165,11 @@ export default function Ask({ navigate }: PageProps) {
       ...prev,
       { id: entryId, query: currentQuery, response: null, loading: true },
     ]);
-    setQuery('');
+    setQuery("");
 
     // Make API call
-    const { data, error } = await apiFetch<AskResponse>('/api/ask', {
-      method: 'POST',
+    const { data, error } = await apiFetch<AskResponse>("/api/ask", {
+      method: "POST",
       body: JSON.stringify({ query: currentQuery, limit: 5 }),
     });
 
@@ -188,9 +189,9 @@ export default function Ask({ navigate }: PageProps) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e);
+      void handleSubmit(e);
     }
   };
 
@@ -238,8 +239,8 @@ export default function Ask({ navigate }: PageProps) {
               <h2 className="mb-2 font-medium text-lg">Ask anything</h2>
               <p className="text-muted-foreground">
                 {answerAvailable
-                  ? 'Get AI-powered answers with citations from your documents'
-                  : 'AI answers not available. Install a generation model to enable.'}
+                  ? "Get AI-powered answers with citations from your documents"
+                  : "AI answers not available. Install a generation model to enable."}
               </p>
             </div>
           )}
@@ -306,11 +307,11 @@ export default function Ask({ navigate }: PageProps) {
                                     `/doc?uri=${encodeURIComponent(c.uri)}`
                                   );
                                 }}
-                                title={`[${i + 1}] ${c.uri.split('/').pop()}`}
+                                title={`[${i + 1}] ${c.uri.split("/").pop()}`}
                               >
                                 <BookOpen className="size-4 shrink-0" />
                                 <span className="truncate">
-                                  [{i + 1}] {c.uri.split('/').pop()}
+                                  [{i + 1}] {c.uri.split("/").pop()}
                                 </span>
                                 {c.startLine && (
                                   <span className="ml-1 font-mono text-[10px] text-muted-foreground/60">
@@ -366,7 +367,7 @@ export default function Ask({ navigate }: PageProps) {
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="min-w-0">
                                     <p className="font-medium text-primary text-sm">
-                                      {r.title || r.uri.split('/').pop()}
+                                      {r.title || r.uri.split("/").pop()}
                                     </p>
                                     <p className="line-clamp-2 text-muted-foreground text-xs">
                                       {r.snippet.slice(0, 200)}...
@@ -419,8 +420,8 @@ export default function Ask({ navigate }: PageProps) {
               onKeyDown={handleKeyDown}
               placeholder={
                 answerAvailable
-                  ? 'Ask a question about your documents...'
-                  : 'AI answers not available'
+                  ? "Ask a question about your documents..."
+                  : "AI answers not available"
               }
               ref={textareaRef}
               rows={1}

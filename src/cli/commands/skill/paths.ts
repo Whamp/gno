@@ -5,28 +5,28 @@
  * @module src/cli/commands/skill/paths
  */
 
-import { homedir } from 'node:os';
-import { isAbsolute, join, normalize, relative, sep } from 'node:path';
+import { homedir } from "node:os";
+import { isAbsolute, join, normalize, relative, sep } from "node:path";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Environment Variables
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Override home dir for user scope (testing) */
-export const ENV_SKILLS_HOME_OVERRIDE = 'GNO_SKILLS_HOME_OVERRIDE';
+export const ENV_SKILLS_HOME_OVERRIDE = "GNO_SKILLS_HOME_OVERRIDE";
 
 /** Override Claude skills directory */
-export const ENV_CLAUDE_SKILLS_DIR = 'CLAUDE_SKILLS_DIR';
+export const ENV_CLAUDE_SKILLS_DIR = "CLAUDE_SKILLS_DIR";
 
 /** Override Codex skills directory */
-export const ENV_CODEX_SKILLS_DIR = 'CODEX_SKILLS_DIR';
+export const ENV_CODEX_SKILLS_DIR = "CODEX_SKILLS_DIR";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type SkillScope = 'project' | 'user';
-export type SkillTarget = 'claude' | 'codex';
+export type SkillScope = "project" | "user";
+export type SkillTarget = "claude" | "codex";
 
 export interface SkillPathOptions {
   scope: SkillScope;
@@ -51,15 +51,15 @@ export interface SkillPaths {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Skill name for the gno skill directory */
-export const SKILL_NAME = 'gno';
+export const SKILL_NAME = "gno";
 
 /** Directory name for skills within agent config */
-const SKILLS_SUBDIR = 'skills';
+const SKILLS_SUBDIR = "skills";
 
 /** Agent config directory names */
 const AGENT_DIRS: Record<SkillTarget, string> = {
-  claude: '.claude',
-  codex: '.codex',
+  claude: ".claude",
+  codex: ".codex",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -74,7 +74,7 @@ export function resolveSkillPaths(opts: SkillPathOptions): SkillPaths {
 
   // Check for env overrides first
   const envOverride =
-    target === 'claude'
+    target === "claude"
       ? process.env[ENV_CLAUDE_SKILLS_DIR]
       : process.env[ENV_CODEX_SKILLS_DIR];
 
@@ -82,12 +82,12 @@ export function resolveSkillPaths(opts: SkillPathOptions): SkillPaths {
     // Require absolute path for security
     if (!isAbsolute(envOverride)) {
       throw new Error(
-        `${target === 'claude' ? ENV_CLAUDE_SKILLS_DIR : ENV_CODEX_SKILLS_DIR} must be an absolute path`
+        `${target === "claude" ? ENV_CLAUDE_SKILLS_DIR : ENV_CODEX_SKILLS_DIR} must be an absolute path`
       );
     }
     const skillsDir = normalize(envOverride);
     return {
-      base: join(skillsDir, '..'),
+      base: join(skillsDir, ".."),
       skillsDir,
       gnoDir: join(skillsDir, SKILL_NAME),
     };
@@ -97,7 +97,7 @@ export function resolveSkillPaths(opts: SkillPathOptions): SkillPaths {
   const agentDir = AGENT_DIRS[target];
   let base: string;
 
-  if (scope === 'user') {
+  if (scope === "user") {
     const home = homeDir ?? process.env[ENV_SKILLS_HOME_OVERRIDE] ?? homedir();
     base = join(home, agentDir);
   } else {
@@ -115,13 +115,13 @@ export function resolveSkillPaths(opts: SkillPathOptions): SkillPaths {
  * Resolve paths for all targets given scope options.
  */
 export function resolveAllPaths(
-  scope: SkillScope | 'all',
-  target: SkillTarget | 'all',
+  scope: SkillScope | "all",
+  target: SkillTarget | "all",
   overrides?: { cwd?: string; homeDir?: string }
 ): Array<{ scope: SkillScope; target: SkillTarget; paths: SkillPaths }> {
-  const scopes: SkillScope[] = scope === 'all' ? ['project', 'user'] : [scope];
+  const scopes: SkillScope[] = scope === "all" ? ["project", "user"] : [scope];
   const targets: SkillTarget[] =
-    target === 'all' ? ['claude', 'codex'] : [target];
+    target === "all" ? ["claude", "codex"] : [target];
 
   const results: Array<{
     scope: SkillScope;
@@ -173,18 +173,18 @@ export function validatePathForDeletion(
 
   // Minimum length sanity check
   if (normalized.length < 20) {
-    return 'Path is suspiciously short';
+    return "Path is suspiciously short";
   }
 
   // Must not equal base
   if (normalized === normalizedBase) {
-    return 'Path equals base directory';
+    return "Path equals base directory";
   }
 
   // Must be strictly inside expected base (proper containment check)
   const rel = relative(normalizedBase, normalized);
-  if (rel.startsWith('..') || isAbsolute(rel)) {
-    return 'Path is not inside expected base directory';
+  if (rel.startsWith("..") || isAbsolute(rel)) {
+    return "Path is not inside expected base directory";
   }
 
   return null;

@@ -4,7 +4,7 @@
  * @module src/config
  */
 
-export { createDefaultConfig } from './defaults';
+export { createDefaultConfig } from "./defaults";
 // Loading
 export {
   isInitialized,
@@ -13,7 +13,7 @@ export {
   loadConfig,
   loadConfigFromPath,
   loadConfigOrNull,
-} from './loader';
+} from "./loader";
 
 // Path utilities
 export {
@@ -24,7 +24,7 @@ export {
   pathExists,
   type ResolvedDirs,
   toAbsolutePath,
-} from './paths';
+} from "./paths";
 // Saving
 export {
   ensureDirectories,
@@ -32,7 +32,7 @@ export {
   type SaveResult,
   saveConfig,
   saveConfigToPath,
-} from './saver';
+} from "./saver";
 // Types and schemas
 export {
   CONFIG_VERSION,
@@ -52,4 +52,4 @@ export {
   parseScope,
   type ScopeType,
   ScopeTypeSchema,
-} from './types';
+} from "./types";

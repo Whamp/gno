@@ -2,18 +2,18 @@
  * MCP gno_status tool tests.
  */
 
-import { describe, expect, test } from 'bun:test';
-import { z } from 'zod';
+import { describe, expect, test } from "bun:test";
+import { z } from "zod";
 
 // Test the status input/output schemas match spec
-describe('gno_status schema', () => {
-  test('status input schema accepts empty object', () => {
+describe("gno_status schema", () => {
+  test("status input schema accepts empty object", () => {
     const schema = z.object({});
     const result = schema.safeParse({});
     expect(result.success).toBe(true);
   });
 
-  test('status output schema structure', () => {
+  test("status output schema structure", () => {
     // Define expected output schema per spec
     const statusOutputSchema = z.object({
       indexName: z.string(),
@@ -38,9 +38,9 @@ describe('gno_status schema', () => {
 
     // Sample valid status response
     const validStatus = {
-      indexName: 'default',
-      configPath: '/path/to/config.yml',
-      dbPath: '/path/to/index-default.sqlite',
+      indexName: "default",
+      configPath: "/path/to/config.yml",
+      dbPath: "/path/to/index-default.sqlite",
       healthy: true,
       activeDocuments: 100,
       totalChunks: 500,
@@ -48,8 +48,8 @@ describe('gno_status schema', () => {
       recentErrors: 0,
       collections: [
         {
-          name: 'docs',
-          path: '/path/to/docs',
+          name: "docs",
+          path: "/path/to/docs",
           activeDocuments: 50,
           totalChunks: 250,
           embeddedChunks: 200,

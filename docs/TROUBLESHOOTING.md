@@ -11,6 +11,7 @@ gno doctor
 ```
 
 This checks:
+
 - Configuration validity
 - Database accessibility
 - SQLite extensions
@@ -18,11 +19,11 @@ This checks:
 
 ## Exit Codes
 
-| Code | Meaning | Common Causes |
-|------|---------|---------------|
-| 0 | Success | Command completed |
-| 1 | Validation error | Bad arguments, missing options |
-| 2 | Runtime error | IO, database, model failures |
+| Code | Meaning          | Common Causes                  |
+| ---- | ---------------- | ------------------------------ |
+| 0    | Success          | Command completed              |
+| 1    | Validation error | Bad arguments, missing options |
+| 2    | Runtime error    | IO, database, model failures   |
 
 ## Installation Issues
 
@@ -110,6 +111,7 @@ cat ~/.config/gno/config/index.yml
 ```
 
 Common causes:
+
 - Pattern doesn't match files (`**/*.md` vs actual extensions)
 - Exclude patterns too aggressive
 - Empty directory
@@ -119,6 +121,7 @@ Common causes:
 Large collections take time.
 
 Tips:
+
 - Use specific patterns (`**/*.md` vs `**/*`)
 - Add excludes (`node_modules`, `dist`)
 - First run is slowest (subsequent runs are incremental)
@@ -160,6 +163,7 @@ gno query "my search" --explain
 ```
 
 This shows scoring breakdown for each result:
+
 - `bm25`: Keyword match score (high = exact terms found)
 - `vector`: Semantic similarity (high = meaning matches)
 - `fusion`: Combined RRF score
@@ -168,12 +172,12 @@ This shows scoring breakdown for each result:
 
 **Common Issues:**
 
-| Symptom | Cause | Fix |
-|---------|-------|-----|
-| High BM25, low vector | Query too keyword-specific | Use `gno query` not `gno search` |
-| Low BM25, high vector | Query too abstract | Add specific keywords |
-| Good scores, wrong order | Fusion needs tuning | Use `gno query` (reranking on by default) |
-| All low scores | Content not indexed | Check `gno ls`, re-index |
+| Symptom                  | Cause                      | Fix                                       |
+| ------------------------ | -------------------------- | ----------------------------------------- |
+| High BM25, low vector    | Query too keyword-specific | Use `gno query` not `gno search`          |
+| Low BM25, high vector    | Query too abstract         | Add specific keywords                     |
+| Good scores, wrong order | Fusion needs tuning        | Use `gno query` (reranking on by default) |
+| All low scores           | Content not indexed        | Check `gno ls`, re-index                  |
 
 **Improve Results:**
 
@@ -270,6 +274,7 @@ gno update
 GNO not properly configured.
 
 1. Check global installation:
+
    ```bash
    which gno
    ```
@@ -336,11 +341,11 @@ GNO_VERBOSE=1 gno mcp
 
 ## Common Error Messages
 
-| Error | Solution |
-|-------|----------|
-| "missing required argument" | Check command usage with `--help` |
-| "unknown command" | Check spelling, run `gno --help` |
+| Error                       | Solution                           |
+| --------------------------- | ---------------------------------- |
+| "missing required argument" | Check command usage with `--help`  |
+| "unknown command"           | Check spelling, run `gno --help`   |
 | "collection already exists" | Use different name or remove first |
-| "invalid path" | Use absolute path |
-| "database not initialized" | Run `gno init` |
-| "model not cached" | Run `gno models pull` |
+| "invalid path"              | Use absolute path                  |
+| "database not initialized"  | Run `gno init`                     |
+| "model not cached"          | Run `gno models pull`              |

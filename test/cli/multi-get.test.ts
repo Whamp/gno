@@ -3,16 +3,17 @@
  * Tests CLI behavior via runCli().
  */
 
-import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
-import { mkdir, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import Ajv from 'ajv';
-// biome-ignore lint/performance/noNamespaceImport: ajv-formats requires namespace for .default
-import * as addFormatsModule from 'ajv-formats';
-import multiGetSchema from '../../spec/output-schemas/multi-get.schema.json';
-import { runCli } from '../../src/cli/run';
-import { safeRm } from '../helpers/cleanup';
+import Ajv from "ajv";
+// oxlint-disable-next-line import/no-namespace -- ajv-formats requires namespace for .default
+import * as addFormatsModule from "ajv-formats";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { mkdir, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+import multiGetSchema from "../../spec/output-schemas/multi-get.schema.json";
+import { runCli } from "../../src/cli/run";
+import { safeRm } from "../helpers/cleanup";
 
 const addFormats = addFormatsModule.default;
 
@@ -34,21 +35,21 @@ const originalConsoleLog = console.log.bind(console);
 const originalConsoleError = console.error.bind(console);
 
 function captureOutput() {
-  stdoutData = '';
-  stderrData = '';
+  stdoutData = "";
+  stderrData = "";
   process.stdout.write = (chunk: string | Uint8Array): boolean => {
-    stdoutData += typeof chunk === 'string' ? chunk : chunk.toString();
+    stdoutData += typeof chunk === "string" ? chunk : chunk.toString();
     return true;
   };
   process.stderr.write = (chunk: string | Uint8Array): boolean => {
-    stderrData += typeof chunk === 'string' ? chunk : chunk.toString();
+    stderrData += typeof chunk === "string" ? chunk : chunk.toString();
     return true;
   };
   console.log = (...args: unknown[]) => {
-    stdoutData += `${args.join(' ')}\n`;
+    stdoutData += `${args.join(" ")}\n`;
   };
   console.error = (...args: unknown[]) => {
-    stderrData += `${args.join(' ')}\n`;
+    stderrData += `${args.join(" ")}\n`;
   };
 }
 
@@ -59,7 +60,7 @@ function restoreOutput() {
   console.error = originalConsoleError;
 }
 
-const TEST_ROOT = join(tmpdir(), 'gno-multi-get-smoke');
+const TEST_ROOT = join(tmpdir(), "gno-multi-get-smoke");
 let testCounter = 0;
 
 function getTestDir(): string {
@@ -70,16 +71,16 @@ function getTestDir(): string {
 
 async function setupTestEnv(testDir: string) {
   await mkdir(testDir, { recursive: true });
-  process.env.GNO_CONFIG_DIR = join(testDir, 'config');
-  process.env.GNO_DATA_DIR = join(testDir, 'data');
-  process.env.GNO_CACHE_DIR = join(testDir, 'cache');
+  process.env.GNO_CONFIG_DIR = join(testDir, "config");
+  process.env.GNO_DATA_DIR = join(testDir, "data");
+  process.env.GNO_CACHE_DIR = join(testDir, "cache");
 }
 
 async function cleanupTestEnv(testDir: string) {
   await safeRm(testDir);
-  Reflect.deleteProperty(process.env, 'GNO_CONFIG_DIR');
-  Reflect.deleteProperty(process.env, 'GNO_DATA_DIR');
-  Reflect.deleteProperty(process.env, 'GNO_CACHE_DIR');
+  Reflect.deleteProperty(process.env, "GNO_CONFIG_DIR");
+  Reflect.deleteProperty(process.env, "GNO_DATA_DIR");
+  Reflect.deleteProperty(process.env, "GNO_CACHE_DIR");
 }
 
 async function cli(
@@ -87,7 +88,7 @@ async function cli(
 ): Promise<{ code: number; stdout: string; stderr: string }> {
   captureOutput();
   try {
-    const code = await runCli(['node', 'gno', ...args]);
+    const code = await runCli(["node", "gno", ...args]);
     return { code, stdout: stdoutData, stderr: stderrData };
   } finally {
     restoreOutput();
@@ -98,19 +99,19 @@ async function setupTestWithContent(): Promise<string> {
   const testDir = getTestDir();
   await setupTestEnv(testDir);
 
-  const docsDir = join(testDir, 'docs');
+  const docsDir = join(testDir, "docs");
   await mkdir(docsDir, { recursive: true });
-  await writeFile(join(docsDir, 'doc1.md'), '# Document 1\n\nContent 1.');
-  await writeFile(join(docsDir, 'doc2.md'), '# Document 2\n\nContent 2.');
-  await writeFile(join(docsDir, 'doc3.md'), '# Document 3\n\nContent 3.');
+  await writeFile(join(docsDir, "doc1.md"), "# Document 1\n\nContent 1.");
+  await writeFile(join(docsDir, "doc2.md"), "# Document 2\n\nContent 2.");
+  await writeFile(join(docsDir, "doc3.md"), "# Document 3\n\nContent 3.");
   // Large doc for truncation test
   await writeFile(
-    join(docsDir, 'large.md'),
-    `# Large Document\n\n${'Line of content here.\n'.repeat(1000)}`
+    join(docsDir, "large.md"),
+    `# Large Document\n\n${"Line of content here.\n".repeat(1000)}`
   );
 
-  await cli('init', docsDir, '--name', 'docs');
-  await cli('update');
+  await cli("init", docsDir, "--name", "docs");
+  await cli("update");
 
   return testDir;
 }
@@ -127,7 +128,7 @@ const validateMultiGet = ajv.compile(multiGetSchema);
 // gno multi-get Tests
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('gno multi-get smoke tests', () => {
+describe("gno multi-get smoke tests", () => {
   let testDir: string;
 
   beforeEach(async () => {
@@ -138,92 +139,92 @@ describe('gno multi-get smoke tests', () => {
     await cleanupTestEnv(testDir);
   });
 
-  test('retrieves multiple documents', async () => {
+  test("retrieves multiple documents", async () => {
     const { code, stdout } = await cli(
-      'multi-get',
-      'docs/doc1.md',
-      'docs/doc2.md'
+      "multi-get",
+      "docs/doc1.md",
+      "docs/doc2.md"
     );
     expect(code).toBe(0);
-    expect(stdout).toContain('Document 1');
-    expect(stdout).toContain('Document 2');
-    expect(stdout).toContain('2/2 documents');
+    expect(stdout).toContain("Document 1");
+    expect(stdout).toContain("Document 2");
+    expect(stdout).toContain("2/2 documents");
   });
 
-  test('accepts comma-separated refs', async () => {
+  test("accepts comma-separated refs", async () => {
     const { code, stdout } = await cli(
-      'multi-get',
-      'docs/doc1.md,docs/doc2.md'
+      "multi-get",
+      "docs/doc1.md,docs/doc2.md"
     );
     expect(code).toBe(0);
-    expect(stdout).toContain('2/2 documents');
+    expect(stdout).toContain("2/2 documents");
   });
 
-  test('--json validates against schema', async () => {
+  test("--json validates against schema", async () => {
     const { code, stdout } = await cli(
-      'multi-get',
-      'docs/doc1.md',
-      'docs/doc2.md',
-      '--json'
+      "multi-get",
+      "docs/doc1.md",
+      "docs/doc2.md",
+      "--json"
     );
     expect(code).toBe(0);
     const parsed = JSON.parse(stdout);
     const valid = validateMultiGet(parsed);
     if (!valid) {
-      console.error('Schema validation errors:', validateMultiGet.errors);
+      console.error("Schema validation errors:", validateMultiGet.errors);
     }
     expect(valid).toBe(true);
     expect(parsed.documents).toHaveLength(2);
     expect(parsed.meta.returned).toBe(2);
   });
 
-  test('--files outputs file protocol', async () => {
-    const { code, stdout } = await cli('multi-get', 'docs/doc1.md', '--files');
+  test("--files outputs file protocol", async () => {
+    const { code, stdout } = await cli("multi-get", "docs/doc1.md", "--files");
     expect(code).toBe(0);
     expect(stdout).toMatch(FILE_PROTOCOL_PATTERN);
   });
 
-  test('--md produces markdown output', async () => {
+  test("--md produces markdown output", async () => {
     const { code, stdout } = await cli(
-      'multi-get',
-      'docs/doc1.md',
-      'docs/doc2.md',
-      '--md'
+      "multi-get",
+      "docs/doc1.md",
+      "docs/doc2.md",
+      "--md"
     );
     expect(code).toBe(0);
-    expect(stdout).toContain('# Multi-Get Results');
-    expect(stdout).toContain('**URI**');
+    expect(stdout).toContain("# Multi-Get Results");
+    expect(stdout).toContain("**URI**");
   });
 
-  test('handles glob patterns', async () => {
-    const { code, stdout } = await cli('multi-get', 'docs/*.md', '--json');
+  test("handles glob patterns", async () => {
+    const { code, stdout } = await cli("multi-get", "docs/*.md", "--json");
     expect(code).toBe(0);
     const parsed = JSON.parse(stdout);
     // Should match all 4 docs
     expect(parsed.documents.length).toBeGreaterThanOrEqual(4);
   });
 
-  test('tracks skipped documents', async () => {
+  test("tracks skipped documents", async () => {
     const { code, stdout } = await cli(
-      'multi-get',
-      'docs/doc1.md',
-      'docs/nonexistent.md',
-      '--json'
+      "multi-get",
+      "docs/doc1.md",
+      "docs/nonexistent.md",
+      "--json"
     );
     expect(code).toBe(0);
     const parsed = JSON.parse(stdout);
     expect(parsed.documents).toHaveLength(1);
     expect(parsed.skipped).toHaveLength(1);
-    expect(parsed.skipped[0].reason).toBe('not_found');
+    expect(parsed.skipped[0].reason).toBe("not_found");
   });
 
-  test('truncates large documents with --max-bytes', async () => {
+  test("truncates large documents with --max-bytes", async () => {
     const { code, stdout } = await cli(
-      'multi-get',
-      'docs/large.md',
-      '--max-bytes',
-      '500',
-      '--json'
+      "multi-get",
+      "docs/large.md",
+      "--max-bytes",
+      "500",
+      "--json"
     );
     expect(code).toBe(0);
     const parsed = JSON.parse(stdout);
@@ -231,12 +232,12 @@ describe('gno multi-get smoke tests', () => {
     expect(parsed.documents[0].content.length).toBeLessThan(500);
   });
 
-  test('exit 0 even with partial failures', async () => {
+  test("exit 0 even with partial failures", async () => {
     const { code, stdout } = await cli(
-      'multi-get',
-      'docs/nonexistent1.md',
-      'docs/nonexistent2.md',
-      '--json'
+      "multi-get",
+      "docs/nonexistent1.md",
+      "docs/nonexistent2.md",
+      "--json"
     );
     expect(code).toBe(0);
     const parsed = JSON.parse(stdout);

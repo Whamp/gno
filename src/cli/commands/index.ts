@@ -9,13 +9,13 @@ export {
   type AskCommandResult,
   ask,
   formatAsk,
-} from './ask';
+} from "./ask";
 export {
   type CleanupOptions,
   type CleanupResult,
   cleanup,
   formatCleanup,
-} from './cleanup';
+} from "./cleanup";
 export {
   type DoctorCheck,
   type DoctorCheckStatus,
@@ -23,27 +23,27 @@ export {
   type DoctorResult,
   doctor,
   formatDoctor,
-} from './doctor';
+} from "./doctor";
 export {
   type EmbedOptions,
   type EmbedResult,
   embed,
   formatEmbed,
-} from './embed';
+} from "./embed";
 export {
   formatGet,
   type GetCommandOptions,
   type GetResponse,
   type GetResult,
   get,
-} from './get';
+} from "./get";
 export {
   formatIndex,
   type IndexOptions,
   type IndexResult,
   index,
-} from './index-cmd';
-export { type InitOptions, type InitResult, init } from './init';
+} from "./index-cmd";
+export { type InitOptions, type InitResult, init } from "./init";
 export {
   formatLs,
   type LsCommandOptions,
@@ -51,8 +51,8 @@ export {
   type LsResponse,
   type LsResult,
   ls,
-} from './ls';
-export * from './models';
+} from "./ls";
+export * from "./models";
 export {
   formatMultiGet,
   type MultiGetCommandOptions,
@@ -61,13 +61,13 @@ export {
   type MultiGetResult,
   multiGet,
   type SkippedDoc,
-} from './multi-get';
+} from "./multi-get";
 export {
   formatQuery,
   type QueryCommandOptions,
   type QueryResult,
   query,
-} from './query';
+} from "./query";
 export {
   isGlobPattern,
   type ParsedRef,
@@ -75,28 +75,28 @@ export {
   parseRef,
   type RefType,
   splitRefs,
-} from './ref-parser';
+} from "./ref-parser";
 export {
   formatSearch,
   type SearchCommandOptions,
   type SearchResult,
   search,
-} from './search';
+} from "./search";
 export {
   formatStatus,
   type StatusOptions,
   type StatusResult,
   status,
-} from './status';
+} from "./status";
 export {
   formatUpdate,
   type UpdateOptions,
   type UpdateResult,
   update,
-} from './update';
+} from "./update";
 export {
   formatVsearch,
   type VsearchCommandOptions,
   type VsearchResult,
   vsearch,
-} from './vsearch';
+} from "./vsearch";

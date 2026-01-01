@@ -11,6 +11,7 @@ Per-hit `getChunks()` calls in vsearch.ts (and hybrid.ts, rerank.ts, search.ts) 
 ## Scope
 
 **In scope**:
+
 - Add `getChunksBatch()` to StorePort interface
 - Implement in SqliteAdapter with parameter-limit batching
 - Refactor vsearch.ts, hybrid.ts, rerank.ts to use batch
@@ -18,6 +19,7 @@ Per-hit `getChunks()` calls in vsearch.ts (and hybrid.ts, rerank.ts, search.ts) 
 - Unit and integration tests
 
 **Out of scope**:
+
 - FTS search optimization (already uses efficient JOINs)
 - `getContentBatch()` for --full mode (future work)
 - Language filter push-down into batch query
@@ -88,6 +90,7 @@ async getChunksBatch(mirrorHashes: string[]): Promise<StoreResult<Map<string, Ch
 **File**: `src/pipeline/vsearch.ts` (lines 100-131)
 
 Before:
+
 ```typescript
 for (const vec of vecResults) {
   let chunks = chunkCache.get(vec.mirrorHash);
@@ -99,6 +102,7 @@ for (const vec of vecResults) {
 ```
 
 After:
+
 ```typescript
 // Pre-fetch all chunks in one query
 const uniqueHashes = [...new Set(vecResults.map(v => v.mirrorHash))];
@@ -159,6 +163,7 @@ This ensures pipelines use batch method and don't fall back to per-hit calls.
 ### 7. Tests
 
 **Unit tests** (`test/store/adapter.test.ts`):
+
 - Empty input returns empty Map
 - Single hash equivalence to `getChunks()`
 - Multiple unique hashes (verify ordering preserved)
@@ -168,18 +173,19 @@ This ensures pipelines use batch method and don't fall back to per-hit calls.
 - Large batch (>900 hashes) correctly batched
 
 **Pipeline tests** (`test/pipeline/*.test.ts`):
+
 - Assert pipelines call `getChunksBatch()` not `getChunks()` per hit
 - Mock `getChunks` to throw, ensuring N+1 removal is verified deterministically
 - End-to-end vsearch/hybrid/rerank with batch chunks
 
 ## Risks & Dependencies
 
-| Risk | Mitigation |
-|------|------------|
-| Large batch (>999 params) | Implemented batching with SQLITE_MAX_PARAMS=900 |
-| Memory for large result sets | Typical case ~100KB; acceptable |
-| Interface breakage | Additive change only; keep existing `getChunks()` |
-| Test mocks break | Explicitly update all mocks to implement new method |
+| Risk                         | Mitigation                                          |
+| ---------------------------- | --------------------------------------------------- |
+| Large batch (>999 params)    | Implemented batching with SQLITE_MAX_PARAMS=900     |
+| Memory for large result sets | Typical case ~100KB; acceptable                     |
+| Interface breakage           | Additive change only; keep existing `getChunks()`   |
+| Test mocks break             | Explicitly update all mocks to implement new method |
 
 **Dependencies**: None (builds on existing schema with `idx_chunks_mirror_hash` index)
 
@@ -200,6 +206,7 @@ This ensures pipelines use batch method and don't fall back to per-hit calls.
 ## Test Notes
 
 Verify N+1 removal deterministically:
+
 ```typescript
 // Mock getChunks to throw - ensures pipeline uses batch
 getChunks: async () => { throw new Error('N+1 detected'); }
@@ -207,17 +214,17 @@ getChunks: async () => { throw new Error('N+1 detected'); }
 
 ## References
 
-| File | Lines | Purpose |
-|------|-------|---------|
-| `src/pipeline/vsearch.ts` | 100-131 | Primary N+1 location |
-| `src/pipeline/hybrid.ts` | 346-382, 413-417 | Result-building N+1 (main hybrid win) |
-| `src/pipeline/rerank.ts` | 123-144 | Rerank chunk fetch |
-| `src/store/types.ts` | 405-419 | StorePort interface |
-| `src/store/sqlite/adapter.ts` | 553-571 | Existing getChunks impl |
-| `src/store/sqlite/adapter.ts` | 587-606 | FTS JOIN pattern (model) |
-| `spec/db/schema.sql` | 137 | idx_chunks_mirror_hash index |
-| `test/store/adapter.test.ts` | - | Existing store tests |
-| `test/pipeline/rerank-normalization.test.ts` | - | Mock StorePort to update |
+| File                                         | Lines            | Purpose                               |
+| -------------------------------------------- | ---------------- | ------------------------------------- |
+| `src/pipeline/vsearch.ts`                    | 100-131          | Primary N+1 location                  |
+| `src/pipeline/hybrid.ts`                     | 346-382, 413-417 | Result-building N+1 (main hybrid win) |
+| `src/pipeline/rerank.ts`                     | 123-144          | Rerank chunk fetch                    |
+| `src/store/types.ts`                         | 405-419          | StorePort interface                   |
+| `src/store/sqlite/adapter.ts`                | 553-571          | Existing getChunks impl               |
+| `src/store/sqlite/adapter.ts`                | 587-606          | FTS JOIN pattern (model)              |
+| `spec/db/schema.sql`                         | 137              | idx_chunks_mirror_hash index          |
+| `test/store/adapter.test.ts`                 | -                | Existing store tests                  |
+| `test/pipeline/rerank-normalization.test.ts` | -                | Mock StorePort to update              |
 
 ## Resolved Questions
 

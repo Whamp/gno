@@ -5,13 +5,14 @@
  */
 
 // node:fs/promises: rm and stat for recursive directory deletion (no Bun equivalent)
-import { rm, stat } from 'node:fs/promises';
+import { rm, stat } from "node:fs/promises";
 // node:os: homedir for platform-agnostic home directory (no Bun equivalent)
-import { homedir } from 'node:os';
+import { homedir } from "node:os";
 // node:path: path manipulation utilities (no Bun equivalent)
-import { isAbsolute, normalize, sep } from 'node:path';
-import { resolveDirs } from '../../app/constants';
-import { CliError } from '../errors';
+import { isAbsolute, normalize, sep } from "node:path";
+
+import { resolveDirs } from "../../app/constants";
+import { CliError } from "../errors";
 
 interface ResetOptions {
   confirm?: boolean;
@@ -21,7 +22,7 @@ interface ResetOptions {
 
 interface DirResult {
   path: string;
-  status: 'deleted' | 'missing' | 'kept';
+  status: "deleted" | "missing" | "kept";
   error?: string;
 }
 
@@ -32,12 +33,12 @@ interface ResetResult {
 
 // Forbidden paths that should never be deleted
 const FORBIDDEN_PATHS = new Set([
-  '/',
-  '/Users',
-  '/home',
-  '/var',
-  '/etc',
-  '/tmp',
+  "/",
+  "/Users",
+  "/home",
+  "/var",
+  "/etc",
+  "/tmp",
 ]);
 
 /**
@@ -49,7 +50,7 @@ function assertSafePath(path: string, label: string): void {
 
   // Must be absolute
   if (!isAbsolute(normalized)) {
-    throw new CliError('VALIDATION', `${label} path must be absolute: ${path}`);
+    throw new CliError("VALIDATION", `${label} path must be absolute: ${path}`);
   }
 
   // Must not be a forbidden system path
@@ -57,14 +58,14 @@ function assertSafePath(path: string, label: string): void {
     FORBIDDEN_PATHS.has(normalized) ||
     FORBIDDEN_PATHS.has(`${normalized}${sep}`)
   ) {
-    throw new CliError('VALIDATION', `Refusing to delete system path: ${path}`);
+    throw new CliError("VALIDATION", `Refusing to delete system path: ${path}`);
   }
 
   // Must be under home directory (for user safety)
   const home = homedir();
   if (!normalized.startsWith(home + sep) && normalized !== home) {
     throw new CliError(
-      'VALIDATION',
+      "VALIDATION",
       `${label} path must be under home directory: ${path}`
     );
   }
@@ -72,7 +73,7 @@ function assertSafePath(path: string, label: string): void {
   // Must not be home directory itself
   if (normalized === home || normalized === home + sep) {
     throw new CliError(
-      'VALIDATION',
+      "VALIDATION",
       `Refusing to delete home directory: ${path}`
     );
   }
@@ -84,8 +85,8 @@ function assertSafePath(path: string, label: string): void {
 export async function reset(options: ResetOptions): Promise<ResetResult> {
   if (!options.confirm) {
     throw new CliError(
-      'VALIDATION',
-      'Reset requires --confirm or --yes flag to prevent accidental data loss'
+      "VALIDATION",
+      "Reset requires --confirm or --yes flag to prevent accidental data loss"
     );
   }
 
@@ -94,12 +95,12 @@ export async function reset(options: ResetOptions): Promise<ResetResult> {
   const errors: string[] = [];
 
   // Validate all paths before deleting anything
-  assertSafePath(dirs.data, 'Data');
+  assertSafePath(dirs.data, "Data");
   if (!options.keepConfig) {
-    assertSafePath(dirs.config, 'Config');
+    assertSafePath(dirs.config, "Config");
   }
   if (!options.keepCache) {
-    assertSafePath(dirs.cache, 'Cache');
+    assertSafePath(dirs.cache, "Cache");
   }
 
   // Delete data directory (always, contains index DB)
@@ -107,14 +108,14 @@ export async function reset(options: ResetOptions): Promise<ResetResult> {
 
   // Delete config unless --keep-config
   if (options.keepConfig) {
-    results.push({ path: dirs.config, status: 'kept' });
+    results.push({ path: dirs.config, status: "kept" });
   } else {
     results.push(await rmDir(dirs.config));
   }
 
   // Delete cache unless --keep-cache
   if (options.keepCache) {
-    results.push({ path: dirs.cache, status: 'kept' });
+    results.push({ path: dirs.cache, status: "kept" });
   } else {
     results.push(await rmDir(dirs.cache));
   }
@@ -127,7 +128,7 @@ export async function reset(options: ResetOptions): Promise<ResetResult> {
   }
 
   if (errors.length > 0) {
-    throw new CliError('RUNTIME', `Reset failed:\n${errors.join('\n')}`);
+    throw new CliError("RUNTIME", `Reset failed:\n${errors.join("\n")}`);
   }
 
   return { results, errors };
@@ -139,18 +140,18 @@ async function rmDir(path: string): Promise<DirResult> {
     await stat(path);
   } catch (e) {
     const err = e as NodeJS.ErrnoException;
-    if (err.code === 'ENOENT') {
-      return { path, status: 'missing' };
+    if (err.code === "ENOENT") {
+      return { path, status: "missing" };
     }
-    return { path, status: 'missing', error: err.message };
+    return { path, status: "missing", error: err.message };
   }
 
   try {
     await rm(path, { recursive: true, force: true });
-    return { path, status: 'deleted' };
+    return { path, status: "deleted" };
   } catch (e) {
     const err = e as NodeJS.ErrnoException;
-    return { path, status: 'missing', error: err.message };
+    return { path, status: "missing", error: err.message };
   }
 }
 
@@ -158,34 +159,34 @@ async function rmDir(path: string): Promise<DirResult> {
  * Format reset result for terminal output.
  */
 export function formatReset(result: ResetResult): string {
-  const deleted = result.results.filter((r) => r.status === 'deleted');
-  const missing = result.results.filter((r) => r.status === 'missing');
-  const kept = result.results.filter((r) => r.status === 'kept');
+  const deleted = result.results.filter((r) => r.status === "deleted");
+  const missing = result.results.filter((r) => r.status === "missing");
+  const kept = result.results.filter((r) => r.status === "kept");
 
-  const lines: string[] = ['GNO reset complete.', ''];
+  const lines: string[] = ["GNO reset complete.", ""];
 
   if (deleted.length > 0) {
-    lines.push('Deleted:');
+    lines.push("Deleted:");
     for (const r of deleted) {
       lines.push(`  ${r.path}`);
     }
   }
 
   if (missing.length > 0) {
-    lines.push('');
-    lines.push('Already missing:');
+    lines.push("");
+    lines.push("Already missing:");
     for (const r of missing) {
       lines.push(`  ${r.path}`);
     }
   }
 
   if (kept.length > 0) {
-    lines.push('');
-    lines.push('Kept:');
+    lines.push("");
+    lines.push("Kept:");
     for (const r of kept) {
       lines.push(`  ${r.path}`);
     }
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }

@@ -18,19 +18,20 @@ rp-cli -e '<command>'
 
 **Quick reference:**
 
-| MCP Tool | CLI Command |
-|----------|-------------|
-| `get_file_tree` | `rp-cli -e 'tree'` |
-| `file_search` | `rp-cli -e 'search "pattern"'` |
-| `get_code_structure` | `rp-cli -e 'structure path/'` |
-| `read_file` | `rp-cli -e 'read path/file.swift'` |
-| `manage_selection` | `rp-cli -e 'select add path/'` |
-| `context_builder` | `rp-cli -e 'builder "instructions" --response-type plan'` |
-| `chat_send` | `rp-cli -e 'chat "message" --mode plan'` |
-| `apply_edits` | `rp-cli -e 'edit path/file.swift "old" "new"'` |
-| `file_actions` | `rp-cli -e 'file create path/new.swift'` |
+| MCP Tool             | CLI Command                                               |
+| -------------------- | --------------------------------------------------------- |
+| `get_file_tree`      | `rp-cli -e 'tree'`                                        |
+| `file_search`        | `rp-cli -e 'search "pattern"'`                            |
+| `get_code_structure` | `rp-cli -e 'structure path/'`                             |
+| `read_file`          | `rp-cli -e 'read path/file.swift'`                        |
+| `manage_selection`   | `rp-cli -e 'select add path/'`                            |
+| `context_builder`    | `rp-cli -e 'builder "instructions" --response-type plan'` |
+| `chat_send`          | `rp-cli -e 'chat "message" --mode plan'`                  |
+| `apply_edits`        | `rp-cli -e 'edit path/file.swift "old" "new"'`            |
+| `file_actions`       | `rp-cli -e 'file create path/new.swift'`                  |
 
 Chain commands with `&&`:
+
 ```bash
 rp-cli -e 'select set src/ && context'
 ```
@@ -38,9 +39,11 @@ rp-cli -e 'select set src/ && context'
 Use `-d <cmd>` for detailed help on any command.
 
 ---
+
 ## Investigation Protocol
 
 ### Core Principles
+
 1. **Don't stop until confident** - pursue every lead until you have solid evidence
 2. **Document findings as you go** - create/update a report file with observations
 3. **Question everything** - if something seems off, investigate it
@@ -90,6 +93,7 @@ rp-cli -e 'chat "<specific follow-up based on findings>" --mode plan'
 ### Phase 5: Conclusions
 
 Document:
+
 - Root cause identification (with evidence)
 - Eliminated hypotheses (and why)
 - Recommended fixes
@@ -100,10 +104,12 @@ Document:
 ## Context Builder Tips
 
 The `builder` operates in two phases:
+
 1. **Discovery**: Intelligently explores the codebase
 2. **Analysis**: A capable model analyzes the captured context
 
 **Give it good guidance:**
+
 - Be specific about what parts of the codebase to investigate
 - Describe symptoms precisely
 - List specific technical questions to answer

@@ -5,7 +5,7 @@
  * @module src/store/vector/types
  */
 
-import type { StoreResult } from '../types';
+import type { StoreResult } from "../types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Row Types
@@ -39,7 +39,7 @@ export interface BacklogItem {
   seq: number;
   text: string;
   title: string | null;
-  reason: 'new' | 'changed' | 'force';
+  reason: "new" | "changed" | "force";
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

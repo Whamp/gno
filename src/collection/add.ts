@@ -5,6 +5,9 @@
  * @module src/collection/add
  */
 
+import type { Config } from "../config/types";
+import type { AddCollectionInput, CollectionResult } from "./types";
+
 import {
   type Collection,
   CollectionSchema,
@@ -12,9 +15,7 @@ import {
   DEFAULT_PATTERN,
   pathExists,
   toAbsolutePath,
-} from '../config';
-import type { Config } from '../config/types';
-import type { AddCollectionInput, CollectionResult } from './types';
+} from "../config";
 
 /**
  * Parse comma-separated string or array into deduplicated array.
@@ -29,7 +30,7 @@ function parseList(input: string[] | string | undefined): string[] {
   return [
     ...new Set(
       input
-        .split(',')
+        .split(",")
         .map((s) => s.trim())
         .filter(Boolean)
     ),
@@ -57,7 +58,7 @@ export async function addCollection(
   if (!exists) {
     return {
       ok: false,
-      code: 'PATH_NOT_FOUND',
+      code: "PATH_NOT_FOUND",
       message: `Path does not exist: ${absolutePath}`,
     };
   }
@@ -67,7 +68,7 @@ export async function addCollection(
   if (existing) {
     return {
       ok: false,
-      code: 'DUPLICATE',
+      code: "DUPLICATE",
       message: `Collection "${collectionName}" already exists`,
     };
   }
@@ -94,8 +95,8 @@ export async function addCollection(
   if (!validation.success) {
     return {
       ok: false,
-      code: 'VALIDATION',
-      message: `Invalid collection: ${validation.error.issues[0]?.message ?? 'unknown error'}`,
+      code: "VALIDATION",
+      message: `Invalid collection: ${validation.error.issues[0]?.message ?? "unknown error"}`,
     };
   }
 

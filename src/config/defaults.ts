@@ -4,7 +4,7 @@
  * @module src/config/defaults
  */
 
-import { CONFIG_VERSION, type Config, DEFAULT_FTS_TOKENIZER } from './types';
+import { CONFIG_VERSION, type Config, DEFAULT_FTS_TOKENIZER } from "./types";
 
 /**
  * Create a default config object.

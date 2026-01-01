@@ -6,7 +6,7 @@
  * @module src/cli/commands/context/check
  */
 
-import { getCollectionFromScope, loadConfig } from '../../../config';
+import { getCollectionFromScope, loadConfig } from "../../../config";
 
 /**
  * Exit codes
@@ -16,7 +16,7 @@ const EXIT_SUCCESS = 0;
 /**
  * Output format
  */
-export type OutputFormat = 'terminal' | 'json' | 'md';
+export type OutputFormat = "terminal" | "json" | "md";
 
 /**
  * Check result
@@ -39,7 +39,7 @@ export interface CheckResult {
  * @returns Exit code
  */
 export async function contextCheck(
-  format: OutputFormat = 'terminal'
+  format: OutputFormat = "terminal"
 ): Promise<number> {
   // Load config
   const configResult = await loadConfig();
@@ -54,9 +54,9 @@ export async function contextCheck(
   const errors: string[] = [];
 
   // Check global scope exists
-  const hasGlobalScope = contexts.some((ctx) => ctx.scopeType === 'global');
+  const hasGlobalScope = contexts.some((ctx) => ctx.scopeType === "global");
   if (!hasGlobalScope) {
-    warnings.push('No global scope (/) configured');
+    warnings.push("No global scope (/) configured");
   }
 
   // Check collection and prefix scopes reference existing collections
@@ -86,12 +86,12 @@ export async function contextCheck(
  * Format and output check results
  */
 function formatOutput(format: OutputFormat, result: CheckResult): void {
-  if (format === 'json') {
+  if (format === "json") {
     console.log(JSON.stringify(result, null, 2));
     return;
   }
 
-  if (format === 'md') {
+  if (format === "md") {
     formatMarkdown(result);
     return;
   }
@@ -103,27 +103,27 @@ function formatOutput(format: OutputFormat, result: CheckResult): void {
  * Format check results as markdown
  */
 function formatMarkdown(result: CheckResult): void {
-  console.log('# Context Check\n');
+  console.log("# Context Check\n");
   console.log(`**Valid:** ${result.valid}\n`);
 
   if (result.errors.length > 0) {
-    console.log('## Errors\n');
+    console.log("## Errors\n");
     for (const error of result.errors) {
       console.log(`- ${error}`);
     }
-    console.log('');
+    console.log("");
   }
 
   if (result.warnings.length > 0) {
-    console.log('## Warnings\n');
+    console.log("## Warnings\n");
     for (const warning of result.warnings) {
       console.log(`- ${warning}`);
     }
-    console.log('');
+    console.log("");
   }
 
   if (result.valid && result.warnings.length === 0) {
-    console.log('No issues found.');
+    console.log("No issues found.");
   }
 }
 
@@ -132,20 +132,20 @@ function formatMarkdown(result: CheckResult): void {
  */
 function formatTerminal(result: CheckResult): void {
   if (result.valid) {
-    console.log('✓ Context configuration is valid');
+    console.log("✓ Context configuration is valid");
   } else {
-    console.log('✗ Context configuration has errors');
+    console.log("✗ Context configuration has errors");
   }
 
   if (result.errors.length > 0) {
-    console.log('\nErrors:');
+    console.log("\nErrors:");
     for (const error of result.errors) {
       console.log(`  - ${error}`);
     }
   }
 
   if (result.warnings.length > 0) {
-    console.log('\nWarnings:');
+    console.log("\nWarnings:");
     for (const warning of result.warnings) {
       console.log(`  - ${warning}`);
     }

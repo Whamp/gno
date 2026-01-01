@@ -6,24 +6,40 @@ layout: default
   <section class="hero">
     <div class="hero-aurora" aria-hidden="true"></div>
     <span class="hero-badge">
-      {% include icons.html icon="brain" size="16" %}
-      Local Knowledge Engine
+      {% include icons.html icon="brain" size="16" %} Local Knowledge Engine
     </span>
     <h1 class="hero-title">Your Local Second Brain</h1>
     <p class="hero-tagline">
-      Index everything. Search from CLI or Claude. Your data never leaves your machine.
+      Index everything. Search from CLI or Claude. Your data never leaves your
+      machine.
     </p>
     <p class="hero-description">
-      Index your entire digital life—notes, code, PDFs, and Office docs. Turn your fragmented data into a cohesive local knowledge engine. Built for humans and AI agents alike, fully local and private.
+      Index your entire digital life—notes, code, PDFs, and Office docs. Turn
+      your fragmented data into a cohesive local knowledge engine. Built for
+      humans and AI agents alike, fully local and private.
     </p>
 
     <div class="hero-demo">
-      <img src="{{ '/assets/demos/hero.gif' | relative_url }}" alt="GNO search demo" class="demo-gif" loading="lazy">
+      <img
+        src="{{ '/assets/demos/hero.gif' | relative_url }}"
+        alt="GNO search demo"
+        class="demo-gif"
+        loading="lazy"
+      />
     </div>
 
     <div class="hero-actions">
-      <a href="{{ '/docs/QUICKSTART/' | relative_url }}" class="btn btn-primary btn-lg">Get Started</a>
-      <a href="https://github.com/{{ site.repository }}" class="btn btn-secondary btn-lg" target="_blank" rel="noopener">
+      <a
+        href="{{ '/docs/QUICKSTART/' | relative_url }}"
+        class="btn btn-primary btn-lg"
+        >Get Started</a
+      >
+      <a
+        href="https://github.com/{{ site.repository }}"
+        class="btn btn-secondary btn-lg"
+        target="_blank"
+        rel="noopener"
+      >
         View on GitHub
       </a>
     </div>
@@ -49,7 +65,11 @@ gno index
 gno query "authentication best practices"
 gno ask "summarize the API discussion" --answer</code></pre>
       </div>
-      <p class="quickstart-link"><a href="{{ '/docs/QUICKSTART/' | relative_url }}">Read the Full Documentation →</a></p>
+      <p class="quickstart-link">
+        <a href="{{ '/docs/QUICKSTART/' | relative_url }}"
+          >Read the Full Documentation →</a
+        >
+      </p>
     </div>
   </section>
 
@@ -59,95 +79,154 @@ gno ask "summarize the API discussion" --answer</code></pre>
     <div class="demo-full">
       <h3>Quick Start</h3>
       <p>Initialize, index, and search in seconds</p>
-      <img src="{{ '/assets/demos/quickstart.gif' | relative_url }}" alt="GNO quickstart demo" loading="lazy">
+      <img
+        src="{{ '/assets/demos/quickstart.gif' | relative_url }}"
+        alt="GNO quickstart demo"
+        loading="lazy"
+      />
     </div>
 
     <div class="demo-full">
       <h3>Search Modes</h3>
       <p>BM25, vector, and hybrid search comparison</p>
-      <img src="{{ '/assets/demos/search-modes.gif' | relative_url }}" alt="GNO search modes demo" loading="lazy">
+      <img
+        src="{{ '/assets/demos/search-modes.gif' | relative_url }}"
+        alt="GNO search modes demo"
+        loading="lazy"
+      />
     </div>
   </section>
 
   <section class="features">
     <div class="features-grid">
-      <a href="{{ '/features/hybrid-search/' | relative_url }}" class="feature-card">
-        <div class="feature-card-icon">{% include icons.html icon="hybrid-search" size="24" %}</div>
+      <a
+        href="{{ '/features/hybrid-search/' | relative_url }}"
+        class="feature-card"
+      >
+        <div class="feature-card-icon">
+          {% include icons.html icon="hybrid-search" size="24" %}
+        </div>
         <h3 class="feature-card-title">Hybrid Search</h3>
         <p class="feature-card-description">
-          BM25 full-text + vector similarity with reciprocal rank fusion for accurate results.
+          BM25 full-text + vector similarity with reciprocal rank fusion for
+          accurate results.
         </p>
       </a>
 
-      <a href="{{ '/features/local-llm/' | relative_url }}" class="feature-card">
-        <div class="feature-card-icon">{% include icons.html icon="local-llm" size="24" %}</div>
+      <a
+        href="{{ '/features/local-llm/' | relative_url }}"
+        class="feature-card"
+      >
+        <div class="feature-card-icon">
+          {% include icons.html icon="local-llm" size="24" %}
+        </div>
         <h3 class="feature-card-title">AI Answers</h3>
         <p class="feature-card-description">
-          Get grounded responses with citations using local LLMs. No data leaves your machine.
+          Get grounded responses with citations using local LLMs. No data leaves
+          your machine.
         </p>
       </a>
 
-      <a href="{{ '/features/multi-format/' | relative_url }}" class="feature-card">
-        <div class="feature-card-icon">{% include icons.html icon="multi-format" size="24" %}</div>
+      <a
+        href="{{ '/features/multi-format/' | relative_url }}"
+        class="feature-card"
+      >
+        <div class="feature-card-icon">
+          {% include icons.html icon="multi-format" size="24" %}
+        </div>
         <h3 class="feature-card-title">Multi-Format</h3>
         <p class="feature-card-description">
-          Index Markdown, PDF, DOCX, XLSX, PPTX, and plain text documents seamlessly.
+          Index Markdown, PDF, DOCX, XLSX, PPTX, and plain text documents
+          seamlessly.
         </p>
       </a>
 
-      <a href="{{ '/features/privacy-first/' | relative_url }}" class="feature-card">
-        <div class="feature-card-icon">{% include icons.html icon="privacy-first" size="24" %}</div>
+      <a
+        href="{{ '/features/privacy-first/' | relative_url }}"
+        class="feature-card"
+      >
+        <div class="feature-card-icon">
+          {% include icons.html icon="privacy-first" size="24" %}
+        </div>
         <h3 class="feature-card-title">Privacy First</h3>
         <p class="feature-card-description">
-          All processing happens locally. Your documents never leave your machine.
+          All processing happens locally. Your documents never leave your
+          machine.
         </p>
       </a>
 
-      <a href="{{ '/features/mcp-integration/' | relative_url }}" class="feature-card">
-        <div class="feature-card-icon">{% include icons.html icon="mcp-integration" size="24" %}</div>
+      <a
+        href="{{ '/features/mcp-integration/' | relative_url }}"
+        class="feature-card"
+      >
+        <div class="feature-card-icon">
+          {% include icons.html icon="mcp-integration" size="24" %}
+        </div>
         <h3 class="feature-card-title">MCP Integration</h3>
         <p class="feature-card-description">
-          Use as an MCP server for seamless AI assistant access to your knowledge base.
+          Use as an MCP server for seamless AI assistant access to your
+          knowledge base.
         </p>
       </a>
 
       <a href="{{ '/features/web-ui/' | relative_url }}" class="feature-card">
-        <div class="feature-card-icon">{% include icons.html icon="globe" size="24" %}</div>
+        <div class="feature-card-icon">
+          {% include icons.html icon="globe" size="24" %}
+        </div>
         <h3 class="feature-card-title">Web UI</h3>
         <p class="feature-card-description">
-          Visual dashboard for search, browse, and AI Q&A. Switch presets and download models live.
+          Visual dashboard for search, browse, and AI Q&A. Switch presets and
+          download models live.
         </p>
       </a>
 
       <a href="{{ '/features/api/' | relative_url }}" class="feature-card">
-        <div class="feature-card-icon">{% include icons.html icon="code" size="24" %}</div>
+        <div class="feature-card-icon">
+          {% include icons.html icon="code" size="24" %}
+        </div>
         <h3 class="feature-card-title">REST API</h3>
         <p class="feature-card-description">
-          HTTP API for programmatic access. Build custom tools and integrations in any language.
+          HTTP API for programmatic access. Build custom tools and integrations
+          in any language.
         </p>
       </a>
 
-      <a href="{{ '/features/collections/' | relative_url }}" class="feature-card">
-        <div class="feature-card-icon">{% include icons.html icon="collections" size="24" %}</div>
+      <a
+        href="{{ '/features/collections/' | relative_url }}"
+        class="feature-card"
+      >
+        <div class="feature-card-icon">
+          {% include icons.html icon="collections" size="24" %}
+        </div>
         <h3 class="feature-card-title">Collections</h3>
         <p class="feature-card-description">
-          Organize documents by source directory with contexts for improved relevance.
+          Organize documents by source directory with contexts for improved
+          relevance.
         </p>
       </a>
 
       <a href="{{ '/docs/CLI/' | relative_url }}" class="feature-card">
-        <div class="feature-card-icon">{% include icons.html icon="terminal" size="24" %}</div>
+        <div class="feature-card-icon">
+          {% include icons.html icon="terminal" size="24" %}
+        </div>
         <h3 class="feature-card-title">Fast CLI</h3>
         <p class="feature-card-description">
-          Bun-powered for instant startup. Search thousands of documents in milliseconds.
+          Bun-powered for instant startup. Search thousands of documents in
+          milliseconds.
         </p>
       </a>
 
-      <a href="{{ '/docs/HOW-SEARCH-WORKS/' | relative_url }}" class="feature-card">
-        <div class="feature-card-icon">{% include icons.html icon="brain" size="24" %}</div>
+      <a
+        href="{{ '/docs/HOW-SEARCH-WORKS/' | relative_url }}"
+        class="feature-card"
+      >
+        <div class="feature-card-icon">
+          {% include icons.html icon="brain" size="24" %}
+        </div>
         <h3 class="feature-card-title">Advanced Retrieval</h3>
         <p class="feature-card-description">
-          Query expansion, metadata filtering, and cross-encoder reranking. Fully offline.
+          Query expansion, metadata filtering, and cross-encoder reranking.
+          Fully offline.
         </p>
       </a>
     </div>

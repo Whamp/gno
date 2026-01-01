@@ -14,6 +14,7 @@ Implement the search pipeline layer for GNO with four search commands: `gno sear
 ## Problem Statement
 
 GNO has completed:
+
 - **EPIC 5:** Indexing with FTS5 (`StorePort.searchFts()`)
 - **EPIC 6:** LLM subsystem (`EmbeddingPort`, `RerankPort`, `GenerationPort`)
 - **EPIC 7:** Vector embeddings (`VectorIndexPort.searchNearest()`)
@@ -48,15 +49,15 @@ src/pipeline/
 
 ### Parameters (Clarified)
 
-| Parameter | Default | Configurable | Source |
-|-----------|---------|--------------|--------|
-| `rrfK` | 60 | Yes (config) | RRF constant |
-| `topRankBonus` | 0.1 | Yes (config) | Added if in top-5 both modes |
-| `expansionTimeout` | 5000ms | Yes (config) | Gen model timeout |
-| `rerankCandidates` | 20 | Yes (config) | Max candidates to rerank |
-| Blending (ranks 1-3) | 0.75/0.25 | Yes (config) | fusion/rerank weights |
-| Blending (ranks 4-10) | 0.60/0.40 | Yes (config) | fusion/rerank weights |
-| Blending (ranks 11+) | 0.40/0.60 | Yes (config) | fusion/rerank weights |
+| Parameter             | Default   | Configurable | Source                       |
+| --------------------- | --------- | ------------ | ---------------------------- |
+| `rrfK`                | 60        | Yes (config) | RRF constant                 |
+| `topRankBonus`        | 0.1       | Yes (config) | Added if in top-5 both modes |
+| `expansionTimeout`    | 5000ms    | Yes (config) | Gen model timeout            |
+| `rerankCandidates`    | 20        | Yes (config) | Max candidates to rerank     |
+| Blending (ranks 1-3)  | 0.75/0.25 | Yes (config) | fusion/rerank weights        |
+| Blending (ranks 4-10) | 0.60/0.40 | Yes (config) | fusion/rerank weights        |
+| Blending (ranks 11+)  | 0.40/0.60 | Yes (config) | fusion/rerank weights        |
 
 ---
 
@@ -65,6 +66,7 @@ src/pipeline/
 ### Phase 1: Core Search Commands (search, vsearch)
 
 **Tasks:**
+
 - [ ] T8.1.1: Create `src/pipeline/types.ts` with `SearchPipelinePort` interface
 - [ ] T8.1.2: Implement `src/pipeline/search.ts` - BM25 wrapper over `StorePort.searchFts()`
 - [ ] T8.1.3: Implement `src/pipeline/vsearch.ts` - Vector wrapper over `VectorIndexPort`
@@ -74,12 +76,14 @@ src/pipeline/
 - [ ] T8.1.7: Integration tests with fixture corpus
 
 **File References:**
+
 - `src/store/sqlite/adapter.ts:550-623` - Existing FTS search implementation
 - `src/store/vector/sqlite-vec.ts:357-380` - Existing vector search
 - `spec/cli.md:386-420` - CLI spec for search commands
 - `spec/output-schemas/search-result.schema.json` - Output schema
 
 **Acceptance Criteria:**
+
 - `gno search` returns BM25 results with correct schema
 - `gno vsearch` returns vector results or structured error if unavailable
 - Both support `-n`, `--collection`, `--min-score`, `--lang`, output formats
@@ -89,6 +93,7 @@ src/pipeline/
 ### Phase 2: Query Expansion
 
 **Tasks:**
+
 - [ ] T8.2.1: Define expansion JSON schema in `spec/output-schemas/expansion.schema.json`
 - [ ] T8.2.2: Implement `src/pipeline/expansion.ts`:
   - Prompt template selection by language
@@ -103,6 +108,7 @@ src/pipeline/
 - [ ] T8.2.5: Unit tests for cache key generation
 
 **Expansion Schema:**
+
 ```json
 {
   "lexicalQueries": ["variant1", "variant2"],
@@ -113,6 +119,7 @@ src/pipeline/
 ```
 
 **Cache Key Structure:**
+
 ```typescript
 // Cache key for llm_cache table
 const cacheKey = sha256([
@@ -124,6 +131,7 @@ const cacheKey = sha256([
 ```
 
 **Acceptance Criteria:**
+
 - Expansion returns valid schema or null on failure
 - Cache hits return identical results
 - Timeout gracefully falls back to no expansion
@@ -133,6 +141,7 @@ const cacheKey = sha256([
 ### Phase 3: Parallel Retrieval & RRF Fusion
 
 **Tasks:**
+
 - [ ] T8.3.1: Implement `src/pipeline/fusion.ts`:
   - RRF formula: `1 / (k + rank)`
   - Weighted sources (original: 1.0, variant: 0.5, hyde: 0.7)
@@ -146,6 +155,7 @@ const cacheKey = sha256([
 - [ ] T8.3.4: Unit tests for tie-breaking stability
 
 **RRF Formula:**
+
 ```typescript
 function rrfScore(
   doc: string,
@@ -171,6 +181,7 @@ function rrfScore(
 ```
 
 **Acceptance Criteria:**
+
 - RRF produces stable, reproducible rankings
 - Parallel retrieval completes without race conditions
 - Tie-breaking is deterministic by docid
@@ -180,6 +191,7 @@ function rrfScore(
 ### Phase 4: Reranking & Blending
 
 **Tasks:**
+
 - [ ] T8.4.1: Implement `src/pipeline/rerank.ts`:
   - Integration with `RerankPort`
   - Position-aware blending schedule
@@ -194,6 +206,7 @@ function rrfScore(
 - [ ] T8.4.4: Integration tests with mock reranker
 
 **Blending Implementation:**
+
 ```typescript
 function blend(
   fusionScore: number,
@@ -213,6 +226,7 @@ const DEFAULT_BLENDING_SCHEDULE = [
 ```
 
 **Acceptance Criteria:**
+
 - Rerank gracefully skips when model unavailable
 - Blending produces stable rankings
 - `meta.reranked` correctly indicates reranking status
@@ -222,6 +236,7 @@ const DEFAULT_BLENDING_SCHEDULE = [
 ### Phase 5: Hybrid Query Command
 
 **Tasks:**
+
 - [ ] T8.5.1: Implement `src/pipeline/hybrid.ts` orchestrator:
   - Strong BM25 check (sigmoid normalized, dual threshold)
   - Expansion decision logic
@@ -235,6 +250,7 @@ const DEFAULT_BLENDING_SCHEDULE = [
 - [ ] T8.5.5: Graceful degradation tests (no vectors, no gen, no rerank)
 
 **Pipeline Flow:**
+
 ```typescript
 async function hybridSearch(
   query: string,
@@ -272,6 +288,7 @@ async function hybridSearch(
 ```
 
 **Acceptance Criteria:**
+
 - `gno query` uses hybrid pipeline with all stages
 - `--no-expand`, `--no-rerank` flags work correctly
 - `--explain` outputs pipeline details to stderr
@@ -282,6 +299,7 @@ async function hybridSearch(
 ### Phase 6: Ask Command
 
 **Tasks:**
+
 - [ ] T8.6.1: Add `gno ask` CLI command:
   - Wrapper over `gno query`
   - Citations-first output format
@@ -296,6 +314,7 @@ async function hybridSearch(
 - [ ] T8.6.5: Integration tests
 
 **Ask Output Schema:**
+
 ```json
 {
   "query": "string",
@@ -315,6 +334,7 @@ async function hybridSearch(
 ```
 
 **Acceptance Criteria:**
+
 - `gno ask` returns citations-first format
 - `--answer` generates grounded response when gen model available
 - Falls back to citations-only when gen model unavailable
@@ -324,6 +344,7 @@ async function hybridSearch(
 ### Phase 7: Eval Harness Integration
 
 **Tasks:**
+
 - [ ] T8.7.1: Create eval corpus with multilingual queries (DE/FR/IT/EN)
 - [ ] T8.7.2: Implement recall@k and nDCG@k metrics
 - [ ] T8.7.3: Add expansion stability checks (same query → same expansion)
@@ -331,6 +352,7 @@ async function hybridSearch(
 - [ ] T8.7.5: CI gate integration (soft fail initially)
 
 **Eval Metrics:**
+
 - recall@5, recall@10
 - nDCG@5, nDCG@10
 - Expansion determinism: 100% (same input → same output)
@@ -341,6 +363,7 @@ async function hybridSearch(
 ## Acceptance Criteria
 
 ### Functional Requirements
+
 - [ ] `gno search` returns BM25 results matching schema
 - [ ] `gno vsearch` returns vector results or VECTORS_UNAVAILABLE error
 - [ ] `gno query` runs full hybrid pipeline with expansion, fusion, reranking
@@ -350,12 +373,14 @@ async function hybridSearch(
 - [ ] Graceful degradation when models/vectors unavailable
 
 ### Non-Functional Requirements
+
 - [ ] Hybrid search p95 < 5s on typical corpus
 - [ ] Deterministic results for same query
 - [ ] Schema contract tests pass for all output formats
 - [ ] Eval metrics meet baseline thresholds
 
 ### Quality Gates
+
 - [ ] Unit tests for RRF math, blending, expansion schema
 - [ ] Integration tests with fixture corpus
 - [ ] Schema contract tests (extend existing 94 tests)
@@ -366,11 +391,13 @@ async function hybridSearch(
 ## Dependencies & Prerequisites
 
 ### Internal Dependencies
+
 - [x] **EPIC 5:** Indexing + FTS5 (`StorePort.searchFts()`)
 - [x] **EPIC 6:** LLM subsystem (`EmbeddingPort`, `RerankPort`, `GenerationPort`)
 - [x] **EPIC 7:** Vector embeddings (`VectorIndexPort.searchNearest()`)
 
 ### External Dependencies
+
 - `bun:sqlite` - Database layer
 - `node-llama-cpp` - LLM inference (already in EPIC 6)
 - `sqlite-vec` - Vector search (already in EPIC 7)
@@ -379,19 +406,20 @@ async function hybridSearch(
 
 ## Risk Analysis & Mitigation
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Gen model slow/unavailable | Expansion fails | Timeout + graceful skip |
-| Rerank model OOM | Results not reranked | Skip rerank, use fusion scores |
-| sqlite-vec not loaded | No vector search | Degrade to BM25-only |
-| Expansion returns garbage | Bad query variants | Schema validation + skip invalid |
-| RRF produces unstable order | Flaky tests | Deterministic tie-breaking |
+| Risk                        | Impact               | Mitigation                       |
+| --------------------------- | -------------------- | -------------------------------- |
+| Gen model slow/unavailable  | Expansion fails      | Timeout + graceful skip          |
+| Rerank model OOM            | Results not reranked | Skip rerank, use fusion scores   |
+| sqlite-vec not loaded       | No vector search     | Degrade to BM25-only             |
+| Expansion returns garbage   | Bad query variants   | Schema validation + skip invalid |
+| RRF produces unstable order | Flaky tests          | Deterministic tie-breaking       |
 
 ---
 
 ## File Changes Summary
 
 ### New Files
+
 ```
 src/pipeline/
   types.ts           # ~100 lines
@@ -432,6 +460,7 @@ test/cli/
 ```
 
 ### Modified Files
+
 ```
 src/config/types.ts          # Add search pipeline config
 src/cli/index.ts             # Register new commands
@@ -484,6 +513,7 @@ graph TD
 ## References
 
 ### Internal References
+
 - `src/store/sqlite/adapter.ts:550-623` - FTS search implementation
 - `src/store/vector/sqlite-vec.ts:357-380` - Vector search
 - `src/llm/types.ts:78-96` - LLM port interfaces
@@ -491,12 +521,14 @@ graph TD
 - `spec/output-schemas/search-result.schema.json` - Output schema
 
 ### External References
+
 - [sqlite-vec Hybrid Search](https://alexgarcia.xyz/blog/2024/sqlite-vec-hybrid-search/index.html)
 - [RRF TypeScript Implementation](https://alexop.dev/tils/reciprocal-rank-fusion-typescript-vue/)
 - [node-llama-cpp Ranking Guide](https://node-llama-cpp.withcat.ai/guide/embedding)
 - [SQLite FTS5 BM25](https://www.sqlite.org/fts5.html)
 
 ### Related Work
+
 - PRD §12: Search modes and pipelines
 - PRD §14: CLI specification
 - PRD §15: Output contracts

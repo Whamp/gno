@@ -23,6 +23,7 @@ Error: sqlite-vec extension not loaded
 ```
 
 **Solution**: On macOS, install Homebrew SQLite:
+
 ```bash
 brew install sqlite
 ```
@@ -42,6 +43,7 @@ gno doctor --json
 ```
 
 This checks:
+
 - Configuration validity
 - Database accessibility
 - Extension availability
@@ -52,11 +54,13 @@ This checks:
 ### Slow Indexing
 
 Large collections may take time to index. Tips:
+
 - Use specific patterns (`--pattern "*.md"`)
 - Exclude large directories (`--exclude node_modules`)
 
 ### Search Latency
 
 If search is slow:
+
 - Check index size with `gno stats`
 - Consider using BM25 instead of vector search for speed

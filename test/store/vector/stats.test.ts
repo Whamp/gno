@@ -2,21 +2,22 @@
  * Tests for VectorStatsPort.
  */
 
-import { Database } from 'bun:sqlite';
-import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
-import { mkdtemp } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { createVectorStatsPort } from '../../../src/store/vector/stats';
-import { safeRm } from '../../helpers/cleanup';
+import { Database } from "bun:sqlite";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { mkdtemp } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
-describe('VectorStatsPort', () => {
+import { createVectorStatsPort } from "../../../src/store/vector/stats";
+import { safeRm } from "../../helpers/cleanup";
+
+describe("VectorStatsPort", () => {
   let db: Database;
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'gno-stats-test-'));
-    const dbPath = join(testDir, 'test.sqlite');
+    testDir = await mkdtemp(join(tmpdir(), "gno-stats-test-"));
+    const dbPath = join(testDir, "test.sqlite");
     db = new Database(dbPath, { create: true });
 
     // Create required tables (minimal schema)
@@ -57,10 +58,10 @@ describe('VectorStatsPort', () => {
     await safeRm(testDir);
   });
 
-  describe('countVectors', () => {
-    test('returns 0 for empty table', async () => {
+  describe("countVectors", () => {
+    test("returns 0 for empty table", async () => {
       const stats = createVectorStatsPort(db);
-      const result = await stats.countVectors('test-model');
+      const result = await stats.countVectors("test-model");
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -68,7 +69,7 @@ describe('VectorStatsPort', () => {
       }
     });
 
-    test('counts vectors for specific model', async () => {
+    test("counts vectors for specific model", async () => {
       // Insert vectors for two models
       db.exec(`
         INSERT INTO content_vectors (mirror_hash, seq, model, embedding)
@@ -79,13 +80,13 @@ describe('VectorStatsPort', () => {
 
       const stats = createVectorStatsPort(db);
 
-      const resultA = await stats.countVectors('model-a');
+      const resultA = await stats.countVectors("model-a");
       expect(resultA.ok).toBe(true);
       if (resultA.ok) {
         expect(resultA.value).toBe(2);
       }
 
-      const resultB = await stats.countVectors('model-b');
+      const resultB = await stats.countVectors("model-b");
       expect(resultB.ok).toBe(true);
       if (resultB.ok) {
         expect(resultB.value).toBe(1);
@@ -93,8 +94,8 @@ describe('VectorStatsPort', () => {
     });
   });
 
-  describe('countBacklog', () => {
-    test('returns 0 when all chunks are embedded', async () => {
+  describe("countBacklog", () => {
+    test("returns 0 when all chunks are embedded", async () => {
       // Setup: document with chunk and matching vector
       db.exec(`
         INSERT INTO documents (id, mirror_hash, active) VALUES (1, 'h1', 1);
@@ -105,7 +106,7 @@ describe('VectorStatsPort', () => {
       `);
 
       const stats = createVectorStatsPort(db);
-      const result = await stats.countBacklog('test-model');
+      const result = await stats.countBacklog("test-model");
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -113,7 +114,7 @@ describe('VectorStatsPort', () => {
       }
     });
 
-    test('counts chunks without vectors', async () => {
+    test("counts chunks without vectors", async () => {
       // Setup: active document with 3 chunks, only 1 has vector
       db.exec(`
         INSERT INTO documents (id, mirror_hash, active) VALUES (1, 'h1', 1);
@@ -126,7 +127,7 @@ describe('VectorStatsPort', () => {
       `);
 
       const stats = createVectorStatsPort(db);
-      const result = await stats.countBacklog('test-model');
+      const result = await stats.countBacklog("test-model");
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -134,7 +135,7 @@ describe('VectorStatsPort', () => {
       }
     });
 
-    test('excludes chunks from inactive documents', async () => {
+    test("excludes chunks from inactive documents", async () => {
       // Setup: one active, one inactive document
       db.exec(`
         INSERT INTO documents (id, mirror_hash, active) VALUES
@@ -146,7 +147,7 @@ describe('VectorStatsPort', () => {
       `);
 
       const stats = createVectorStatsPort(db);
-      const result = await stats.countBacklog('test-model');
+      const result = await stats.countBacklog("test-model");
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -154,7 +155,7 @@ describe('VectorStatsPort', () => {
       }
     });
 
-    test('counts stale vectors as backlog', async () => {
+    test("counts stale vectors as backlog", async () => {
       // Setup: chunk created after embedding
       db.exec(`
         INSERT INTO documents (id, mirror_hash, active) VALUES (1, 'h1', 1);
@@ -165,7 +166,7 @@ describe('VectorStatsPort', () => {
       `);
 
       const stats = createVectorStatsPort(db);
-      const result = await stats.countBacklog('test-model');
+      const result = await stats.countBacklog("test-model");
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -174,8 +175,8 @@ describe('VectorStatsPort', () => {
     });
   });
 
-  describe('getBacklog', () => {
-    test('returns empty array when no backlog', async () => {
+  describe("getBacklog", () => {
+    test("returns empty array when no backlog", async () => {
       db.exec(`
         INSERT INTO documents (id, mirror_hash, active) VALUES (1, 'h1', 1);
         INSERT INTO content_chunks (mirror_hash, seq, text, created_at)
@@ -185,7 +186,7 @@ describe('VectorStatsPort', () => {
       `);
 
       const stats = createVectorStatsPort(db);
-      const result = await stats.getBacklog('test-model');
+      const result = await stats.getBacklog("test-model");
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -193,7 +194,7 @@ describe('VectorStatsPort', () => {
       }
     });
 
-    test('returns chunks needing embedding with reason', async () => {
+    test("returns chunks needing embedding with reason", async () => {
       db.exec(`
         INSERT INTO documents (id, mirror_hash, active) VALUES (1, 'h1', 1);
         INSERT INTO content_chunks (mirror_hash, seq, text) VALUES
@@ -202,17 +203,17 @@ describe('VectorStatsPort', () => {
       `);
 
       const stats = createVectorStatsPort(db);
-      const result = await stats.getBacklog('test-model');
+      const result = await stats.getBacklog("test-model");
 
       expect(result.ok).toBe(true);
       if (result.ok) {
         expect(result.value).toHaveLength(2);
-        expect(result.value[0]?.reason).toBe('new');
-        expect(result.value[0]?.text).toBe('new chunk');
+        expect(result.value[0]?.reason).toBe("new");
+        expect(result.value[0]?.text).toBe("new chunk");
       }
     });
 
-    test('respects limit and cursor pagination', async () => {
+    test("respects limit and cursor pagination", async () => {
       db.exec(`
         INSERT INTO documents (id, mirror_hash, active) VALUES (1, 'h1', 1);
         INSERT INTO content_chunks (mirror_hash, seq, text) VALUES
@@ -226,7 +227,7 @@ describe('VectorStatsPort', () => {
       const stats = createVectorStatsPort(db);
 
       // Get first 2
-      const result1 = await stats.getBacklog('test-model', { limit: 2 });
+      const result1 = await stats.getBacklog("test-model", { limit: 2 });
       expect(result1.ok).toBe(true);
       if (!result1.ok) {
         return;
@@ -237,10 +238,10 @@ describe('VectorStatsPort', () => {
 
       // Get next 2 using cursor from last item
       const lastItem = result1.value[1];
-      const result2 = await stats.getBacklog('test-model', {
+      const result2 = await stats.getBacklog("test-model", {
         limit: 2,
         after: {
-          mirrorHash: lastItem?.mirrorHash ?? '',
+          mirrorHash: lastItem?.mirrorHash ?? "",
           seq: lastItem?.seq ?? 0,
         },
       });
@@ -252,7 +253,7 @@ describe('VectorStatsPort', () => {
       }
     });
 
-    test('marks changed chunks correctly', async () => {
+    test("marks changed chunks correctly", async () => {
       // Setup: chunk with stale vector
       db.exec(`
         INSERT INTO documents (id, mirror_hash, active) VALUES (1, 'h1', 1);
@@ -263,12 +264,12 @@ describe('VectorStatsPort', () => {
       `);
 
       const stats = createVectorStatsPort(db);
-      const result = await stats.getBacklog('test-model');
+      const result = await stats.getBacklog("test-model");
 
       expect(result.ok).toBe(true);
       if (result.ok) {
         expect(result.value).toHaveLength(1);
-        expect(result.value[0]?.reason).toBe('changed');
+        expect(result.value[0]?.reason).toBe("changed");
       }
     });
   });

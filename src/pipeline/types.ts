@@ -5,7 +5,7 @@
  * @module src/pipeline/types
  */
 
-import type { StoreResult } from '../store/types';
+import type { StoreResult } from "../store/types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Search Result Types
@@ -51,7 +51,7 @@ export interface SearchResult {
 }
 
 /** Search mode enum */
-export type SearchMode = 'bm25' | 'vector' | 'hybrid' | 'bm25_only';
+export type SearchMode = "bm25" | "vector" | "hybrid" | "bm25_only";
 
 /** Search metadata */
 export interface SearchMeta {
@@ -167,11 +167,11 @@ export interface ChunkId {
 
 /** Source for a fusion candidate */
 export type FusionSource =
-  | 'bm25'
-  | 'vector'
-  | 'bm25_variant'
-  | 'vector_variant'
-  | 'hyde';
+  | "bm25"
+  | "vector"
+  | "bm25_variant"
+  | "vector_variant"
+  | "hyde";
 
 /** Fusion candidate with ranks from different sources */
 export interface FusionCandidate {
@@ -255,7 +255,7 @@ export interface AskMeta {
 /** Ask command result */
 export interface AskResult {
   query: string;
-  mode: 'hybrid' | 'bm25_only';
+  mode: "hybrid" | "bm25_only";
   queryLanguage: string;
   answer?: string;
   citations?: Citation[];

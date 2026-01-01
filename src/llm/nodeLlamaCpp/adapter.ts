@@ -5,21 +5,22 @@
  * @module src/llm/nodeLlamaCpp/adapter
  */
 
-import type { Config } from '../../config/types';
-import { ModelCache } from '../cache';
-import type { DownloadPolicy } from '../policy';
-import { getActivePreset, getModelConfig } from '../registry';
+import type { Config } from "../../config/types";
+import type { DownloadPolicy } from "../policy";
 import type {
   EmbeddingPort,
   GenerationPort,
   LlmResult,
   ProgressCallback,
   RerankPort,
-} from '../types';
-import { NodeLlamaCppEmbedding } from './embedding';
-import { NodeLlamaCppGeneration } from './generation';
-import { getModelManager, type ModelManager } from './lifecycle';
-import { NodeLlamaCppRerank } from './rerank';
+} from "../types";
+
+import { ModelCache } from "../cache";
+import { getActivePreset, getModelConfig } from "../registry";
+import { NodeLlamaCppEmbedding } from "./embedding";
+import { NodeLlamaCppGeneration } from "./generation";
+import { getModelManager, type ModelManager } from "./lifecycle";
+import { NodeLlamaCppRerank } from "./rerank";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -66,7 +67,7 @@ export class LlmAdapter {
     // Ensure model is available (downloads if policy allows)
     const resolved = await this.cache.ensureModel(
       uri,
-      'embed',
+      "embed",
       policy,
       options?.onProgress
     );
@@ -95,7 +96,7 @@ export class LlmAdapter {
     // Ensure model is available (downloads if policy allows)
     const resolved = await this.cache.ensureModel(
       uri,
-      'gen',
+      "gen",
       policy,
       options?.onProgress
     );
@@ -124,7 +125,7 @@ export class LlmAdapter {
     // Ensure model is available (downloads if policy allows)
     const resolved = await this.cache.ensureModel(
       uri,
-      'rerank',
+      "rerank",
       policy,
       options?.onProgress
     );

@@ -2,14 +2,15 @@
  * Tests for model cache.
  */
 
-import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
-import { mkdir, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { ModelCache } from '../../src/llm/cache';
-import { safeRm } from '../helpers/cleanup';
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { mkdir, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
-describe('ModelCache', () => {
+import { ModelCache } from "../../src/llm/cache";
+import { safeRm } from "../helpers/cleanup";
+
+describe("ModelCache", () => {
   let tempDir: string;
   let cache: ModelCache;
 
@@ -26,132 +27,132 @@ describe('ModelCache', () => {
     await safeRm(tempDir);
   });
 
-  describe('resolve', () => {
-    test('returns error for file: URI when file does not exist', async () => {
+  describe("resolve", () => {
+    test("returns error for file: URI when file does not exist", async () => {
       const result = await cache.resolve(
-        'file:/nonexistent/model.gguf',
-        'embed'
+        "file:/nonexistent/model.gguf",
+        "embed"
       );
       expect(result.ok).toBe(false);
       if (!result.ok) {
-        expect(result.error.code).toBe('MODEL_NOT_FOUND');
+        expect(result.error.code).toBe("MODEL_NOT_FOUND");
       }
     });
 
-    test('returns path for file: URI when file exists', async () => {
-      const modelPath = join(tempDir, 'test-model.gguf');
-      await writeFile(modelPath, 'test content');
+    test("returns path for file: URI when file exists", async () => {
+      const modelPath = join(tempDir, "test-model.gguf");
+      await writeFile(modelPath, "test content");
 
-      const result = await cache.resolve(`file:${modelPath}`, 'embed');
+      const result = await cache.resolve(`file:${modelPath}`, "embed");
       expect(result.ok).toBe(true);
       if (result.ok) {
         expect(result.value).toBe(modelPath);
       }
     });
 
-    test('returns path for absolute path when file exists', async () => {
-      const modelPath = join(tempDir, 'test-model.gguf');
-      await writeFile(modelPath, 'test content');
+    test("returns path for absolute path when file exists", async () => {
+      const modelPath = join(tempDir, "test-model.gguf");
+      await writeFile(modelPath, "test content");
 
-      const result = await cache.resolve(modelPath, 'embed');
+      const result = await cache.resolve(modelPath, "embed");
       expect(result.ok).toBe(true);
       if (result.ok) {
         expect(result.value).toBe(modelPath);
       }
     });
 
-    test('returns NOT_CACHED for uncached hf: URI', async () => {
-      const result = await cache.resolve('hf:test/model/model.gguf', 'embed');
+    test("returns NOT_CACHED for uncached hf: URI", async () => {
+      const result = await cache.resolve("hf:test/model/model.gguf", "embed");
       expect(result.ok).toBe(false);
       if (!result.ok) {
-        expect(result.error.code).toBe('MODEL_NOT_CACHED');
+        expect(result.error.code).toBe("MODEL_NOT_CACHED");
       }
     });
 
-    test('returns error for invalid URI', async () => {
-      const result = await cache.resolve('invalid-uri', 'embed');
+    test("returns error for invalid URI", async () => {
+      const result = await cache.resolve("invalid-uri", "embed");
       expect(result.ok).toBe(false);
       if (!result.ok) {
-        expect(result.error.code).toBe('INVALID_URI');
+        expect(result.error.code).toBe("INVALID_URI");
       }
     });
   });
 
-  describe('isCached', () => {
-    test('returns false for uncached model', async () => {
-      const isCached = await cache.isCached('hf:test/model/model.gguf');
+  describe("isCached", () => {
+    test("returns false for uncached model", async () => {
+      const isCached = await cache.isCached("hf:test/model/model.gguf");
       expect(isCached).toBe(false);
     });
 
-    test('returns true for file: URI when file exists', async () => {
-      const modelPath = join(tempDir, 'local-model.gguf');
-      await writeFile(modelPath, 'test content');
+    test("returns true for file: URI when file exists", async () => {
+      const modelPath = join(tempDir, "local-model.gguf");
+      await writeFile(modelPath, "test content");
 
       const isCached = await cache.isCached(`file:${modelPath}`);
       expect(isCached).toBe(true);
     });
 
-    test('returns false for file: URI when file does not exist', async () => {
-      const isCached = await cache.isCached('file:/nonexistent/model.gguf');
+    test("returns false for file: URI when file does not exist", async () => {
+      const isCached = await cache.isCached("file:/nonexistent/model.gguf");
       expect(isCached).toBe(false);
     });
 
-    test('returns true for absolute path when file exists', async () => {
-      const modelPath = join(tempDir, 'local-model.gguf');
-      await writeFile(modelPath, 'test content');
+    test("returns true for absolute path when file exists", async () => {
+      const modelPath = join(tempDir, "local-model.gguf");
+      await writeFile(modelPath, "test content");
 
       const isCached = await cache.isCached(modelPath);
       expect(isCached).toBe(true);
     });
 
-    test('returns false for stale manifest entry', async () => {
+    test("returns false for stale manifest entry", async () => {
       // Write a manifest with an entry pointing to a non-existent file
-      const manifestPath = join(tempDir, 'manifest.json');
+      const manifestPath = join(tempDir, "manifest.json");
       await writeFile(
         manifestPath,
         JSON.stringify({
-          version: '1.0',
+          version: "1.0",
           models: [
             {
-              uri: 'hf:test/model/model.gguf',
-              type: 'embed',
-              path: '/nonexistent/path.gguf',
+              uri: "hf:test/model/model.gguf",
+              type: "embed",
+              path: "/nonexistent/path.gguf",
               size: 100,
-              checksum: '',
+              checksum: "",
               cachedAt: new Date().toISOString(),
             },
           ],
         })
       );
 
-      const isCached = await cache.isCached('hf:test/model/model.gguf');
+      const isCached = await cache.isCached("hf:test/model/model.gguf");
       expect(isCached).toBe(false);
     });
   });
 
-  describe('list', () => {
-    test('returns empty array when no manifest', async () => {
+  describe("list", () => {
+    test("returns empty array when no manifest", async () => {
       const entries = await cache.list();
       expect(entries).toEqual([]);
     });
 
-    test('returns entries from manifest', async () => {
-      const manifestPath = join(tempDir, 'manifest.json');
-      const modelPath = join(tempDir, 'model.gguf');
-      await writeFile(modelPath, 'test content');
+    test("returns entries from manifest", async () => {
+      const manifestPath = join(tempDir, "manifest.json");
+      const modelPath = join(tempDir, "model.gguf");
+      await writeFile(modelPath, "test content");
 
       await writeFile(
         manifestPath,
         JSON.stringify({
-          version: '1.0',
+          version: "1.0",
           models: [
             {
-              uri: 'hf:test/model/model.gguf',
-              type: 'embed',
+              uri: "hf:test/model/model.gguf",
+              type: "embed",
               path: modelPath,
               size: 12,
-              checksum: '',
-              cachedAt: '2024-01-01T00:00:00Z',
+              checksum: "",
+              cachedAt: "2024-01-01T00:00:00Z",
             },
           ],
         })
@@ -159,39 +160,39 @@ describe('ModelCache', () => {
 
       const entries = await cache.list();
       expect(entries).toHaveLength(1);
-      expect(entries[0]?.uri).toBe('hf:test/model/model.gguf');
-      expect(entries[0]?.type).toBe('embed');
+      expect(entries[0]?.uri).toBe("hf:test/model/model.gguf");
+      expect(entries[0]?.type).toBe("embed");
     });
   });
 
-  describe('totalSize', () => {
-    test('returns 0 for empty cache', async () => {
+  describe("totalSize", () => {
+    test("returns 0 for empty cache", async () => {
       const size = await cache.totalSize();
       expect(size).toBe(0);
     });
 
-    test('returns sum of model sizes', async () => {
-      const manifestPath = join(tempDir, 'manifest.json');
+    test("returns sum of model sizes", async () => {
+      const manifestPath = join(tempDir, "manifest.json");
       await writeFile(
         manifestPath,
         JSON.stringify({
-          version: '1.0',
+          version: "1.0",
           models: [
             {
-              uri: 'hf:test/embed/model.gguf',
-              type: 'embed',
-              path: '/path/embed.gguf',
+              uri: "hf:test/embed/model.gguf",
+              type: "embed",
+              path: "/path/embed.gguf",
               size: 100,
-              checksum: '',
-              cachedAt: '2024-01-01T00:00:00Z',
+              checksum: "",
+              cachedAt: "2024-01-01T00:00:00Z",
             },
             {
-              uri: 'hf:test/gen/model.gguf',
-              type: 'gen',
-              path: '/path/gen.gguf',
+              uri: "hf:test/gen/model.gguf",
+              type: "gen",
+              path: "/path/gen.gguf",
               size: 200,
-              checksum: '',
-              cachedAt: '2024-01-01T00:00:00Z',
+              checksum: "",
+              cachedAt: "2024-01-01T00:00:00Z",
             },
           ],
         })
@@ -202,13 +203,13 @@ describe('ModelCache', () => {
     });
   });
 
-  describe('ensureModel', () => {
-    test('returns cached path if model exists', async () => {
-      const modelPath = join(tempDir, 'test-model.gguf');
-      await writeFile(modelPath, 'test content');
+  describe("ensureModel", () => {
+    test("returns cached path if model exists", async () => {
+      const modelPath = join(tempDir, "test-model.gguf");
+      await writeFile(modelPath, "test content");
 
       // file: URIs are always "cached" if file exists
-      const result = await cache.ensureModel(`file:${modelPath}`, 'embed', {
+      const result = await cache.ensureModel(`file:${modelPath}`, "embed", {
         offline: false,
         allowDownload: false,
       });
@@ -219,10 +220,10 @@ describe('ModelCache', () => {
       }
     });
 
-    test('returns error in offline mode for uncached hf: URI', async () => {
+    test("returns error in offline mode for uncached hf: URI", async () => {
       const result = await cache.ensureModel(
-        'hf:test/model/model.gguf',
-        'embed',
+        "hf:test/model/model.gguf",
+        "embed",
         {
           offline: true,
           allowDownload: false,
@@ -231,14 +232,14 @@ describe('ModelCache', () => {
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
-        expect(result.error.code).toBe('MODEL_NOT_CACHED');
+        expect(result.error.code).toBe("MODEL_NOT_CACHED");
       }
     });
 
-    test('returns error when auto-download disabled for uncached hf: URI', async () => {
+    test("returns error when auto-download disabled for uncached hf: URI", async () => {
       const result = await cache.ensureModel(
-        'hf:test/model/model.gguf',
-        'embed',
+        "hf:test/model/model.gguf",
+        "embed",
         {
           offline: false,
           allowDownload: false,
@@ -247,14 +248,14 @@ describe('ModelCache', () => {
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
-        expect(result.error.code).toBe('AUTO_DOWNLOAD_DISABLED');
+        expect(result.error.code).toBe("AUTO_DOWNLOAD_DISABLED");
       }
     });
 
-    test('returns error for non-existent file: URI', async () => {
+    test("returns error for non-existent file: URI", async () => {
       const result = await cache.ensureModel(
-        'file:/nonexistent/model.gguf',
-        'embed',
+        "file:/nonexistent/model.gguf",
+        "embed",
         {
           offline: false,
           allowDownload: true,
@@ -263,41 +264,41 @@ describe('ModelCache', () => {
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
-        expect(result.error.code).toBe('MODEL_NOT_FOUND');
+        expect(result.error.code).toBe("MODEL_NOT_FOUND");
       }
     });
 
-    test('returns error for invalid URI', async () => {
-      const result = await cache.ensureModel('invalid-uri', 'embed', {
+    test("returns error for invalid URI", async () => {
+      const result = await cache.ensureModel("invalid-uri", "embed", {
         offline: false,
         allowDownload: true,
       });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
-        expect(result.error.code).toBe('INVALID_URI');
+        expect(result.error.code).toBe("INVALID_URI");
       }
     });
   });
 
-  describe('clear', () => {
-    test('clears all models', async () => {
-      const manifestPath = join(tempDir, 'manifest.json');
-      const modelPath = join(tempDir, 'model.gguf');
-      await writeFile(modelPath, 'test content');
+  describe("clear", () => {
+    test("clears all models", async () => {
+      const manifestPath = join(tempDir, "manifest.json");
+      const modelPath = join(tempDir, "model.gguf");
+      await writeFile(modelPath, "test content");
 
       await writeFile(
         manifestPath,
         JSON.stringify({
-          version: '1.0',
+          version: "1.0",
           models: [
             {
-              uri: 'hf:test/model/model.gguf',
-              type: 'embed',
+              uri: "hf:test/model/model.gguf",
+              type: "embed",
               path: modelPath,
               size: 12,
-              checksum: '',
-              cachedAt: '2024-01-01T00:00:00Z',
+              checksum: "",
+              cachedAt: "2024-01-01T00:00:00Z",
             },
           ],
         })
@@ -309,43 +310,43 @@ describe('ModelCache', () => {
       expect(entries).toEqual([]);
     });
 
-    test('clears only specified types', async () => {
-      const manifestPath = join(tempDir, 'manifest.json');
-      const embedPath = join(tempDir, 'embed.gguf');
-      const genPath = join(tempDir, 'gen.gguf');
-      await writeFile(embedPath, 'embed');
-      await writeFile(genPath, 'gen');
+    test("clears only specified types", async () => {
+      const manifestPath = join(tempDir, "manifest.json");
+      const embedPath = join(tempDir, "embed.gguf");
+      const genPath = join(tempDir, "gen.gguf");
+      await writeFile(embedPath, "embed");
+      await writeFile(genPath, "gen");
 
       await writeFile(
         manifestPath,
         JSON.stringify({
-          version: '1.0',
+          version: "1.0",
           models: [
             {
-              uri: 'hf:test/embed/model.gguf',
-              type: 'embed',
+              uri: "hf:test/embed/model.gguf",
+              type: "embed",
               path: embedPath,
               size: 5,
-              checksum: '',
-              cachedAt: '2024-01-01T00:00:00Z',
+              checksum: "",
+              cachedAt: "2024-01-01T00:00:00Z",
             },
             {
-              uri: 'hf:test/gen/model.gguf',
-              type: 'gen',
+              uri: "hf:test/gen/model.gguf",
+              type: "gen",
               path: genPath,
               size: 3,
-              checksum: '',
-              cachedAt: '2024-01-01T00:00:00Z',
+              checksum: "",
+              cachedAt: "2024-01-01T00:00:00Z",
             },
           ],
         })
       );
 
-      await cache.clear(['embed']);
+      await cache.clear(["embed"]);
 
       const entries = await cache.list();
       expect(entries).toHaveLength(1);
-      expect(entries[0]?.type).toBe('gen');
+      expect(entries[0]?.type).toBe("gen");
     });
   });
 });

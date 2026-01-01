@@ -4,14 +4,14 @@
  * @module src/cli/commands/mcp
  */
 
-import type { GlobalOptions } from '../context';
+import type { GlobalOptions } from "../context";
 
 /**
  * Start the MCP server.
  * Reads global options for --index and --config flags.
  */
 export async function mcpCommand(options: GlobalOptions): Promise<void> {
-  const { startMcpServer } = await import('../../mcp/server.js');
+  const { startMcpServer } = await import("../../mcp/server.js");
   await startMcpServer({
     indexName: options.index,
     configPath: options.config,

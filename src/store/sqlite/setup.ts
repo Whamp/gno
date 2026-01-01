@@ -10,11 +10,11 @@
  * @module src/store/sqlite/setup
  */
 
-import { Database } from 'bun:sqlite';
+import { Database } from "bun:sqlite";
 // node:fs: existsSync for checking file existence (no async needed at module load)
-import { existsSync } from 'node:fs';
+import { existsSync } from "node:fs";
 // node:os: platform detection (no Bun equivalent)
-import { platform } from 'node:os';
+import { platform } from "node:os";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -26,7 +26,7 @@ import { platform } from 'node:os';
  * - 'custom': Custom SQLite library loaded successfully (macOS with Homebrew)
  * - 'unavailable': Extension loading not possible
  */
-export type ExtensionLoadingMode = 'native' | 'custom' | 'unavailable';
+export type ExtensionLoadingMode = "native" | "custom" | "unavailable";
 
 /**
  * Record of a SQLite load attempt for diagnostics.
@@ -42,8 +42,8 @@ export interface LoadAttempt {
 
 // Possible paths to Homebrew SQLite with extension support
 const SQLITE_PATHS = [
-  '/opt/homebrew/opt/sqlite3/lib/libsqlite3.dylib', // macOS Apple Silicon
-  '/usr/local/opt/sqlite3/lib/libsqlite3.dylib', // macOS Intel
+  "/opt/homebrew/opt/sqlite3/lib/libsqlite3.dylib", // macOS Apple Silicon
+  "/usr/local/opt/sqlite3/lib/libsqlite3.dylib", // macOS Intel
 ];
 
 let setupCompleted = false;
@@ -64,7 +64,7 @@ function setupCustomSqlite(): void {
   }
 
   // Linux/Windows: bundled SQLite supports extensions natively
-  if (platform() !== 'darwin') {
+  if (platform() !== "darwin") {
     setupCompleted = true;
     return;
   }
@@ -72,7 +72,7 @@ function setupCustomSqlite(): void {
   // macOS: try Homebrew paths
   for (const path of SQLITE_PATHS) {
     if (!existsSync(path)) {
-      loadAttempts.push({ path, error: 'file not found' });
+      loadAttempts.push({ path, error: "file not found" });
       continue;
     }
     try {
@@ -100,10 +100,10 @@ setupCustomSqlite();
  * Get the extension loading mode for this platform.
  */
 export function getExtensionLoadingMode(): ExtensionLoadingMode {
-  if (platform() !== 'darwin') {
-    return 'native'; // Linux/Windows: bundled SQLite supports extensions
+  if (platform() !== "darwin") {
+    return "native"; // Linux/Windows: bundled SQLite supports extensions
   }
-  return customSqlitePath ? 'custom' : 'unavailable';
+  return customSqlitePath ? "custom" : "unavailable";
 }
 
 /**
@@ -125,5 +125,5 @@ export function getLoadAttempts(): LoadAttempt[] {
  * @deprecated Use getExtensionLoadingMode() !== 'unavailable' instead
  */
 export function hasExtensionSupport(): boolean {
-  return getExtensionLoadingMode() !== 'unavailable';
+  return getExtensionLoadingMode() !== "unavailable";
 }

@@ -132,6 +132,7 @@ gno serve
 ```
 
 Open http://localhost:3000 in your browser for:
+
 - Dashboard with index stats
 - Visual search with highlighted results
 - Document browser with collection filtering

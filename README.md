@@ -99,12 +99,12 @@ gno skill install --target all       # Both Claude + Codex
 
 ## Search Modes
 
-| Command | Mode | Best For |
-|:--------|:-----|:---------|
-| `gno search` | Document-level BM25 | Exact phrases, code identifiers |
-| `gno vsearch` | Contextual Vector | Natural language, concepts |
-| `gno query` | Hybrid | Best accuracy (BM25 + vector + reranking) |
-| `gno ask --answer` | RAG | Direct answers with citations |
+| Command            | Mode                | Best For                                  |
+| :----------------- | :------------------ | :---------------------------------------- |
+| `gno search`       | Document-level BM25 | Exact phrases, code identifiers           |
+| `gno vsearch`      | Contextual Vector   | Natural language, concepts                |
+| `gno query`        | Hybrid              | Best accuracy (BM25 + vector + reranking) |
+| `gno ask --answer` | RAG                 | Direct answers with citations             |
 
 **BM25** indexes full documents (not chunks) with Snowball stemming—"running" matches "run".
 **Vector** embeds chunks with document titles for context awareness.
@@ -163,17 +163,17 @@ curl -X POST http://localhost:3000/api/ask \
 curl http://localhost:3000/api/status
 ```
 
-| Endpoint | Method | Description |
-|:---------|:-------|:------------|
-| `/api/query` | POST | Hybrid search (recommended) |
-| `/api/search` | POST | BM25 keyword search |
-| `/api/ask` | POST | AI-powered Q&A |
-| `/api/docs` | GET | List documents |
-| `/api/doc` | GET | Get document content |
-| `/api/status` | GET | Index statistics |
-| `/api/presets` | GET/POST | Model preset management |
-| `/api/models/pull` | POST | Download models |
-| `/api/models/status` | GET | Download progress |
+| Endpoint             | Method   | Description                 |
+| :------------------- | :------- | :-------------------------- |
+| `/api/query`         | POST     | Hybrid search (recommended) |
+| `/api/search`        | POST     | BM25 keyword search         |
+| `/api/ask`           | POST     | AI-powered Q&A              |
+| `/api/docs`          | GET      | List documents              |
+| `/api/doc`           | GET      | Get document content        |
+| `/api/status`        | GET      | Index statistics            |
+| `/api/presets`       | GET/POST | Model preset management     |
+| `/api/models/pull`   | POST     | Download models             |
+| `/api/models/status` | GET      | Download progress           |
 
 No authentication. No rate limits. Build custom tools, automate workflows, integrate with any language.
 
@@ -189,14 +189,14 @@ No authentication. No rate limits. Build custom tools, automate workflows, integ
 
 GNO exposes 6 tools via [Model Context Protocol](https://modelcontextprotocol.io):
 
-| Tool | Description |
-|:-----|:------------|
-| `gno_search` | BM25 keyword search |
-| `gno_vsearch` | Vector semantic search |
-| `gno_query` | Hybrid search (recommended) |
-| `gno_get` | Retrieve document by ID |
-| `gno_multi_get` | Batch document retrieval |
-| `gno_status` | Index health check |
+| Tool            | Description                 |
+| :-------------- | :-------------------------- |
+| `gno_search`    | BM25 keyword search         |
+| `gno_vsearch`   | Vector semantic search      |
+| `gno_query`     | Hybrid search (recommended) |
+| `gno_get`       | Retrieve document by ID     |
+| `gno_multi_get` | Batch document retrieval    |
+| `gno_status`    | Index health check          |
 
 **Design**: MCP tools are retrieval-only. Your AI assistant (Claude, GPT-4) synthesizes answers from retrieved context—best retrieval (GNO) + best reasoning (your LLM).
 
@@ -210,7 +210,7 @@ gno skill install --scope user
 
 ![GNO Skill in Claude Code](./assets/screenshots/claudecodeskill.jpg)
 
-Then ask your agent: *"Search my notes for the auth discussion"*
+Then ask your agent: _"Search my notes for the auth discussion"_
 
 > **Detailed docs**: [MCP Integration](https://gno.sh/docs/MCP/) · [Use Cases](https://gno.sh/docs/USE-CASES/)
 
@@ -253,18 +253,18 @@ graph TD
 
 ## Features
 
-| Feature | Description |
-|:--------|:------------|
+| Feature           | Description                                          |
+| :---------------- | :--------------------------------------------------- |
 | **Hybrid Search** | BM25 + vector + RRF fusion + cross-encoder reranking |
-| **Web UI** | Visual dashboard for search, browse, and AI Q&A |
-| **REST API** | HTTP API for custom tools and integrations |
-| **Multi-Format** | Markdown, PDF, DOCX, XLSX, PPTX, plain text |
-| **Local LLM** | AI answers via llama.cpp—no API keys |
-| **Privacy First** | 100% offline, zero telemetry, your data stays yours |
-| **MCP Server** | Works with Claude Desktop, Cursor, Zed, + 8 more |
-| **Collections** | Organize sources with patterns, excludes, contexts |
-| **Multilingual** | 30+ languages, auto-detection, cross-lingual search |
-| **Incremental** | SHA-256 tracking—only changed files re-indexed |
+| **Web UI**        | Visual dashboard for search, browse, and AI Q&A      |
+| **REST API**      | HTTP API for custom tools and integrations           |
+| **Multi-Format**  | Markdown, PDF, DOCX, XLSX, PPTX, plain text          |
+| **Local LLM**     | AI answers via llama.cpp—no API keys                 |
+| **Privacy First** | 100% offline, zero telemetry, your data stays yours  |
+| **MCP Server**    | Works with Claude Desktop, Cursor, Zed, + 8 more     |
+| **Collections**   | Organize sources with patterns, excludes, contexts   |
+| **Multilingual**  | 30+ languages, auto-detection, cross-lingual search  |
+| **Incremental**   | SHA-256 tracking—only changed files re-indexed       |
 
 ---
 
@@ -272,19 +272,19 @@ graph TD
 
 Models auto-download on first use to `~/.cache/gno/models/`.
 
-| Model | Purpose | Size |
-|:------|:--------|:-----|
-| bge-m3 | Embeddings (1024-dim, multilingual) | ~500MB |
-| Qwen3-Reranker-0.6B | Cross-encoder reranking (32K context) | ~700MB |
-| Qwen/SmolLM | Query expansion + AI answers | ~600MB-1.2GB |
+| Model               | Purpose                               | Size         |
+| :------------------ | :------------------------------------ | :----------- |
+| bge-m3              | Embeddings (1024-dim, multilingual)   | ~500MB       |
+| Qwen3-Reranker-0.6B | Cross-encoder reranking (32K context) | ~700MB       |
+| Qwen/SmolLM         | Query expansion + AI answers          | ~600MB-1.2GB |
 
 ### Model Presets
 
-| Preset | Disk | Best For |
-|:-------|:-----|:---------|
-| `slim` | ~1GB | Fast, lower quality |
-| `balanced` | ~2GB | Good balance (default) |
-| `quality` | ~2.5GB | Best answers |
+| Preset     | Disk   | Best For               |
+| :--------- | :----- | :--------------------- |
+| `slim`     | ~1GB   | Fast, lower quality    |
+| `balanced` | ~2GB   | Good balance (default) |
+| `quality`  | ~2.5GB | Best answers           |
 
 ```bash
 gno models use balanced

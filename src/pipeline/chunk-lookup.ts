@@ -10,7 +10,7 @@
  * @module src/pipeline/chunk-lookup
  */
 
-import type { ChunkRow } from '../store/types';
+import type { ChunkRow } from "../store/types";
 
 /**
  * Create O(1) chunk lookup function from batch-fetched chunks.

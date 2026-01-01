@@ -5,16 +5,17 @@
  * @module src/cli/commands/skill/uninstall
  */
 
-import { rm } from 'node:fs/promises';
-import { join } from 'node:path';
-import { CliError } from '../../errors.js';
-import { getGlobals } from '../../program.js';
+import { rm } from "node:fs/promises";
+import { join } from "node:path";
+
+import { CliError } from "../../errors.js";
+import { getGlobals } from "../../program.js";
 import {
   resolveSkillPaths,
   type SkillScope,
   type SkillTarget,
   validatePathForDeletion,
-} from './paths.js';
+} from "./paths.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Uninstall Command
@@ -22,7 +23,7 @@ import {
 
 export interface UninstallOptions {
   scope?: SkillScope;
-  target?: SkillTarget | 'all';
+  target?: SkillTarget | "all";
   /** Override for testing */
   cwd?: string;
   /** Override for testing */
@@ -50,7 +51,7 @@ async function uninstallFromTarget(
   const paths = resolveSkillPaths({ scope, target, ...overrides });
 
   // Check if exists
-  const exists = await Bun.file(join(paths.gnoDir, 'SKILL.md')).exists();
+  const exists = await Bun.file(join(paths.gnoDir, "SKILL.md")).exists();
   if (!exists) {
     return null;
   }
@@ -59,7 +60,7 @@ async function uninstallFromTarget(
   const validationError = validatePathForDeletion(paths.gnoDir, paths.base);
   if (validationError) {
     throw new CliError(
-      'RUNTIME',
+      "RUNTIME",
       `Safety check failed for ${paths.gnoDir}: ${validationError}`
     );
   }
@@ -70,7 +71,7 @@ async function uninstallFromTarget(
     return { target, scope, path: paths.gnoDir };
   } catch (err) {
     throw new CliError(
-      'RUNTIME',
+      "RUNTIME",
       `Failed to remove skill: ${err instanceof Error ? err.message : String(err)}`
     );
   }
@@ -93,14 +94,14 @@ function safeGetGlobals(): { json: boolean; quiet: boolean } {
 export async function uninstallSkill(
   opts: UninstallOptions = {}
 ): Promise<void> {
-  const scope = opts.scope ?? 'project';
-  const target = opts.target ?? 'claude';
+  const scope = opts.scope ?? "project";
+  const target = opts.target ?? "claude";
   const globals = safeGetGlobals();
   const json = opts.json ?? globals.json;
   const quiet = opts.quiet ?? globals.quiet;
 
   const targets: SkillTarget[] =
-    target === 'all' ? ['claude', 'codex'] : [target];
+    target === "all" ? ["claude", "codex"] : [target];
 
   const results: UninstallResult[] = [];
   const notFound: string[] = [];
@@ -120,8 +121,8 @@ export async function uninstallSkill(
   // If nothing was uninstalled
   if (results.length === 0) {
     throw new CliError(
-      'VALIDATION',
-      `GNO skill not found for ${targets.join(', ')} (${scope} scope)`
+      "VALIDATION",
+      `GNO skill not found for ${targets.join(", ")} (${scope} scope)`
     );
   }
 
@@ -135,7 +136,7 @@ export async function uninstallSkill(
       process.stdout.write(`Uninstalled GNO skill from ${r.path}\n`);
     }
     if (notFound.length > 0) {
-      process.stdout.write(`(Not found for: ${notFound.join(', ')})\n`);
+      process.stdout.write(`(Not found for: ${notFound.join(", ")})\n`);
     }
   }
 }

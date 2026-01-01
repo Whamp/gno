@@ -5,7 +5,7 @@
  * @module src/cli/format/searchResults
  */
 
-import type { SearchResults } from '../../pipeline/types';
+import type { SearchResults } from "../../pipeline/types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -14,7 +14,7 @@ import type { SearchResults } from '../../pipeline/types';
 export interface FormatOptions {
   full?: boolean;
   lineNumbers?: boolean;
-  format: 'terminal' | 'json' | 'files' | 'csv' | 'md' | 'xml';
+  format: "terminal" | "json" | "files" | "csv" | "md" | "xml";
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -36,15 +36,15 @@ export function formatSearchResults(
   options: FormatOptions
 ): string {
   switch (options.format) {
-    case 'json':
+    case "json":
       return JSON.stringify(data, null, 2);
-    case 'files':
+    case "files":
       return formatFiles(data);
-    case 'csv':
+    case "csv":
       return formatCsv(data);
-    case 'md':
+    case "md":
       return formatMarkdown(data, options);
-    case 'xml':
+    case "xml":
       return formatXml(data, options);
     default:
       return formatTerminal(data, options);
@@ -63,15 +63,15 @@ function formatFiles(data: SearchResults): string {
   return data.results
     .map((r) => {
       // Defensive: ensure docid starts with #
-      const docid = r.docid.startsWith('#') ? r.docid : `#${r.docid}`;
+      const docid = r.docid.startsWith("#") ? r.docid : `#${r.docid}`;
       return `${docid},${r.score.toFixed(4)},${r.uri}`;
     })
-    .join('\n');
+    .join("\n");
 }
 
 function formatTerminal(data: SearchResults, options: FormatOptions): string {
   if (data.results.length === 0) {
-    return 'No results found.';
+    return "No results found.";
   }
 
   const lines: string[] = [];
@@ -90,31 +90,31 @@ function formatTerminal(data: SearchResults, options: FormatOptions): string {
         ? addLineNumbers(content, startLine)
         : content;
       // Indent multiline snippets
-      lines.push(`  ${formatted.replace(/\n/g, '\n  ')}`);
+      lines.push(`  ${formatted.replace(/\n/g, "\n  ")}`);
     }
-    lines.push('');
+    lines.push("");
   }
   lines.push(
     `${data.meta.totalResults} result(s) for "${data.meta.query}" (${data.meta.mode})`
   );
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 function formatMarkdown(data: SearchResults, options: FormatOptions): string {
-  const modeLabel = data.meta.mode === 'vector' ? 'Vector ' : '';
+  const modeLabel = data.meta.mode === "vector" ? "Vector " : "";
   if (data.results.length === 0) {
     return `# ${modeLabel}Search Results\n\nNo results found for "${data.meta.query}".`;
   }
 
   const lines: string[] = [];
   lines.push(`# ${modeLabel}Search Results for "${data.meta.query}"`);
-  lines.push('');
+  lines.push("");
   lines.push(`*${data.meta.totalResults} result(s)*`);
-  lines.push('');
+  lines.push("");
 
   for (const r of data.results) {
     lines.push(`## ${r.title || r.source.relPath}`);
-    lines.push('');
+    lines.push("");
     lines.push(`- **URI**: \`${r.uri}\``);
     lines.push(`- **Score**: ${r.score.toFixed(2)}`);
     lines.push(`- **DocID**: \`${r.docid}\``);
@@ -126,39 +126,39 @@ function formatMarkdown(data: SearchResults, options: FormatOptions): string {
       const formatted = options.lineNumbers
         ? addLineNumbers(content, startLine)
         : content;
-      lines.push('');
-      lines.push('```');
+      lines.push("");
+      lines.push("```");
       lines.push(formatted);
-      lines.push('```');
+      lines.push("```");
     }
-    lines.push('');
+    lines.push("");
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 function formatCsv(data: SearchResults): string {
   const lines: string[] = [];
-  lines.push('docid,score,uri,title,relPath');
+  lines.push("docid,score,uri,title,relPath");
   for (const r of data.results) {
-    const title = escapeCsv(r.title ?? '');
+    const title = escapeCsv(r.title ?? "");
     const relPath = escapeCsv(r.source.relPath);
     lines.push(
       `"${r.docid}",${r.score.toFixed(4)},"${r.uri}","${title}","${relPath}"`
     );
   }
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 function formatXml(data: SearchResults, options: FormatOptions): string {
   const lines: string[] = [];
   lines.push('<?xml version="1.0" encoding="UTF-8"?>');
-  lines.push('<searchResults>');
+  lines.push("<searchResults>");
   lines.push(
     `  <meta query="${escapeXml(data.meta.query)}" mode="${data.meta.mode}" total="${data.meta.totalResults}"/>`
   );
   for (const r of data.results) {
-    lines.push('  <result>');
+    lines.push("  <result>");
     lines.push(`    <docid>${escapeXml(r.docid)}</docid>`);
     lines.push(`    <score>${r.score}</score>`);
     lines.push(`    <uri>${escapeXml(r.uri)}</uri>`);
@@ -176,10 +176,10 @@ function formatXml(data: SearchResults, options: FormatOptions): string {
         : content;
       lines.push(`    <snippet>${escapeXml(formatted)}</snippet>`);
     }
-    lines.push('  </result>');
+    lines.push("  </result>");
   }
-  lines.push('</searchResults>');
-  return lines.join('\n');
+  lines.push("</searchResults>");
+  return lines.join("\n");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -188,9 +188,9 @@ function formatXml(data: SearchResults, options: FormatOptions): string {
 
 function addLineNumbers(text: string, startLine: number): string {
   return text
-    .split('\n')
+    .split("\n")
     .map((line, i) => `${startLine + i}: ${line}`)
-    .join('\n');
+    .join("\n");
 }
 
 function truncate(text: string, limit: number): string {
@@ -203,9 +203,9 @@ function escapeCsv(str: string): string {
 
 function escapeXml(str: string): string {
   return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
 }

@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       publish:
-        description: 'Actually publish to npm (false = dry run)'
+        description: "Actually publish to npm (false = dry run)"
         required: false
-        default: 'false'
+        default: "false"
         type: boolean
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   test:
@@ -63,14 +63,14 @@ jobs:
         if: matrix.os != 'windows-latest'
         run: bun test | cat
         env:
-          CI: 'true'
+          CI: "true"
 
       - name: Test (Windows)
         if: matrix.os == 'windows-latest'
         shell: cmd
         run: bun test --concurrency 1
         env:
-          CI: 'true'
+          CI: "true"
 
   pack-test:
     needs: test
@@ -114,7 +114,7 @@ jobs:
     if: github.event_name == 'push' || inputs.publish == true
     permissions:
       contents: read
-      id-token: write  # Required for npm trusted publishing (OIDC)
+      id-token: write # Required for npm trusted publishing (OIDC)
 
     steps:
       - uses: actions/checkout@v6
@@ -123,8 +123,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2

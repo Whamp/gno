@@ -23,6 +23,7 @@ commands:
 GNO's hybrid search combines two powerful search paradigms:
 
 ### BM25 Full-Text Search
+
 Traditional keyword matching that excels at finding exact terms. When you search for "authentication JWT", BM25 finds documents containing those exact words.
 
 ```bash
@@ -30,6 +31,7 @@ gno search "authentication JWT"
 ```
 
 ### Vector Similarity Search
+
 Semantic search using embeddings. When you search for "how to protect my app", vector search finds documents about security, authentication, and access control - even without those exact words.
 
 ```bash
@@ -37,6 +39,7 @@ gno vsearch "how to protect my app"
 ```
 
 ### Reciprocal Rank Fusion
+
 The `query` command combines both methods using RRF, a proven algorithm that merges ranked lists. Documents that score well in both methods rise to the top.
 
 ```bash

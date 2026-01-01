@@ -5,6 +5,7 @@
 Extend the macOS-only workaround in `src/store/sqlite/setup.ts` to enable sqlite-vec on all platforms with minimal user friction.
 
 **Key insight from research:**
+
 - **Linux/Windows**: `Database.setCustomSQLite()` is a no-op - Bun's bundled SQLite supports extensions natively
 - **macOS**: Apple's SQLite disables extension loading - requires custom SQLite
 
@@ -66,11 +67,13 @@ export function getCustomSqlitePath(): string | null {
 **Goal**: Ship `libsqlite3.dylib` (arm64 + x64) with the package so macOS users don't need Homebrew.
 
 **Required SQLite compile options** (must validate):
+
 - `SQLITE_ENABLE_LOAD_EXTENSION` - for sqlite-vec
 - `SQLITE_ENABLE_FTS5` - required by migrations/FTS queries
 - `SQLITE_ENABLE_JSON1` - commonly used
 
 **Bundled artifact requirements**:
+
 1. Pin exact SQLite version (e.g., 3.45.0)
 2. Add `vendor/sqlite/README.md` with:
    - Provenance (download URL or build script)
@@ -94,6 +97,7 @@ function getBundledSqlitePath(): string | null {
 ```
 
 **Resolution order** (macOS) with fallback on failure:
+
 1. Try bundled `vendor/sqlite/darwin-{arch}/libsqlite3.dylib`
    - If `setCustomSQLite()` throws, log error and continue to next
 2. Try Homebrew ARM: `/opt/homebrew/opt/sqlite3/lib/libsqlite3.dylib`
@@ -103,6 +107,7 @@ function getBundledSqlitePath(): string | null {
 4. If all fail, `getExtensionLoadingMode()` returns `'unavailable'`
 
 **Failure chain tracking** for diagnostics (full chain, not just last error):
+
 ```typescript
 type LoadAttempt = { path: string; error: string };
 const attempts: LoadAttempt[] = [];
@@ -121,6 +126,7 @@ export function getLoadAttempts(): LoadAttempt[] { return attempts; }
 ```
 
 Doctor prints full chain:
+
 ```
 SQLite loading attempts:
   1. vendor/sqlite/darwin-arm64/libsqlite3.dylib → dlopen failed: code signature invalid
@@ -129,6 +135,7 @@ SQLite loading attempts:
 ```
 
 **Code signing stance**:
+
 - Bundled dylib is best-effort for zero-friction
 - Homebrew remains recommended path for production
 - Doctor detects and reports dlopen failures distinctly
@@ -176,6 +183,7 @@ async function checkSqliteExtensions(): Promise<DiagnosticResult> {
 ```
 
 **Example output**:
+
 ```
 SQLite Extension Support:
   Platform: darwin-arm64
@@ -198,26 +206,26 @@ Specific items to address once cross-platform works:
 
 ## Files to Modify
 
-| File | Changes |
-|------|---------|
-| `src/store/sqlite/setup.ts` | New `getExtensionLoadingMode()` API, bundled path resolution, fix comments |
-| `src/store/vector/sqlite-vec.ts:77-85` | Preserve load failure reason for diagnostics |
-| `src/cli/commands/doctor.ts` | Add runtime probe for sqlite-vec, validate FTS5 |
-| `vendor/sqlite/README.md` | New - provenance, checksums, compile options |
-| `vendor/sqlite/darwin-*/libsqlite3.dylib` | New - bundled SQLite dylibs |
-| `test/store/vector/sqlite-vec-works.test.ts` | New - test that actually asserts vec search works |
+| File                                         | Changes                                                                    |
+| -------------------------------------------- | -------------------------------------------------------------------------- |
+| `src/store/sqlite/setup.ts`                  | New `getExtensionLoadingMode()` API, bundled path resolution, fix comments |
+| `src/store/vector/sqlite-vec.ts:77-85`       | Preserve load failure reason for diagnostics                               |
+| `src/cli/commands/doctor.ts`                 | Add runtime probe for sqlite-vec, validate FTS5                            |
+| `vendor/sqlite/README.md`                    | New - provenance, checksums, compile options                               |
+| `vendor/sqlite/darwin-*/libsqlite3.dylib`    | New - bundled SQLite dylibs                                                |
+| `test/store/vector/sqlite-vec-works.test.ts` | New - test that actually asserts vec search works                          |
 
 **NOT modifying**: `package.json` optional deps - let sqlite-vec handle its own packaging.
 
 ## Risks & Mitigations
 
-| Risk | Likelihood | Mitigation |
-|------|------------|------------|
-| Bundled dylib missing FTS5 | Medium | Validate compile_options at runtime, fail fast |
-| Path resolution fails in npm install | Medium | Use import.meta.url, test in CI |
-| Package size increase (~4MB) | Certain | Acceptable for zero-friction UX |
-| macOS Gatekeeper blocks unsigned dylib | Medium | Homebrew is recommended path; bundled is best-effort |
-| SQLite version incompatibility | Low | Pin version, validate at runtime |
+| Risk                                   | Likelihood | Mitigation                                           |
+| -------------------------------------- | ---------- | ---------------------------------------------------- |
+| Bundled dylib missing FTS5             | Medium     | Validate compile_options at runtime, fail fast       |
+| Path resolution fails in npm install   | Medium     | Use import.meta.url, test in CI                      |
+| Package size increase (~4MB)           | Certain    | Acceptable for zero-friction UX                      |
+| macOS Gatekeeper blocks unsigned dylib | Medium     | Homebrew is recommended path; bundled is best-effort |
+| SQLite version incompatibility         | Low        | Pin version, validate at runtime                     |
 
 ## Acceptance Criteria
 
@@ -251,19 +259,21 @@ Specific items to address once cross-platform works:
 
 3. **CI enforcement story**:
 
-| Platform | Expected Result | CI Setup Required |
-|----------|-----------------|-------------------|
-| Linux x64 | sqlite-vec MUST work (native) | None - extensions work OOTB |
-| Windows x64 | sqlite-vec MUST work (native) | None - extensions work OOTB |
-| macOS (CI) | sqlite-vec MUST work | Either: install Homebrew sqlite3 OR ensure bundled dylibs in test env |
-| macOS (no sqlite) | Graceful degradation | Test that doctor reports unavailable correctly |
+| Platform          | Expected Result               | CI Setup Required                                                     |
+| ----------------- | ----------------------------- | --------------------------------------------------------------------- |
+| Linux x64         | sqlite-vec MUST work (native) | None - extensions work OOTB                                           |
+| Windows x64       | sqlite-vec MUST work (native) | None - extensions work OOTB                                           |
+| macOS (CI)        | sqlite-vec MUST work          | Either: install Homebrew sqlite3 OR ensure bundled dylibs in test env |
+| macOS (no sqlite) | Graceful degradation          | Test that doctor reports unavailable correctly                        |
 
 **Test expectations**:
+
 - `sqlite-vec-works.test.ts` MUST pass on Linux/Windows (regression gate)
 - `sqlite-vec-works.test.ts` MUST pass on macOS CI (with Homebrew or bundled)
 - `sqlite-vec.test.ts` (existing) tests graceful degradation
 
 **CI workflow changes** (`.github/workflows/ci.yml`):
+
 ```yaml
 # Linux/Windows: no changes needed
 # macOS: either install Homebrew sqlite3 or include bundled dylibs

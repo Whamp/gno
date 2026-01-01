@@ -5,6 +5,7 @@ This document specifies the evaluation harness for GNO using Evalite v1.
 ## Overview
 
 GNO uses Evalite for:
+
 - **Ranking quality gates**: Validate `vsearch` and `query` return relevant results
 - **Stability checks**: Ensure structured expansion outputs are schema-valid
 - **Multilingual sanity**: Cross-language retrieval works (DE query → EN doc)
@@ -517,11 +518,11 @@ jobs:
 
 ### Threshold Strategy
 
-| Phase | Threshold | Rationale |
-|-------|-----------|-----------|
-| MVP | 70% | Baseline, allow room for improvement |
-| Beta | 80% | Tighten as quality stabilizes |
-| GA | 90% | Production quality gate |
+| Phase | Threshold | Rationale                            |
+| ----- | --------- | ------------------------------------ |
+| MVP   | 70%       | Baseline, allow room for improvement |
+| Beta  | 80%       | Tighten as quality stabilizes        |
+| GA    | 90%       | Production quality gate              |
 
 Configure in CI:
 
@@ -559,6 +560,7 @@ evalite("LLM Expansion", {
 ```
 
 Benefits:
+
 - Automatic trace capture (prompts, responses, tokens)
 - Automatic caching of identical requests
 - Zero overhead in production (no-op outside Evalite)
@@ -568,6 +570,7 @@ Benefits:
 ### Development (In-Memory)
 
 Default behavior when no storage configured:
+
 - Fast iteration
 - Data lost on process exit
 - Good for quick experiments
@@ -593,6 +596,7 @@ evalite --outputPath=./eval-results.json
 ```
 
 JSON contains:
+
 - Run metadata
 - All eval results with scores
 - Traces for debugging

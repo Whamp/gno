@@ -12,6 +12,7 @@ Freeze CLI and MCP interfaces early via specification documents and contract tes
 ## Problem Statement
 
 GNO needs stable, versioned interfaces for:
+
 - CLI commands (23+ commands, multiple output formats)
 - MCP tools/resources (6 tools, URI-based resources)
 - JSON output contracts (consistent shapes across CLI and MCP)
@@ -24,7 +25,7 @@ Create three specification artifacts plus contract tests:
 
 1. **spec/cli.md** - CLI command reference
 2. **spec/mcp.md** - MCP server specification
-3. **spec/output-schemas/*.json** - JSON Schema contracts
+3. **spec/output-schemas/\*.json** - JSON Schema contracts
 4. **test/spec/schemas/** - Contract tests validating outputs
 
 ## Technical Approach
@@ -58,16 +59,17 @@ test/
 
 ### Technology Choices
 
-| Concern | Choice | Rationale |
-|---------|--------|-----------|
-| Schema validation | Ajv | Fastest, JSON Schema standard |
-| MCP tool schemas | Zod | Already in MCP SDK, TypeScript-first |
-| Test runner | bun:test | Already configured, Jest-compatible |
-| Schema format | JSON Schema Draft-07 | VSCode/TS compatible |
+| Concern           | Choice               | Rationale                            |
+| ----------------- | -------------------- | ------------------------------------ |
+| Schema validation | Ajv                  | Fastest, JSON Schema standard        |
+| MCP tool schemas  | Zod                  | Already in MCP SDK, TypeScript-first |
+| Test runner       | bun:test             | Already configured, Jest-compatible  |
+| Schema format     | JSON Schema Draft-07 | VSCode/TS compatible                 |
 
 ### Schema Structure (per PRD §15.1)
 
 **search-result.schema.json:**
+
 ```json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
@@ -123,6 +125,7 @@ test/
 **File:** `spec/cli.md`
 
 **Content:**
+
 - Command catalog (all 23 commands from PRD §14.2)
 - Global flags (--index, --config, --no-color, --verbose, --yes)
 - Output format flags (--json, --files, --csv, --md, --xml)
@@ -135,6 +138,7 @@ test/
   - Examples
 
 **Commands to document:**
+
 ```
 gno status
 gno init [<path>] [--name] [--pattern] [--include] [--exclude] [--update] [--yes]
@@ -159,24 +163,25 @@ gno mcp
 **Output format support matrix:**
 | Command | --json | --files | --csv | --md | --xml |
 |---------|--------|---------|-------|------|-------|
-| search  | yes    | yes     | yes   | yes  | yes   |
-| vsearch | yes    | yes     | yes   | yes  | yes   |
-| query   | yes    | yes     | yes   | yes  | yes   |
-| ask     | yes    | no      | no    | yes  | no    |
-| get     | yes    | no      | no    | yes  | no    |
-| multi-get| yes   | yes     | no    | yes  | no    |
-| status  | yes    | no      | no    | yes  | no    |
-| ls      | yes    | yes     | no    | yes  | no    |
-| collection list | yes | no | no    | yes  | no    |
-| context list | yes | no   | no    | yes  | no    |
-| models list | yes | no    | no    | yes  | no    |
-| doctor  | yes    | no      | no    | yes  | no    |
+| search | yes | yes | yes | yes | yes |
+| vsearch | yes | yes | yes | yes | yes |
+| query | yes | yes | yes | yes | yes |
+| ask | yes | no | no | yes | no |
+| get | yes | no | no | yes | no |
+| multi-get| yes | yes | no | yes | no |
+| status | yes | no | no | yes | no |
+| ls | yes | yes | no | yes | no |
+| collection list | yes | no | no | yes | no |
+| context list | yes | no | no | yes | no |
+| models list | yes | no | no | yes | no |
+| doctor | yes | no | no | yes | no |
 
 #### Phase 2: MCP Specification (T1.2)
 
 **File:** `spec/mcp.md`
 
 **Content:**
+
 - Server info (name: "gno", transport: stdio)
 - Capabilities declaration
 - Tools (6):
@@ -191,6 +196,7 @@ gno mcp
 - Versioning strategy
 
 **Tool schema pattern:**
+
 ```typescript
 {
   name: "gno_search",
@@ -212,6 +218,7 @@ gno mcp
 #### Phase 3: JSON Schemas (T1.3)
 
 **Files:**
+
 ```
 spec/output-schemas/
   search-result.schema.json    # Single result item
@@ -224,6 +231,7 @@ spec/output-schemas/
 ```
 
 **ask.schema.json (per PRD §15.4):**
+
 ```json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
@@ -267,6 +275,7 @@ spec/output-schemas/
 #### Phase 4: Contract Tests (T1.4)
 
 **Files:**
+
 ```
 test/spec/schemas/
   validator.ts          # Ajv setup + helpers
@@ -285,6 +294,7 @@ test/fixtures/outputs/
 ```
 
 **validator.ts:**
+
 ```typescript
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
@@ -312,6 +322,7 @@ export function assertValid(data: unknown, schema: object) {
 ```
 
 **search-result.test.ts:**
+
 ```typescript
 import { describe, test, expect, beforeAll } from 'bun:test';
 import { loadSchema, assertValid } from './validator';
@@ -413,6 +424,7 @@ describe('search-result schema', () => {
 - Ajv package (to install) - schema validation
 
 **Install:**
+
 ```bash
 bun add -d ajv ajv-formats
 ```
@@ -424,6 +436,7 @@ bun add -d ajv ajv-formats
 **Choice:** Separate files per output type
 
 **Rationale:**
+
 - Easier to maintain and version independently
 - Clearer mapping to CLI commands
 - Supports $ref composition
@@ -433,12 +446,14 @@ bun add -d ajv ajv-formats
 **Choice:** Minimal required set from PRD §15.1
 
 **Required fields:**
+
 - docid, score, uri, snippet, source.{relPath, mime, ext}
 
 **Optional fields:**
+
 - title, snippetLanguage, context, snippetRange
 - source.{absPath, modifiedAt, sizeBytes, sourceHash}
-- conversion.*
+- conversion.\*
 
 **Rationale:** PRD says "source.absPath is included when --source is set or output is from MCP tools"
 
@@ -477,6 +492,7 @@ bun add -d ajv ajv-formats
 ## Task Breakdown
 
 ### T1.1: Write spec/cli.md [P0]
+
 - Document all 23 commands
 - Global flags section
 - Output format matrix
@@ -484,12 +500,14 @@ bun add -d ajv ajv-formats
 - Per-command examples
 
 ### T1.2: Write spec/mcp.md [P0]
+
 - Server capabilities
 - 6 tool definitions with schemas
 - Resource URI pattern
 - Versioning rules
 
-### T1.3: Write spec/output-schemas/*.json [P0]
+### T1.3: Write spec/output-schemas/\*.json [P0]
+
 - search-result.schema.json
 - search-results.schema.json
 - status.schema.json
@@ -499,6 +517,7 @@ bun add -d ajv ajv-formats
 - error.schema.json
 
 ### T1.4: Add contract tests [P1]
+
 - Install ajv, ajv-formats
 - Create validator.ts helpers
 - Write test per schema
@@ -506,11 +525,11 @@ bun add -d ajv ajv-formats
 
 ## Risks
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| PRD §15.1 changes | Medium | High | Spec-driven: PRD changes require spec update first |
-| Schema too strict | Medium | Medium | Start permissive, tighten based on implementation |
-| MCP SDK version drift | Low | Medium | Pin SDK version, monitor releases |
+| Risk                  | Likelihood | Impact | Mitigation                                         |
+| --------------------- | ---------- | ------ | -------------------------------------------------- |
+| PRD §15.1 changes     | Medium     | High   | Spec-driven: PRD changes require spec update first |
+| Schema too strict     | Medium     | Medium | Start permissive, tighten based on implementation  |
+| MCP SDK version drift | Low        | Medium | Pin SDK version, monitor releases                  |
 
 ## Open Questions (Resolved)
 

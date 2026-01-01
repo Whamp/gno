@@ -7,14 +7,15 @@
  * @module src/store/sqlite/fts5-snowball
  */
 
-import type { Database } from 'bun:sqlite';
+import type { Database } from "bun:sqlite";
+
 // node:fs: existsSync for sync file checks at load time
-import { existsSync } from 'node:fs';
+import { existsSync } from "node:fs";
 // node:path: join for cross-platform paths
-import { join } from 'node:path';
+import { join } from "node:path";
 // node:process: arch/platform detection (no Bun equivalent)
-import { arch, platform } from 'node:process';
-import { fileURLToPath } from 'node:url';
+import { arch, platform } from "node:process";
+import { fileURLToPath } from "node:url";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -34,30 +35,30 @@ export interface Fts5SnowballLoadResult {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function getPlatformDir(): string | null {
-  const os = platform === 'win32' ? 'windows' : platform;
-  const archName = arch === 'arm64' ? 'arm64' : 'x64';
+  const os = platform === "win32" ? "windows" : platform;
+  const archName = arch === "arm64" ? "arm64" : "x64";
 
-  if (os === 'darwin') {
+  if (os === "darwin") {
     return `darwin-${archName}`;
   }
-  if (os === 'linux' && archName === 'x64') {
-    return 'linux-x64';
+  if (os === "linux" && archName === "x64") {
+    return "linux-x64";
   }
-  if (os === 'windows' && archName === 'x64') {
-    return 'windows-x64';
+  if (os === "windows" && archName === "x64") {
+    return "windows-x64";
   }
 
   return null;
 }
 
 function getExtensionSuffix(): string {
-  if (platform === 'win32') {
-    return 'dll';
+  if (platform === "win32") {
+    return "dll";
   }
-  if (platform === 'darwin') {
-    return 'dylib';
+  if (platform === "darwin") {
+    return "dylib";
   }
-  return 'so';
+  return "so";
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -78,14 +79,14 @@ export function getExtensionPath(): string | null {
   const filename = `fts5stemmer.${suffix}`;
 
   // Resolve relative to this module (ESM-safe)
-  const thisDir = fileURLToPath(new URL('.', import.meta.url));
+  const thisDir = fileURLToPath(new URL(".", import.meta.url));
   const vendorPath = join(
     thisDir,
-    '..',
-    '..',
-    '..',
-    'vendor',
-    'fts5-snowball',
+    "..",
+    "..",
+    "..",
+    "vendor",
+    "fts5-snowball",
     platformDir,
     filename
   );

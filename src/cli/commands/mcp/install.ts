@@ -4,8 +4,8 @@
  * @module src/cli/commands/mcp/install
  */
 
-import { CliError } from '../../errors.js';
-import { getGlobals } from '../../program.js';
+import { CliError } from "../../errors.js";
+import { getGlobals } from "../../program.js";
 import {
   type AnyMcpConfig,
   buildEntry,
@@ -15,7 +15,7 @@ import {
   type StandardMcpEntry,
   setServerEntry,
   writeMcpConfig,
-} from './config.js';
+} from "./config.js";
 import {
   buildMcpServerEntry,
   getTargetDisplayName,
@@ -24,7 +24,7 @@ import {
   type McpTarget,
   resolveMcpConfigPath,
   TARGETS_WITH_PROJECT_SCOPE,
-} from './paths.js';
+} from "./paths.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -49,7 +49,7 @@ interface InstallResult {
   target: McpTarget;
   scope: McpScope;
   configPath: string;
-  action: 'created' | 'updated' | 'dry_run_create' | 'dry_run_update';
+  action: "created" | "updated" | "dry_run_create" | "dry_run_update";
   serverEntry: { command: string; args: string[] };
 }
 
@@ -91,10 +91,10 @@ async function installToTarget(
   const alreadyExists = hasServerEntry(config, MCP_SERVER_NAME, configFormat);
   if (alreadyExists && !force) {
     throw new CliError(
-      'VALIDATION',
+      "VALIDATION",
       `${getTargetDisplayName(target)} already has gno configured.\n` +
         `  Config: ${configPath}\n` +
-        '  Use --force to overwrite.'
+        "  Use --force to overwrite."
     );
   }
 
@@ -105,12 +105,12 @@ async function installToTarget(
       target,
       scope,
       configPath,
-      action: wouldCreate ? 'dry_run_create' : 'dry_run_update',
+      action: wouldCreate ? "dry_run_create" : "dry_run_update",
       serverEntry,
     };
   }
 
-  const action = wouldCreate ? 'created' : 'updated';
+  const action = wouldCreate ? "created" : "updated";
 
   // Build format-specific entry and add to config
   const entry = buildEntry(serverEntry.command, serverEntry.args, configFormat);
@@ -143,8 +143,8 @@ function safeGetGlobals(): { json: boolean; quiet: boolean } {
  * Install gno MCP server.
  */
 export async function installMcp(opts: InstallOptions = {}): Promise<void> {
-  const target = opts.target ?? 'claude-desktop';
-  const scope = opts.scope ?? 'user';
+  const target = opts.target ?? "claude-desktop";
+  const scope = opts.scope ?? "user";
   const force = opts.force ?? false;
   const dryRun = opts.dryRun ?? false;
   const globals = safeGetGlobals();
@@ -152,9 +152,9 @@ export async function installMcp(opts: InstallOptions = {}): Promise<void> {
   const quiet = opts.quiet ?? globals.quiet;
 
   // Validate scope - only some targets support project scope
-  if (scope === 'project' && !TARGETS_WITH_PROJECT_SCOPE.includes(target)) {
+  if (scope === "project" && !TARGETS_WITH_PROJECT_SCOPE.includes(target)) {
     throw new CliError(
-      'VALIDATION',
+      "VALIDATION",
       `${getTargetDisplayName(target)} does not support project scope. Use --scope user.`
     );
   }
@@ -181,18 +181,18 @@ export async function installMcp(opts: InstallOptions = {}): Promise<void> {
   }
 
   if (dryRun) {
-    const dryRunVerb = result.action === 'dry_run_create' ? 'create' : 'update';
-    process.stdout.write('Dry run - no changes made.\n\n');
+    const dryRunVerb = result.action === "dry_run_create" ? "create" : "update";
+    process.stdout.write("Dry run - no changes made.\n\n");
     process.stdout.write(
       `Would ${dryRunVerb} gno in ${getTargetDisplayName(target)}:\n`
     );
     process.stdout.write(`  Config: ${result.configPath}\n`);
     process.stdout.write(`  Command: ${serverEntry.command}\n`);
-    process.stdout.write(`  Args: ${serverEntry.args.join(' ')}\n`);
+    process.stdout.write(`  Args: ${serverEntry.args.join(" ")}\n`);
     return;
   }
 
-  const verb = result.action === 'created' ? 'Installed' : 'Updated';
+  const verb = result.action === "created" ? "Installed" : "Updated";
   process.stdout.write(
     `${verb} gno MCP server in ${getTargetDisplayName(target)}.\n`
   );

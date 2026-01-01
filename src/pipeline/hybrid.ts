@@ -5,14 +5,23 @@
  * @module src/pipeline/hybrid
  */
 
-import type { Config } from '../config/types';
-import type { EmbeddingPort, GenerationPort, RerankPort } from '../llm/types';
-import type { StorePort } from '../store/types';
-import { err, ok } from '../store/types';
-import type { VectorIndexPort } from '../store/vector/types';
-import { createChunkLookup } from './chunk-lookup';
-import { formatQueryForEmbedding } from './contextual';
-import { expandQuery } from './expansion';
+import type { Config } from "../config/types";
+import type { EmbeddingPort, GenerationPort, RerankPort } from "../llm/types";
+import type { StorePort } from "../store/types";
+import type { VectorIndexPort } from "../store/vector/types";
+import type {
+  ExpansionResult,
+  ExplainLine,
+  HybridSearchOptions,
+  PipelineConfig,
+  SearchResult,
+  SearchResults,
+} from "./types";
+
+import { err, ok } from "../store/types";
+import { createChunkLookup } from "./chunk-lookup";
+import { formatQueryForEmbedding } from "./contextual";
+import { expandQuery } from "./expansion";
 import {
   buildExplainResults,
   type ExpansionStatus,
@@ -21,19 +30,11 @@ import {
   explainFusion,
   explainRerank,
   explainVector,
-} from './explain';
-import { type RankedInput, rrfFuse, toRankedInput } from './fusion';
-import { detectQueryLanguage } from './query-language';
-import { rerankCandidates } from './rerank';
-import type {
-  ExpansionResult,
-  ExplainLine,
-  HybridSearchOptions,
-  PipelineConfig,
-  SearchResult,
-  SearchResults,
-} from './types';
-import { DEFAULT_PIPELINE_CONFIG } from './types';
+} from "./explain";
+import { type RankedInput, rrfFuse, toRankedInput } from "./fusion";
+import { detectQueryLanguage } from "./query-language";
+import { rerankCandidates } from "./rerank";
+import { DEFAULT_PIPELINE_CONFIG } from "./types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Dependencies
@@ -124,7 +125,7 @@ interface ChunkId {
 
 type FtsChunksResult =
   | { ok: true; chunks: ChunkId[] }
-  | { ok: false; code: 'INVALID_INPUT' | 'OTHER'; message: string };
+  | { ok: false; code: "INVALID_INPUT" | "OTHER"; message: string };
 
 async function searchFtsChunks(
   store: StorePort,
@@ -139,7 +140,7 @@ async function searchFtsChunks(
   if (!result.ok) {
     // Propagate INVALID_INPUT for FTS syntax errors
     const code =
-      result.error.code === 'INVALID_INPUT' ? 'INVALID_INPUT' : 'OTHER';
+      result.error.code === "INVALID_INPUT" ? "INVALID_INPUT" : "OTHER";
     return { ok: false, code, message: result.error.message };
   }
   return {
@@ -195,14 +196,12 @@ async function searchVectorChunks(
 /**
  * Execute hybrid search with full pipeline.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: search orchestration with BM25, vector, expansion, fusion, and reranking
+// oxlint-disable-next-line max-lines-per-function -- search orchestration with BM25, vector, fusion, reranking
 export async function searchHybrid(
   deps: HybridSearchDeps,
   query: string,
   options: HybridSearchOptions = {}
-): Promise<
-  ReturnType<typeof ok<SearchResults>> | ReturnType<typeof err<SearchResults>>
-> {
+): Promise<ReturnType<typeof ok<SearchResults>>> {
   const { store, vectorIndex, embedPort, genPort, rerankPort } = deps;
   const pipelineConfig = deps.pipelineConfig ?? DEFAULT_PIPELINE_CONFIG;
 
@@ -227,16 +226,16 @@ export async function searchHybrid(
   } else if (options.lang) {
     langMessage = `queryLanguage=${queryLanguage} (explicit)`;
   } else {
-    const confidence = detection.confident ? '' : ', low confidence';
+    const confidence = detection.confident ? "" : ", low confidence";
     langMessage = `queryLanguage=${queryLanguage} (detected${confidence})`;
   }
-  explainLines.push({ stage: 'lang', message: langMessage });
+  explainLines.push({ stage: "lang", message: langMessage });
 
   // ─────────────────────────────────────────────────────────────────────────
   // 1. Check if expansion needed
   // ─────────────────────────────────────────────────────────────────────────
   const shouldExpand = !options.noExpand && genPort !== null;
-  let expansionStatus: ExpansionStatus = 'disabled';
+  let expansionStatus: ExpansionStatus = "disabled";
 
   if (shouldExpand) {
     const hasStrongSignal = await checkBm25Strength(store, query, {
@@ -245,9 +244,9 @@ export async function searchHybrid(
     });
 
     if (hasStrongSignal) {
-      expansionStatus = 'skipped_strong';
+      expansionStatus = "skipped_strong";
     } else {
-      expansionStatus = 'attempted';
+      expansionStatus = "attempted";
       const expandResult = await expandQuery(genPort, query, {
         // Use queryLanguage for prompt selection, NOT options.lang (retrieval filter)
         lang: queryLanguage,
@@ -274,15 +273,15 @@ export async function searchHybrid(
   });
 
   // Propagate FTS syntax errors as INVALID_INPUT
-  if (!bm25Result.ok && bm25Result.code === 'INVALID_INPUT') {
-    return err('INVALID_INPUT', `Invalid search query: ${bm25Result.message}`);
+  if (!bm25Result.ok && bm25Result.code === "INVALID_INPUT") {
+    return err("INVALID_INPUT", `Invalid search query: ${bm25Result.message}`);
   }
   // Other errors: continue with empty BM25 results
 
   const bm25Chunks = bm25Result.ok ? bm25Result.chunks : [];
   const bm25Count = bm25Chunks.length;
   if (bm25Count > 0) {
-    rankedInputs.push(toRankedInput('bm25', bm25Chunks));
+    rankedInputs.push(toRankedInput("bm25", bm25Chunks));
   }
 
   // BM25: lexical variants (syntax errors here are ignored - variants are optional)
@@ -294,7 +293,7 @@ export async function searchHybrid(
         lang: options.lang,
       });
       if (variantResult.ok && variantResult.chunks.length > 0) {
-        rankedInputs.push(toRankedInput('bm25_variant', variantResult.chunks));
+        rankedInputs.push(toRankedInput("bm25_variant", variantResult.chunks));
       }
     }
   }
@@ -314,7 +313,7 @@ export async function searchHybrid(
 
     vecCount = vecChunks.length;
     if (vecCount > 0) {
-      rankedInputs.push(toRankedInput('vector', vecChunks));
+      rankedInputs.push(toRankedInput("vector", vecChunks));
     }
 
     // Semantic variants
@@ -327,7 +326,7 @@ export async function searchHybrid(
           { limit }
         );
         if (variantChunks.length > 0) {
-          rankedInputs.push(toRankedInput('vector_variant', variantChunks));
+          rankedInputs.push(toRankedInput("vector_variant", variantChunks));
         }
       }
     }
@@ -341,7 +340,7 @@ export async function searchHybrid(
         { limit }
       );
       if (hydeChunks.length > 0) {
-        rankedInputs.push(toRankedInput('hyde', hydeChunks));
+        rankedInputs.push(toRankedInput("hyde", hydeChunks));
       }
     }
   }
@@ -396,7 +395,7 @@ export async function searchHybrid(
   const collectionsResult = await store.getCollections();
 
   if (!docsResult.ok) {
-    return err('QUERY_FAILED', docsResult.error.message);
+    return err("QUERY_FAILED", docsResult.error.message);
   }
 
   // Build lookup maps - only include docs needed by candidates
@@ -417,7 +416,7 @@ export async function searchHybrid(
   // Pre-fetch all chunks in one batch query (eliminates N+1)
   const chunksMapResult = await store.getChunksBatch([...neededHashes]);
   if (!chunksMapResult.ok) {
-    return err('QUERY_FAILED', chunksMapResult.error.message);
+    return err("QUERY_FAILED", chunksMapResult.error.message);
   }
   const chunksMap = chunksMapResult.value;
   const getChunk = createChunkLookup(chunksMap);
@@ -538,7 +537,7 @@ export async function searchHybrid(
     results,
     meta: {
       query,
-      mode: vectorAvailable ? 'hybrid' : 'bm25_only',
+      mode: vectorAvailable ? "hybrid" : "bm25_only",
       expanded: expansion !== null,
       reranked: rerankResult.reranked,
       vectorsUsed: vectorAvailable,

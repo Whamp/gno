@@ -3,6 +3,7 @@
 ## Overview
 
 Complete EPIC 8 search pipeline by wiring `--full` and `--line-numbers` options through all search command formatters. Currently:
+
 - `--full` exists in program.ts but formatters don't receive it
 - `--line-numbers` documented in spec but not implemented
 - `formatSearch()` only receives `{ json: boolean }` — all other format flags ignored
@@ -24,6 +25,7 @@ process.stdout.write(
 ```
 
 Additional issues:
+
 - Terminal formatters truncate to 200-500 chars ignoring any options
 - `formatTerminal()` does `snippet.replace(/\n/g, ' ')` — line numbers impossible
 - No mechanism to emit warnings to stderr from formatters (return string only)
@@ -33,19 +35,19 @@ Additional issues:
 
 ### Design Decisions
 
-| Question | Decision | Rationale |
-|----------|----------|-----------|
-| Line number indexing | 1-indexed | Matches editors, grep, ripgrep |
-| Line number format | `{n} \| ` (dynamic width, no extra indent) | Ripgrep-style, copy-paste friendly |
-| --full scope | All formats | Consistency |
-| Line numbers in JSON/XML | Use existing `snippetRange` metadata | Don't mutate content |
-| Absolute vs relative lines | Absolute (use `snippetRange.startLine`) | Editor jump support |
-| Terminal newline handling | Preserve newlines (no flatten) | Required for line numbers |
-| Warnings (>10MB) | Emit in program.ts before formatting | Formatters stay pure |
-| Warning trigger | Only when `full=true` AND format shows snippets | Skip for --files/--csv |
-| Size measurement | JS string length (UTF-16 code units) | Simple, consistent |
-| CRLF handling | Normalize to LF before processing | Cross-platform consistency |
-| XML content escaping | Always escape `&<>` in snippet content | Valid XML even with --full |
+| Question                   | Decision                                        | Rationale                          |
+| -------------------------- | ----------------------------------------------- | ---------------------------------- |
+| Line number indexing       | 1-indexed                                       | Matches editors, grep, ripgrep     |
+| Line number format         | `{n} \| ` (dynamic width, no extra indent)      | Ripgrep-style, copy-paste friendly |
+| --full scope               | All formats                                     | Consistency                        |
+| Line numbers in JSON/XML   | Use existing `snippetRange` metadata            | Don't mutate content               |
+| Absolute vs relative lines | Absolute (use `snippetRange.startLine`)         | Editor jump support                |
+| Terminal newline handling  | Preserve newlines (no flatten)                  | Required for line numbers          |
+| Warnings (>10MB)           | Emit in program.ts before formatting            | Formatters stay pure               |
+| Warning trigger            | Only when `full=true` AND format shows snippets | Skip for --files/--csv             |
+| Size measurement           | JS string length (UTF-16 code units)            | Simple, consistent                 |
+| CRLF handling              | Normalize to LF before processing               | Cross-platform consistency         |
+| XML content escaping       | Always escape `&<>` in snippet content          | Valid XML even with --full         |
 
 ### Type Boundaries
 
@@ -343,16 +345,16 @@ gno query "hybrid" --line-numbers
 
 ## Edge Cases
 
-| Case | Expected Behavior |
-|------|-------------------|
-| Empty file | Show nothing (or file metadata only) |
-| Single-line file | Line number "1" with content |
-| No newlines | Treat as single line (line 1) |
-| Missing `snippetRange` | Default startLine to 1 |
-| File >10MB | Warn to stderr (only if format shows snippets) |
-| `--line-numbers` without `--full` | Truncate by lines (~10), not by chars |
-| CRLF line endings | Normalize to LF |
-| XML special chars (`&<>`) | Always escaped |
+| Case                              | Expected Behavior                              |
+| --------------------------------- | ---------------------------------------------- |
+| Empty file                        | Show nothing (or file metadata only)           |
+| Single-line file                  | Line number "1" with content                   |
+| No newlines                       | Treat as single line (line 1)                  |
+| Missing `snippetRange`            | Default startLine to 1                         |
+| File >10MB                        | Warn to stderr (only if format shows snippets) |
+| `--line-numbers` without `--full` | Truncate by lines (~10), not by chars          |
+| CRLF line endings                 | Normalize to LF                                |
+| XML special chars (`&<>`)         | Always escaped                                 |
 
 ## Out of Scope (Known Issues)
 
@@ -369,16 +371,19 @@ gno query "hybrid" --line-numbers
 ## References
 
 ### Internal
+
 - `src/pipeline/types.ts` — SearchResult with snippetRange
 - `spec/cli.md` — documents --line-numbers (already in spec)
 - `spec/output-schemas/search-result.schema.json` — output schema
 
 ### External
+
 - [ripgrep --line-number behavior](https://manpages.debian.org/testing/ripgrep/rg.1.en.html)
 - [grep context control](https://www.gnu.org/software/grep/manual/html_node/Context-Line-Control.html)
 - [Commander.js options](https://github.com/tj/commander.js#options)
 
 ### Related Beads
+
 - gno-h7i — EPIC 8: Search pipelines
 - gno-h7i.1 — T8.1: gno search (BM25)
 - gno-h7i.2 — T8.2: gno vsearch (vector)

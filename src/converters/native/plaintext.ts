@@ -3,27 +3,28 @@
  * Converts .txt files to markdown (passthrough as paragraphs).
  */
 
-import { basenameWithoutExt } from '../path';
-import type { Converter, ConvertInput, ConvertResult } from '../types';
-import { NATIVE_VERSIONS } from '../versions';
+import type { Converter, ConvertInput, ConvertResult } from "../types";
 
-const CONVERTER_ID = 'native/plaintext' as const;
+import { basenameWithoutExt } from "../path";
+import { NATIVE_VERSIONS } from "../versions";
+
+const CONVERTER_ID = "native/plaintext" as const;
 const CONVERTER_VERSION = NATIVE_VERSIONS.plaintext;
 
 /** UTF-8 BOM character */
-const BOM = '\uFEFF';
+const BOM = "\uFEFF";
 
 export const plaintextConverter: Converter = {
   id: CONVERTER_ID,
   version: CONVERTER_VERSION,
 
   canHandle(mime: string, ext: string): boolean {
-    return mime === 'text/plain' || ext === '.txt';
+    return mime === "text/plain" || ext === ".txt";
   },
 
   convert(input: ConvertInput): Promise<ConvertResult> {
     // Decode as UTF-8 with replacement for invalid bytes (deterministic)
-    const decoder = new TextDecoder('utf-8', {
+    const decoder = new TextDecoder("utf-8", {
       fatal: false, // Don't throw on invalid bytes
       ignoreBOM: false, // We'll strip manually for determinism
     });

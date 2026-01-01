@@ -31,27 +31,31 @@ Claude uses GNO's search tools to find relevant documents, then synthesizes answ
 
 ## Available Tools
 
-| Tool | Purpose |
-|------|---------|
-| `gno_query` | Hybrid search (best for most queries) |
-| `gno_search` | BM25 keyword search |
-| `gno_vsearch` | Semantic vector search |
-| `gno_get` | Get document by ID |
-| `gno_multi_get` | Get multiple documents |
-| `gno_status` | Check index health |
+| Tool            | Purpose                               |
+| --------------- | ------------------------------------- |
+| `gno_query`     | Hybrid search (best for most queries) |
+| `gno_search`    | BM25 keyword search                   |
+| `gno_vsearch`   | Semantic vector search                |
+| `gno_get`       | Get document by ID                    |
+| `gno_multi_get` | Get multiple documents                |
+| `gno_status`    | Check index health                    |
 
 ## Example Prompts
 
 **Finding information:**
+
 > "Search my notes for anything about API rate limiting"
 
 **Research workflow:**
+
 > "Find my documents about user authentication, then summarize the key points"
 
 **Getting specific content:**
+
 > "Get the full contents of my project's architecture doc"
 
 **Multi-step queries:**
+
 > "Find my meeting notes from last week and list the action items"
 
 ## Manual Configuration

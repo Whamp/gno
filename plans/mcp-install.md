@@ -7,11 +7,13 @@ Add `gno mcp install` command to configure gno as an MCP server in various clien
 ## Targets & Config Locations
 
 ### Claude Desktop
+
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 - **Linux**: `~/.config/Claude/claude_desktop_config.json`
 
 Format:
+
 ```json
 {
   "mcpServers": {
@@ -24,10 +26,12 @@ Format:
 ```
 
 ### Claude Code
+
 - **User scope**: `~/.claude.json` (mcpServers section)
 - **Project scope**: `./.mcp.json` (project root)
 
 Format (same as Desktop):
+
 ```json
 {
   "mcpServers": {
@@ -40,13 +44,16 @@ Format (same as Desktop):
 ```
 
 ### Codex
+
 - **User scope**: `~/.codex.json` or similar
 - **Project scope**: `./.codex/.mcp.json`
 
 (Need to verify exact paths)
 
 ### ChatGPT Desktop
+
 **Different model**: ChatGPT requires remote HTTPS MCP servers, not local stdio.
+
 - Requires `ngrok` or `cloudflare tunnel` to expose local server
 - Not suitable for simple `gno mcp install`
 - **Skip for v1** - document manual setup in docs
@@ -227,6 +234,7 @@ Example output configs:
 ```
 
 **Error case**: If bun not found, `gno mcp install` should error with clear message:
+
 ```
 Error: Bun runtime not found. Install bun first: curl -fsSL https://bun.sh/install | bash
 ```
@@ -241,6 +249,7 @@ Error: Bun runtime not found. Install bun first: curl -fsSL https://bun.sh/insta
 ## Tasks
 
 ### Implementation
+
 1. **T1**: Create `src/cli/commands/mcp/paths.ts` - Path resolution
 2. **T2**: Create `src/cli/commands/mcp/install.ts` - Install logic
 3. **T3**: Create `src/cli/commands/mcp/uninstall.ts` - Remove gno entry
@@ -250,6 +259,7 @@ Error: Bun runtime not found. Install bun first: curl -fsSL https://bun.sh/insta
 7. **T7**: Tests for install/uninstall
 
 ### Documentation Updates
+
 8. **T8**: Update `spec/mcp.md`
    - Fix tool names: `gno.search` → `gno_search` (all 6 tools)
    - Add `gno mcp install` command section
@@ -276,12 +286,12 @@ Error: Bun runtime not found. Install bun first: curl -fsSL https://bun.sh/insta
 
 ## Documentation Changes Summary
 
-| File | Changes |
-|------|---------|
-| `spec/mcp.md` | Tool names `gno.X` → `gno_X`, add install/uninstall/status |
-| `spec/cli.md` | Add mcp subcommands to matrix and specs |
-| `website/features/mcp-integration.md` | Primary setup via `gno mcp install`, fix tool names |
-| `assets/skill/cli-reference.md` | Add MCP commands section |
+| File                                  | Changes                                                    |
+| ------------------------------------- | ---------------------------------------------------------- |
+| `spec/mcp.md`                         | Tool names `gno.X` → `gno_X`, add install/uninstall/status |
+| `spec/cli.md`                         | Add mcp subcommands to matrix and specs                    |
+| `website/features/mcp-integration.md` | Primary setup via `gno mcp install`, fix tool names        |
+| `assets/skill/cli-reference.md`       | Add MCP commands section                                   |
 
 ## References
 

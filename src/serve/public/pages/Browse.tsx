@@ -1,15 +1,16 @@
-import { ArrowLeft, ChevronRight, FileText, FolderOpen } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { Loader } from '../components/ai-elements/loader';
-import { Badge } from '../components/ui/badge';
-import { Button } from '../components/ui/button';
+import { ArrowLeft, ChevronRight, FileText, FolderOpen } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { Loader } from "../components/ai-elements/loader";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../components/ui/select';
+} from "../components/ui/select";
 import {
   Table,
   TableBody,
@@ -17,8 +18,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '../components/ui/table';
-import { apiFetch } from '../hooks/use-api';
+} from "../components/ui/table";
+import { apiFetch } from "../hooks/use-api";
 
 interface PageProps {
   navigate: (to: string | number) => void;
@@ -47,7 +48,7 @@ interface DocsResponse {
 
 export default function Browse({ navigate }: PageProps) {
   const [collections, setCollections] = useState<Collection[]>([]);
-  const [selected, setSelected] = useState<string>('');
+  const [selected, setSelected] = useState<string>("");
   const [docs, setDocs] = useState<Document[]>([]);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
@@ -58,14 +59,14 @@ export default function Browse({ navigate }: PageProps) {
   // Parse collection from URL on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const collection = params.get('collection');
+    const collection = params.get("collection");
     if (collection) {
       setSelected(collection);
     }
   }, []);
 
   useEffect(() => {
-    apiFetch<Collection[]>('/api/collections').then(({ data }) => {
+    void apiFetch<Collection[]>("/api/collections").then(({ data }) => {
       if (data) {
         setCollections(data);
       }
@@ -78,7 +79,7 @@ export default function Browse({ navigate }: PageProps) {
       ? `/api/docs?collection=${encodeURIComponent(selected)}&limit=${limit}&offset=${offset}`
       : `/api/docs?limit=${limit}&offset=${offset}`;
 
-    apiFetch<DocsResponse>(url).then(({ data }) => {
+    void apiFetch<DocsResponse>(url).then(({ data }) => {
       setLoading(false);
       setInitialLoad(false);
       if (data) {
@@ -91,15 +92,15 @@ export default function Browse({ navigate }: PageProps) {
   }, [selected, offset]);
 
   const handleCollectionChange = (value: string) => {
-    const newSelected = value === 'all' ? '' : value;
+    const newSelected = value === "all" ? "" : value;
     setSelected(newSelected);
     setOffset(0);
     setDocs([]);
     // Update URL for shareable deep-links
     const url = newSelected
       ? `/browse?collection=${encodeURIComponent(newSelected)}`
-      : '/browse';
-    window.history.pushState({}, '', url);
+      : "/browse";
+    window.history.pushState({}, "", url);
   };
 
   const handleLoadMore = () => {
@@ -108,16 +109,16 @@ export default function Browse({ navigate }: PageProps) {
 
   const getExtBadgeVariant = (ext: string) => {
     switch (ext.toLowerCase()) {
-      case '.md':
-      case '.markdown':
-        return 'default';
-      case '.pdf':
-        return 'destructive';
-      case '.docx':
-      case '.doc':
-        return 'secondary';
+      case ".md":
+      case ".markdown":
+        return "default";
+      case ".pdf":
+        return "destructive";
+      case ".docx":
+      case ".doc":
+        return "secondary";
       default:
-        return 'outline';
+        return "outline";
     }
   };
 
@@ -141,7 +142,7 @@ export default function Browse({ navigate }: PageProps) {
           <div className="flex items-center gap-4">
             <Select
               onValueChange={handleCollectionChange}
-              value={selected || 'all'}
+              value={selected || "all"}
             >
               <SelectTrigger className="w-[200px]">
                 <FolderOpen className="mr-2 size-4 text-muted-foreground" />
@@ -179,8 +180,8 @@ export default function Browse({ navigate }: PageProps) {
             <h3 className="mb-2 font-medium text-lg">No documents found</h3>
             <p className="text-muted-foreground">
               {selected
-                ? 'This collection is empty'
-                : 'Index some documents to get started'}
+                ? "This collection is empty"
+                : "Index some documents to get started"}
             </p>
           </div>
         )}

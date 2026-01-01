@@ -7,8 +7,8 @@ import {
   getCollectionFromScope,
   loadConfig,
   saveConfig,
-} from '../../../config';
-import { CliError } from '../../errors';
+} from "../../../config";
+import { CliError } from "../../errors";
 
 export async function collectionRename(
   oldName: string,
@@ -21,7 +21,7 @@ export async function collectionRename(
   const result = await loadConfig();
   if (!result.ok) {
     throw new CliError(
-      'RUNTIME',
+      "RUNTIME",
       `Failed to load config: ${result.error.message}`
     );
   }
@@ -34,7 +34,7 @@ export async function collectionRename(
   );
   if (!collection) {
     throw new CliError(
-      'VALIDATION',
+      "VALIDATION",
       `Collection "${oldCollectionName}" not found`
     );
   }
@@ -45,7 +45,7 @@ export async function collectionRename(
   );
   if (existingNew) {
     throw new CliError(
-      'VALIDATION',
+      "VALIDATION",
       `Collection "${newCollectionName}" already exists`
     );
   }
@@ -55,8 +55,8 @@ export async function collectionRename(
   const validation = CollectionSchema.safeParse(testCollection);
   if (!validation.success) {
     throw new CliError(
-      'VALIDATION',
-      `Invalid collection name: ${validation.error.issues[0]?.message ?? 'unknown error'}`
+      "VALIDATION",
+      `Invalid collection name: ${validation.error.issues[0]?.message ?? "unknown error"}`
     );
   }
 
@@ -68,9 +68,9 @@ export async function collectionRename(
     const collFromScope = getCollectionFromScope(context.scopeKey);
     if (collFromScope === oldCollectionName) {
       // Update scope key
-      if (context.scopeType === 'collection') {
+      if (context.scopeType === "collection") {
         context.scopeKey = `${newCollectionName}:`;
-      } else if (context.scopeType === 'prefix') {
+      } else if (context.scopeType === "prefix") {
         // Replace collection name in URI
         context.scopeKey = context.scopeKey.replace(
           `gno://${oldCollectionName}/`,
@@ -84,7 +84,7 @@ export async function collectionRename(
   const saveResult = await saveConfig(config);
   if (!saveResult.ok) {
     throw new CliError(
-      'RUNTIME',
+      "RUNTIME",
       `Failed to save config: ${saveResult.error.message}`
     );
   }

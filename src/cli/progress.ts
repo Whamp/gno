@@ -5,7 +5,7 @@
  * @module src/cli/progress
  */
 
-import type { DownloadProgress, ModelType } from '../llm/types';
+import type { DownloadProgress, ModelType } from "../llm/types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types

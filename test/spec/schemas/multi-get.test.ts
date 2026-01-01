@@ -1,15 +1,16 @@
-import { beforeAll, describe, expect, test } from 'bun:test';
-import { assertInvalid, assertValid, loadSchema } from './validator';
+import { beforeAll, describe, expect, test } from "bun:test";
 
-describe('multi-get schema', () => {
+import { assertInvalid, assertValid, loadSchema } from "./validator";
+
+describe("multi-get schema", () => {
   let schema: object;
 
   beforeAll(async () => {
-    schema = await loadSchema('multi-get');
+    schema = await loadSchema("multi-get");
   });
 
-  describe('valid inputs', () => {
-    test('validates minimal response', () => {
+  describe("valid inputs", () => {
+    test("validates minimal response", () => {
       const response = {
         documents: [],
         meta: {
@@ -21,30 +22,30 @@ describe('multi-get schema', () => {
       expect(assertValid(response, schema)).toBe(true);
     });
 
-    test('validates response with documents', () => {
+    test("validates response with documents", () => {
       const response = {
         documents: [
           {
-            docid: '#abc123',
-            uri: 'gno://work/doc1.md',
-            content: '# Doc 1',
+            docid: "#abc123",
+            uri: "gno://work/doc1.md",
+            content: "# Doc 1",
             source: {
-              relPath: 'doc1.md',
-              mime: 'text/markdown',
-              ext: '.md',
+              relPath: "doc1.md",
+              mime: "text/markdown",
+              ext: ".md",
             },
           },
           {
-            docid: '#def456',
-            uri: 'gno://work/doc2.md',
-            title: 'Document 2',
-            content: '# Doc 2\n\nContent here',
+            docid: "#def456",
+            uri: "gno://work/doc2.md",
+            title: "Document 2",
+            content: "# Doc 2\n\nContent here",
             totalLines: 3,
             source: {
-              absPath: '/path/doc2.md',
-              relPath: 'doc2.md',
-              mime: 'text/markdown',
-              ext: '.md',
+              absPath: "/path/doc2.md",
+              relPath: "doc2.md",
+              mime: "text/markdown",
+              ext: ".md",
             },
           },
         ],
@@ -57,28 +58,28 @@ describe('multi-get schema', () => {
       expect(assertValid(response, schema)).toBe(true);
     });
 
-    test('validates response with skipped documents', () => {
+    test("validates response with skipped documents", () => {
       const response = {
         documents: [
           {
-            docid: '#abc123',
-            uri: 'gno://work/small.md',
-            content: 'Small file',
+            docid: "#abc123",
+            uri: "gno://work/small.md",
+            content: "Small file",
             source: {
-              relPath: 'small.md',
-              mime: 'text/markdown',
-              ext: '.md',
+              relPath: "small.md",
+              mime: "text/markdown",
+              ext: ".md",
             },
           },
         ],
         skipped: [
           {
-            ref: 'gno://work/large.pdf',
-            reason: 'exceeds_maxBytes',
+            ref: "gno://work/large.pdf",
+            reason: "exceeds_maxBytes",
           },
           {
-            ref: '#missing',
-            reason: 'not_found',
+            ref: "#missing",
+            reason: "not_found",
           },
         ],
         meta: {
@@ -91,19 +92,19 @@ describe('multi-get schema', () => {
       expect(assertValid(response, schema)).toBe(true);
     });
 
-    test('validates truncated document', () => {
+    test("validates truncated document", () => {
       const response = {
         documents: [
           {
-            docid: '#abc123',
-            uri: 'gno://work/doc.md',
-            content: '# Truncated content...',
+            docid: "#abc123",
+            uri: "gno://work/doc.md",
+            content: "# Truncated content...",
             truncated: true,
             totalLines: 1000,
             source: {
-              relPath: 'doc.md',
-              mime: 'text/markdown',
-              ext: '.md',
+              relPath: "doc.md",
+              mime: "text/markdown",
+              ext: ".md",
             },
           },
         ],
@@ -117,8 +118,8 @@ describe('multi-get schema', () => {
     });
   });
 
-  describe('invalid inputs', () => {
-    test('rejects missing documents array', () => {
+  describe("invalid inputs", () => {
+    test("rejects missing documents array", () => {
       const response = {
         meta: {
           requested: 0,
@@ -129,14 +130,14 @@ describe('multi-get schema', () => {
       expect(assertInvalid(response, schema)).toBe(true);
     });
 
-    test('rejects missing meta', () => {
+    test("rejects missing meta", () => {
       const response = {
         documents: [],
       };
       expect(assertInvalid(response, schema)).toBe(true);
     });
 
-    test('rejects meta missing required fields', () => {
+    test("rejects meta missing required fields", () => {
       const response = {
         documents: [],
         meta: {
@@ -146,13 +147,13 @@ describe('multi-get schema', () => {
       expect(assertInvalid(response, schema)).toBe(true);
     });
 
-    test('rejects invalid skip reason', () => {
+    test("rejects invalid skip reason", () => {
       const response = {
         documents: [],
         skipped: [
           {
-            ref: 'gno://work/doc.md',
-            reason: 'unknown_reason',
+            ref: "gno://work/doc.md",
+            reason: "unknown_reason",
           },
         ],
         meta: {
@@ -164,13 +165,13 @@ describe('multi-get schema', () => {
       expect(assertInvalid(response, schema)).toBe(true);
     });
 
-    test('rejects document missing source', () => {
+    test("rejects document missing source", () => {
       const response = {
         documents: [
           {
-            docid: '#abc123',
-            uri: 'gno://work/doc.md',
-            content: 'Content',
+            docid: "#abc123",
+            uri: "gno://work/doc.md",
+            content: "Content",
           },
         ],
         meta: {
@@ -182,17 +183,17 @@ describe('multi-get schema', () => {
       expect(assertInvalid(response, schema)).toBe(true);
     });
 
-    test('rejects invalid docid in document', () => {
+    test("rejects invalid docid in document", () => {
       const response = {
         documents: [
           {
-            docid: 'invalid',
-            uri: 'gno://work/doc.md',
-            content: 'Content',
+            docid: "invalid",
+            uri: "gno://work/doc.md",
+            content: "Content",
             source: {
-              relPath: 'doc.md',
-              mime: 'text/markdown',
-              ext: '.md',
+              relPath: "doc.md",
+              mime: "text/markdown",
+              ext: ".md",
             },
           },
         ],

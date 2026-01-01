@@ -20,6 +20,7 @@ Add to `claude_desktop_config.json`:
 ```
 
 Config location:
+
 - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 - Linux: `~/.config/Claude/claude_desktop_config.json`
@@ -66,15 +67,16 @@ Hybrid search (best quality).
 
 **Search modes** (via parameters):
 
-| Mode | Parameters | Time |
-|------|------------|------|
-| Fast | `fast: true` | ~0.7s |
-| Default | (none) | ~2-3s |
+| Mode     | Parameters       | Time  |
+| -------- | ---------------- | ----- |
+| Fast     | `fast: true`     | ~0.7s |
+| Default  | (none)           | ~2-3s |
 | Thorough | `thorough: true` | ~5-8s |
 
 Default skips expansion, with reranking. Use `thorough: true` for best recall.
 
 **Agent retry strategy**: Use default mode first. If no relevant results:
+
 1. Rephrase the query (free, often effective)
 2. Then try `thorough: true` for better recall
 
@@ -129,6 +131,7 @@ gno://{collection}/{path}
 ```
 
 Examples:
+
 - `gno://work/contracts/nda.docx`
 - `gno://notes/2025/01/meeting.md`
 
@@ -166,6 +169,7 @@ Errors return:
 ## Graceful Degradation
 
 `gno.query` degrades gracefully:
+
 - No vectors → BM25 only
 - No expansion model → skips expansion
 - No rerank model → skips reranking

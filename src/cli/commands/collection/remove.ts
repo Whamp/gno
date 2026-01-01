@@ -2,16 +2,16 @@
  * gno collection remove - Remove a collection
  */
 
-import { removeCollection } from '../../../collection';
-import { loadConfig, saveConfig } from '../../../config';
-import { CliError } from '../../errors';
+import { removeCollection } from "../../../collection";
+import { loadConfig, saveConfig } from "../../../config";
+import { CliError } from "../../errors";
 
 export async function collectionRemove(name: string): Promise<void> {
   // Load config
   const configResult = await loadConfig();
   if (!configResult.ok) {
     throw new CliError(
-      'RUNTIME',
+      "RUNTIME",
       `Failed to load config: ${configResult.error.message}`
     );
   }
@@ -22,11 +22,11 @@ export async function collectionRemove(name: string): Promise<void> {
   if (!result.ok) {
     // Map collection error codes to CLI error codes
     const cliCode =
-      result.code === 'VALIDATION' ||
-      result.code === 'NOT_FOUND' ||
-      result.code === 'HAS_REFERENCES'
-        ? 'VALIDATION'
-        : 'RUNTIME';
+      result.code === "VALIDATION" ||
+      result.code === "NOT_FOUND" ||
+      result.code === "HAS_REFERENCES"
+        ? "VALIDATION"
+        : "RUNTIME";
     throw new CliError(cliCode, result.message);
   }
 
@@ -34,7 +34,7 @@ export async function collectionRemove(name: string): Promise<void> {
   const saveResult = await saveConfig(result.config);
   if (!saveResult.ok) {
     throw new CliError(
-      'RUNTIME',
+      "RUNTIME",
       `Failed to save config: ${saveResult.error.message}`
     );
   }

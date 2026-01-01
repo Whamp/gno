@@ -4,14 +4,16 @@
  * @module src/mcp/resources
  */
 
-import { join as pathJoin } from 'node:path';
 import {
   type McpServer,
   ResourceTemplate,
-} from '@modelcontextprotocol/sdk/server/mcp.js';
-import { buildUri, parseUri, URI_PREFIX } from '../../app/constants';
-import type { DocumentRow } from '../../store/types';
-import type { ToolContext } from '../server';
+} from "@modelcontextprotocol/sdk/server/mcp.js";
+import { join as pathJoin } from "node:path";
+
+import type { DocumentRow } from "../../store/types";
+import type { ToolContext } from "../server";
+
+import { buildUri, parseUri, URI_PREFIX } from "../../app/constants";
 
 /**
  * Format document content with header comment and line numbers.
@@ -36,7 +38,7 @@ function formatResourceContent(
   // Header comment per spec (includes language if available)
   const langLine = doc.languageHint
     ? `\n     language: ${doc.languageHint}`
-    : '';
+    : "";
   const header = `<!-- ${doc.uri}
      docid: ${doc.docid}
      source: ${absPath}
@@ -46,8 +48,8 @@ function formatResourceContent(
 `;
 
   // Line numbers per spec (default ON for agent friendliness)
-  const lines = content.split('\n');
-  const numbered = lines.map((line, i) => `${i + 1}: ${line}`).join('\n');
+  const lines = content.split("\n");
+  const numbered = lines.map((line, i) => `${i + 1}: ${line}`).join("\n");
 
   return header + numbered;
 }
@@ -69,7 +71,7 @@ export function registerResources(server: McpServer, ctx: ToolContext): void {
         resources: listResult.value.map((doc) => ({
           uri: doc.uri,
           name: doc.relPath,
-          mimeType: doc.sourceMime || 'text/markdown',
+          mimeType: doc.sourceMime || "text/markdown",
           description: doc.title ?? undefined,
         })),
       };
@@ -77,10 +79,10 @@ export function registerResources(server: McpServer, ctx: ToolContext): void {
   });
 
   // Register the template-based resource handler
-  server.resource('gno-document', template, {}, async (uri, _variables) => {
+  server.resource("gno-document", template, {}, async (uri, _variables) => {
     // Check shutdown before acquiring mutex
     if (ctx.isShuttingDown()) {
-      throw new Error('Server is shutting down');
+      throw new Error("Server is shutting down");
     }
 
     // Serialize resource reads same as tools (prevent concurrent DB access + shutdown race)
@@ -127,7 +129,7 @@ export function registerResources(server: McpServer, ctx: ToolContext): void {
         );
       }
 
-      const content = contentResult.value ?? '';
+      const content = contentResult.value ?? "";
 
       // Format with header and line numbers
       const formattedContent = formatResourceContent(doc, content, ctx);
@@ -139,7 +141,7 @@ export function registerResources(server: McpServer, ctx: ToolContext): void {
         contents: [
           {
             uri: canonicalUri,
-            mimeType: 'text/markdown',
+            mimeType: "text/markdown",
             text: formattedContent,
           },
         ],

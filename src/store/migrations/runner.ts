@@ -5,10 +5,12 @@
  * @module src/store/migrations/runner
  */
 
-import type { Database } from 'bun:sqlite';
-import type { FtsTokenizer } from '../../config/types';
-import type { MigrationResult, StoreResult } from '../types';
-import { err, ok } from '../types';
+import type { Database } from "bun:sqlite";
+
+import type { FtsTokenizer } from "../../config/types";
+import type { MigrationResult, StoreResult } from "../types";
+
+import { err, ok } from "../types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -38,7 +40,7 @@ const BOOTSTRAP_META_TABLE = `
   )
 `;
 
-const GET_META = 'SELECT value FROM schema_meta WHERE key = ?';
+const GET_META = "SELECT value FROM schema_meta WHERE key = ?";
 
 const SET_META = `
   INSERT INTO schema_meta (key, value, updated_at)
@@ -58,7 +60,7 @@ const SET_META = `
  */
 export function getSchemaVersion(db: Database): number {
   try {
-    const row = db.query<{ value: string }, [string]>(GET_META).get('version');
+    const row = db.query<{ value: string }, [string]>(GET_META).get("version");
     return row ? Number.parseInt(row.value, 10) : 0;
   } catch {
     // Table doesn't exist yet
@@ -74,7 +76,7 @@ export function getDbFtsTokenizer(db: Database): FtsTokenizer | null {
   try {
     const row = db
       .query<{ value: string }, [string]>(GET_META)
-      .get('fts_tokenizer');
+      .get("fts_tokenizer");
     return row ? (row.value as FtsTokenizer) : null;
   } catch {
     return null;
@@ -114,9 +116,9 @@ export function runMigrations(
       // Tokenizer mismatch - this requires special handling
       // For now, we error out. EPIC 5 will handle FTS rebuild.
       return err(
-        'MIGRATION_FAILED',
+        "MIGRATION_FAILED",
         `FTS tokenizer mismatch: DB has '${dbTokenizer}', config has '${ftsTokenizer}'. ` +
-          'Run `gno index --rebuild-fts` to recreate FTS index with new tokenizer.'
+          "Run `gno index --rebuild-fts` to recreate FTS index with new tokenizer."
       );
     }
 
@@ -128,7 +130,7 @@ export function runMigrations(
       const migration = sorted[i];
       if (migration && migration.version !== i + 1) {
         return err(
-          'MIGRATION_FAILED',
+          "MIGRATION_FAILED",
           `Migration versions must be sequential. Expected ${i + 1}, got ${migration.version}`
         );
       }
@@ -150,14 +152,14 @@ export function runMigrations(
     const transaction = db.transaction(() => {
       for (const migration of pending) {
         migration.up(db, ftsTokenizer);
-        setMeta(db, 'version', migration.version.toString());
+        setMeta(db, "version", migration.version.toString());
         applied.push(migration.version);
       }
 
       // Set FTS tokenizer if not already set
       if (dbTokenizer === null) {
-        setMeta(db, 'fts_tokenizer', ftsTokenizer);
-        setMeta(db, 'created_at', new Date().toISOString());
+        setMeta(db, "fts_tokenizer", ftsTokenizer);
+        setMeta(db, "created_at", new Date().toISOString());
       }
     });
 
@@ -170,8 +172,8 @@ export function runMigrations(
     });
   } catch (cause) {
     const message =
-      cause instanceof Error ? cause.message : 'Unknown migration error';
-    return err('MIGRATION_FAILED', message, cause);
+      cause instanceof Error ? cause.message : "Unknown migration error";
+    return err("MIGRATION_FAILED", message, cause);
   }
 }
 

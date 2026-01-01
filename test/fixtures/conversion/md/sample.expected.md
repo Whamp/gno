@@ -4,7 +4,7 @@ This is a sample markdown file for testing the converter pipeline.
 
 ## Section One
 
-Some content in section one with **bold** and *italic* text.
+Some content in section one with **bold** and _italic_ text.
 
 ## Section Two
 

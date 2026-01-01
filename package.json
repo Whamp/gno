@@ -3,38 +3,35 @@
   "version": "0.7.0",
   "description": "Local semantic search for your documents. Index Markdown, PDF, and Office files with hybrid BM25 + vector search.",
   "keywords": [
-    "search",
-    "semantic-search",
-    "rag",
-    "vector-search",
     "embeddings",
+    "llm",
     "local-first",
     "mcp",
-    "llm"
+    "rag",
+    "search",
+    "semantic-search",
+    "vector-search"
   ],
-  "author": "Gordon Mickel <gordon@mickel.tech>",
+  "homepage": "https://gno.sh",
+  "bugs": {
+    "url": "https://github.com/gmickel/gno/issues"
+  },
   "license": "MIT",
+  "author": "Gordon Mickel <gordon@mickel.tech>",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gmickel/gno.git"
   },
-  "bugs": {
-    "url": "https://github.com/gmickel/gno/issues"
-  },
-  "homepage": "https://gno.sh",
-  "type": "module",
-  "module": "src/index.ts",
   "bin": {
     "gno": "src/index.ts"
   },
   "files": [
-    "src",
     "assets",
+    "src",
     "vendor"
   ],
-  "engines": {
-    "bun": ">=1.3.0"
-  },
+  "type": "module",
+  "module": "src/index.ts",
   "publishConfig": {
     "access": "public"
   },
@@ -42,15 +39,13 @@
     "dev": "bun run --hot src/index.ts",
     "build": "bun build src/index.ts",
     "start": "bun run src/index.ts",
-    "lint": "biome check",
-    "lint:fix": "biome check --write",
+    "lint": "oxlint --fix --type-aware --type-check && oxfmt .",
+    "lint:check": "oxlint --type-aware --type-check && oxfmt --check .",
     "test": "bun test",
     "test:watch": "bun test --watch",
     "test:coverage": "bun test --coverage",
     "test:coverage:html": "bun test --coverage --html",
     "test:fixtures": "bun scripts/generate-test-fixtures.ts",
-    "typecheck": "tsgo --noEmit",
-    "lint:typeaware": "bun x oxlint --type-aware",
     "reset": "bun run src/index.ts reset --confirm",
     "docs:verify": "bun run scripts/docs-verify.ts",
     "website:install": "cd website && bundle install",
@@ -62,9 +57,10 @@
     "version:patch": "npm version patch --no-git-tag-version",
     "version:minor": "npm version minor --no-git-tag-version",
     "version:major": "npm version major --no-git-tag-version",
-    "prerelease": "bun run lint && bun run typecheck && bun test",
+    "prerelease": "bun run lint:check && bun test",
     "release:dry-run": "gh workflow run publish.yml -f publish=false",
-    "release:trigger": "gh workflow run publish.yml -f publish=true"
+    "release:trigger": "gh workflow run publish.yml -f publish=true",
+    "prepare": "lefthook install"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.1",
@@ -106,13 +102,14 @@
     "@types/bun": "latest",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "@typescript/native-preview": "^7.0.0-dev.20251215.1",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "docx": "^9.5.1",
     "evalite": "^1.0.0-beta.15",
     "exceljs": "^4.4.0",
     "lefthook": "^2.0.13",
+    "oxfmt": "^0.21.0",
+    "oxlint": "^1.36.0",
     "oxlint-tsgolint": "^0.10.1",
     "pdf-lib": "^1.17.1",
     "pptxgenjs": "^4.0.1",
@@ -121,5 +118,8 @@
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "engines": {
+    "bun": ">=1.3.0"
   }
 }

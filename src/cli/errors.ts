@@ -9,7 +9,7 @@
 // Error Types
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type CliErrorCode = 'VALIDATION' | 'RUNTIME';
+export type CliErrorCode = "VALIDATION" | "RUNTIME";
 
 export class CliError extends Error {
   readonly code: CliErrorCode;
@@ -23,7 +23,7 @@ export class CliError extends Error {
     super(message);
     this.code = code;
     this.details = details;
-    this.name = 'CliError';
+    this.name = "CliError";
   }
 }
 
@@ -32,7 +32,7 @@ export class CliError extends Error {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function exitCodeFor(err: CliError): 1 | 2 {
-  return err.code === 'VALIDATION' ? 1 : 2;
+  return err.code === "VALIDATION" ? 1 : 2;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

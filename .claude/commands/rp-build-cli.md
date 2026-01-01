@@ -18,19 +18,20 @@ rp-cli -e '<command>'
 
 **Quick reference:**
 
-| MCP Tool | CLI Command |
-|----------|-------------|
-| `get_file_tree` | `rp-cli -e 'tree'` |
-| `file_search` | `rp-cli -e 'search "pattern"'` |
-| `get_code_structure` | `rp-cli -e 'structure path/'` |
-| `read_file` | `rp-cli -e 'read path/file.swift'` |
-| `manage_selection` | `rp-cli -e 'select add path/'` |
-| `context_builder` | `rp-cli -e 'builder "instructions" --response-type plan'` |
-| `chat_send` | `rp-cli -e 'chat "message" --mode plan'` |
-| `apply_edits` | `rp-cli -e 'edit path/file.swift "old" "new"'` |
-| `file_actions` | `rp-cli -e 'file create path/new.swift'` |
+| MCP Tool             | CLI Command                                               |
+| -------------------- | --------------------------------------------------------- |
+| `get_file_tree`      | `rp-cli -e 'tree'`                                        |
+| `file_search`        | `rp-cli -e 'search "pattern"'`                            |
+| `get_code_structure` | `rp-cli -e 'structure path/'`                             |
+| `read_file`          | `rp-cli -e 'read path/file.swift'`                        |
+| `manage_selection`   | `rp-cli -e 'select add path/'`                            |
+| `context_builder`    | `rp-cli -e 'builder "instructions" --response-type plan'` |
+| `chat_send`          | `rp-cli -e 'chat "message" --mode plan'`                  |
+| `apply_edits`        | `rp-cli -e 'edit path/file.swift "old" "new"'`            |
+| `file_actions`       | `rp-cli -e 'file create path/new.swift'`                  |
 
 Chain commands with `&&`:
+
 ```bash
 rp-cli -e 'select set src/ && context'
 ```
@@ -38,6 +39,7 @@ rp-cli -e 'select set src/ && context'
 Use `-d <cmd>` for detailed help on any command.
 
 ---
+
 ## The Workflow
 
 1. **Quick scan** – Understand how the task relates to the codebase
@@ -50,6 +52,7 @@ Use `-d <cmd>` for detailed help on any command.
 ## CRITICAL REQUIREMENT
 
 ⚠️ **DO NOT START IMPLEMENTATION** until you have:
+
 1. Completed Phase 1 (Quick Scan)
 2. **Called `builder`** and received its plan
 
@@ -60,11 +63,13 @@ Skipping `builder` results in shallow implementations that miss architectural pa
 ## Phase 1: Quick Scan
 
 Start by getting a lay of the land with the file tree:
+
 ```bash
 rp-cli -e 'tree'
 ```
 
 Then use targeted searches to understand how the task maps to the codebase:
+
 ```bash
 rp-cli -e 'search "<key term from task>"'
 rp-cli -e 'structure RootName/likely/relevant/area/'
@@ -83,6 +88,7 @@ rp-cli -e 'builder "<reformulated prompt with codebase context>" --response-type
 ```
 
 **What you get back:**
+
 - Smart file selection (automatically curated within token budget)
 - Architectural plan grounded in actual code
 - Chat session for follow-up conversation
@@ -96,6 +102,7 @@ rp-cli -e 'builder "<reformulated prompt with codebase context>" --response-type
 The chat is a **seer** – it sees selected files **completely** (full content, not summaries), but it **only sees what's in the selection**. Nothing else.
 
 Use the chat to:
+
 - Review the plan and clarify ambiguities
 - Ask about patterns across the selected files
 - Validate your understanding before implementing
@@ -105,11 +112,13 @@ rp-cli -e 'chat "How does X connect to Y in these files? Any edge cases I should
 ```
 
 **The chat excels at:**
+
 - Revealing architectural patterns across files
 - Spotting connections that piecemeal reading might miss
 - Answering "how does this all fit together" questions
 
 **Don't expect:**
+
 - Knowledge of files outside the selection
 - Implementation—that's your job
 
@@ -118,6 +127,7 @@ rp-cli -e 'chat "How does X connect to Y in these files? Any edge cases I should
 ## Phase 4: Direct Implementation
 
 **STOP** - Before implementing, verify you have:
+
 - [ ] An architectural plan from the builder
 - [ ] An architectural plan grounded in actual code
 
@@ -126,6 +136,7 @@ If anything is unclear, use `chat` to clarify before proceeding.
 Implement the plan directly. **Do not use `chat` with `mode:"edit"`** – you implement directly.
 
 **Primary tools:**
+
 ```bash
 # Modify existing files (search/replace)
 rp-cli -e 'edit Root/File.swift "old" "new"'
@@ -138,6 +149,7 @@ rp-cli -e 'read Root/File.swift --start-line 50 --limit 30'
 ```
 
 **Ask the chat when stuck:**
+
 ```bash
 rp-cli -e 'chat "I'\''m implementing X but unsure about Y. What pattern should I follow?" --mode chat'
 ```
@@ -149,6 +161,7 @@ rp-cli -e 'chat "I'\''m implementing X but unsure about Y. What pattern should I
 **Token limit:** Stay under ~160k tokens. Check with `select get` if unsure. Context builder manages this, but be aware if you add files.
 
 **Selection management:**
+
 - Add files as needed, but `builder` should have most of what you need
 - Use slices for large files when you only need specific sections
 - New files created are automatically selected

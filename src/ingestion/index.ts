@@ -5,11 +5,11 @@
  */
 
 // Chunker
-export { defaultChunker, MarkdownChunker } from './chunker';
+export { defaultChunker, MarkdownChunker } from "./chunker";
 // Language detection
-export { defaultLanguageDetector, SimpleLanguageDetector } from './language';
+export { defaultLanguageDetector, SimpleLanguageDetector } from "./language";
 // Sync service
-export { defaultSyncService, SyncService } from './sync';
+export { defaultSyncService, SyncService } from "./sync";
 // Types
 export type {
   ChunkerPort,
@@ -26,7 +26,7 @@ export type {
   WalkConfig,
   WalkEntry,
   WalkerPort,
-} from './types';
-export { collectionToWalkConfig, DEFAULT_CHUNK_PARAMS } from './types';
+} from "./types";
+export { collectionToWalkConfig, DEFAULT_CHUNK_PARAMS } from "./types";
 // Walker
-export { defaultWalker, FileWalker } from './walker';
+export { defaultWalker, FileWalker } from "./walker";

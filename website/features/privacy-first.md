@@ -24,6 +24,7 @@ Unlike cloud-based solutions, GNO processes everything on your machine:
 ### No Network Required
 
 Once installed, GNO works completely offline:
+
 - Index documents without internet
 - Search without internet
 - Generate AI answers without internet
@@ -42,6 +43,7 @@ All data stays in your control:
 ### No Telemetry
 
 GNO collects zero data:
+
 - No analytics
 - No crash reports
 - No usage tracking
@@ -62,6 +64,7 @@ gno status
 ## Why Privacy Matters
 
 Your documents contain:
+
 - Personal notes and journals
 - Confidential work documents
 - Proprietary code and designs

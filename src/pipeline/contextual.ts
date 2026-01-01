@@ -20,7 +20,7 @@ const EXT_REGEX = /\.\w+$/;
  * Prepends title for contextual retrieval.
  */
 export function formatDocForEmbedding(text: string, title?: string): string {
-  const safeTitle = title?.trim() || 'none';
+  const safeTitle = title?.trim() || "none";
   return `title: ${safeTitle} | text: ${text}`;
 }
 
@@ -42,7 +42,7 @@ export function extractTitle(content: string, filename: string): string {
   if (match?.[1]) {
     const title = match[1].trim();
     // Skip generic titles like "Notes" and try next heading
-    if (title.toLowerCase() === 'notes') {
+    if (title.toLowerCase() === "notes") {
       const nextMatch = content.match(SUBHEADING_REGEX);
       if (nextMatch?.[1]) {
         return nextMatch[1].trim();
@@ -52,6 +52,6 @@ export function extractTitle(content: string, filename: string): string {
   }
 
   // Fall back to filename without extension
-  const basename = filename.split('/').pop() ?? filename;
-  return basename.replace(EXT_REGEX, '');
+  const basename = filename.split("/").pop() ?? filename;
+  return basename.replace(EXT_REGEX, "");
 }
