@@ -7,21 +7,31 @@
  */
 
 import { runCli } from './cli/run';
+import { resetModelManager } from './llm/nodeLlamaCpp/lifecycle';
+
+/**
+ * Cleanup models and exit.
+ * Without this, llama.cpp native threads can keep the process alive.
+ */
+async function cleanupAndExit(code: number): Promise<never> {
+  await resetModelManager().catch(() => {
+    // Ignore cleanup errors on exit
+  });
+  process.exit(code);
+}
 
 // SIGINT handler for graceful shutdown
 process.on('SIGINT', () => {
   process.stderr.write('\nInterrupted\n');
-  process.exit(130);
+  void cleanupAndExit(130);
 });
 
 // Run CLI and exit
 runCli(process.argv)
-  .then((code) => {
-    process.exit(code);
-  })
+  .then((code) => cleanupAndExit(code))
   .catch((err) => {
     process.stderr.write(
       `Fatal error: ${err instanceof Error ? err.message : String(err)}\n`
     );
-    process.exit(1);
+    void cleanupAndExit(1);
   });
