@@ -149,6 +149,23 @@ gh workflow run publish.yml -f publish=true   # actual publish
 
 See [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) for CI matrix, caching, and release process.
 
+## npm Package Gotchas
+
+**"Works locally, breaks on npm install"** - Check these:
+
+1. **`files` array in package.json** - Only listed files/dirs ship to npm
+   - Runtime deps must be in `dependencies`, not `devDependencies`
+   - Config files like `bunfig.toml` must be explicitly listed
+   - Current: `assets`, `bunfig.toml`, `src`, `THIRD_PARTY_NOTICES.md`, `vendor`
+
+2. **bunfig.toml** - Required for Bun.serve() plugins
+   - Must be in `files` array to ship with npm package
+   - Contains `[serve.static] plugins = ["bun-plugin-tailwind"]` for CSS
+
+3. **Dependencies vs devDependencies**
+   - `tailwindcss`, `bun-plugin-tailwind` - runtime (dependencies)
+   - `@biomejs/biome`, `oxlint` - build only (devDependencies)
+
 ## Architecture Pattern
 
 GNO uses **"Ports without DI"** - a pragmatic simplification of hexagonal architecture:
