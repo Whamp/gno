@@ -32,15 +32,18 @@
 
 - slug: web-ui
   title: Web UI
-  headline: Visual Search at Your Fingertips
-  description: A local web dashboard for searching, browsing documents, and getting AI answers. Switch model presets live, download models in-browser, and explore your knowledge visually.
+  headline: Your Knowledge Dashboard
+  description: A local web dashboard for searching, browsing, creating, and editing documents. Full-featured markdown editor with live preview, keyboard shortcuts, and AI-powered answers—all running 100% locally.
   icon: globe
   benefits:
-    - Visual search interface
-    - Document browser with filtering
+    - Split-view markdown editor with live preview
+    - Quick capture (⌘N) for instant note creation
+    - Create, edit, and delete documents
+    - Collection management (add, remove, re-index)
+    - Visual search with BM25, vector, and hybrid modes
     - AI answers with citations
-    - Live preset switching
-    - In-browser model download
+    - Keyboard-first design (⌘N, ⌘K, ⌘S, ⌘B, ⌘I)
+    - Live preset switching and model download
     - 100% local, no cloud
   commands:
     - "gno serve"

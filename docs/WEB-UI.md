@@ -1,6 +1,6 @@
 # Web UI
 
-A local web dashboard for visual search, document browsing, and AI-powered answers.
+A local web dashboard for visual search, document browsing, editing, and AI-powered answers.
 
 ```bash
 gno serve
@@ -9,20 +9,21 @@ gno serve
 
 ![GNO Web UI Dashboard](../assets/screenshots/webui-home.jpg)
 
-![GNO Web UI Ask](../assets/screenshots/webui-ask-answer.jpg)
-
 ---
 
 ## Overview
 
-The GNO Web UI provides a graphical interface to your local knowledge index. Everything runs on your machine—no cloud, no accounts, no data leaving your network.
+The GNO Web UI provides a complete graphical interface to your local knowledge index. Create, edit, search, and manage your documents—all running on your machine with no cloud dependencies.
 
-| Page          | Purpose                                           |
-| :------------ | :------------------------------------------------ |
-| **Dashboard** | Index stats, collections, quick navigation        |
-| **Search**    | BM25, vector, or hybrid search with mode selector |
-| **Browse**    | Paginated document list, filter by collection     |
-| **Ask**       | AI-powered Q&A with citations                     |
+| Page            | Purpose                                           |
+| :-------------- | :------------------------------------------------ |
+| **Dashboard**   | Index stats, collections, quick capture           |
+| **Search**      | BM25, vector, or hybrid search with mode selector |
+| **Browse**      | Paginated document list, filter by collection     |
+| **Doc View**    | View document with edit/delete actions            |
+| **Editor**      | Split-view markdown editor with live preview      |
+| **Collections** | Add, remove, and re-index collections             |
+| **Ask**         | AI-powered Q&A with citations                     |
 
 ---
 
@@ -42,12 +43,23 @@ Navigate to `http://localhost:3000`. The dashboard shows:
 
 - **Document count** — Total indexed documents
 - **Chunk count** — Text segments for search
-- **Health status** — Index state
 - **Collections** — Click to browse by source
+- **Quick Capture** — Create new notes instantly
 
-### 3. Search
+### 3. Create a Note
 
-Click **Search** or press `/`. Choose your mode:
+Press **⌘N** (or click the floating + button) to open Quick Capture:
+
+1. Enter a title
+2. Write your content (markdown supported)
+3. Select a collection
+4. Click **Create note**
+
+The document is saved to disk and indexed automatically.
+
+### 4. Search
+
+Click **Search** or press **⌘K**. Choose your mode:
 
 | Mode   | Description                |
 | :----- | :------------------------- |
@@ -55,11 +67,110 @@ Click **Search** or press `/`. Choose your mode:
 | Vector | Semantic similarity        |
 | Hybrid | Best of both (recommended) |
 
-### 4. Ask Questions
+### 5. Ask Questions
 
 Click **Ask** for AI-powered answers. Type your question—GNO searches your documents and synthesizes an answer with citations.
 
-> **Note**: Models auto-download on first use. Initial startup may take a moment while models download.
+> **Note**: Models auto-download on first use. Initial startup may take a moment.
+
+---
+
+## Document Editing
+
+### Editor Features
+
+![GNO Document Editor](../assets/screenshots/webui-editor.jpg)
+
+The split-view editor provides:
+
+| Feature              | Description                                |
+| :------------------- | :----------------------------------------- |
+| **CodeMirror 6**     | Modern editor with markdown syntax support |
+| **Live Preview**     | Side-by-side markdown rendering            |
+| **Auto-save**        | 2-second debounced saves                   |
+| **Syntax Highlight** | Code blocks with Shiki highlighting        |
+| **Unsaved Warning**  | Confirmation dialog before losing changes  |
+| **Toggle Preview**   | Show/hide preview pane                     |
+
+### Keyboard Shortcuts
+
+Press **⌘/** (Cmd+/) to view all shortcuts.
+
+#### Global Shortcuts
+
+| Shortcut | Action              |
+| :------- | :------------------ |
+| ⌘N       | New note (anywhere) |
+| ⌘K       | Focus search        |
+| ⌘/       | Show shortcut help  |
+| Escape   | Close modal         |
+
+#### Editor Shortcuts
+
+| Shortcut | Action           |
+| :------- | :--------------- |
+| ⌘S       | Save immediately |
+| ⌘B       | Bold selection   |
+| ⌘I       | Italic selection |
+| ⌘K       | Insert link      |
+| Escape   | Close editor     |
+
+### Opening the Editor
+
+From any document view, click **Edit** to open the split-view editor. Changes are auto-saved after 2 seconds of inactivity.
+
+### Creating Documents
+
+Use Quick Capture (⌘N) for new notes:
+
+1. Enter a title (generates filename automatically)
+2. Write content in markdown
+3. Select target collection
+4. Click **Create note**
+
+The file is written to the collection's folder and indexed immediately.
+
+### Deleting Documents
+
+From document view, click the trash icon. This:
+
+- Removes the document from the search index
+- Does **NOT** delete the file from disk
+- Document may re-appear on next sync unless excluded
+
+---
+
+## Collections Management
+
+### Collections Page
+
+![GNO Collections](../assets/screenshots/webui-collections.jpg)
+
+View and manage your document collections:
+
+- **Document count** — Files indexed
+- **Chunk count** — Text segments created
+- **Embedded %** — Vector embedding progress
+- **Re-index** — Update collection index
+- **Remove** — Delete collection from config
+
+### Adding Collections
+
+Click **Add Collection** and provide:
+
+1. **Path** — Folder path (e.g., `~/Documents/notes`)
+2. **Name** — Optional (defaults to folder name)
+3. **Pattern** — Glob pattern (e.g., `**/*.md`)
+
+The collection is added to config and indexed immediately.
+
+### Removing Collections
+
+Click the menu (⋮) on any collection card and select **Remove**. This:
+
+- Removes collection from configuration
+- Keeps indexed documents in database
+- Documents won't appear in future syncs
 
 ---
 
@@ -69,7 +180,7 @@ Click **Ask** for AI-powered answers. Type your question—GNO searches your doc
 
 Switch between model presets without restarting:
 
-1. Click the preset selector (top-left of header)
+1. Click the preset selector (top-right of header)
 2. Choose: **Slim** (fast), **Balanced** (default), or **Quality** (best answers)
 3. GNO reloads models automatically
 
@@ -88,7 +199,13 @@ If models aren't downloaded, the preset selector shows a warning icon. Download 
 3. Watch progress bar as models download
 4. Capabilities auto-enable when complete
 
-The download runs in background—you can continue using BM25 search while models download.
+### Indexing Progress
+
+When syncing or adding collections, a progress indicator shows:
+
+- Current phase (scanning, parsing, chunking, embedding)
+- Files processed
+- Elapsed time
 
 ### Search Modes
 
@@ -107,7 +224,8 @@ Browse all indexed documents:
 - Filter by collection
 - Paginated results (20 per page)
 - Click any document to view content
-- Shows file path, type, last modified
+- Breadcrumb navigation within collections
+- Edit and delete actions on each document
 
 ### AI Answers
 
@@ -142,8 +260,6 @@ gno serve [options]
 | `HF_HUB_OFFLINE=1`       | Offline mode: use cached models only                     |
 | `GNO_NO_AUTO_DOWNLOAD=1` | Disable auto-download (allow explicit `gno models pull`) |
 
-Models auto-download on first use. Use offline variables in air-gapped environments.
-
 ---
 
 ## Security
@@ -156,17 +272,15 @@ The Web UI is designed for local use only:
 | **CSP headers**           | Strict Content-Security-Policy on all responses   |
 | **CORS protection**       | Cross-origin requests blocked                     |
 | **No external resources** | No CDN fonts, scripts, or tracking                |
+| **Path traversal guard**  | Write operations validate paths stay within root  |
 
 > **Warning**: Do not expose `gno serve` to the internet. It has no authentication.
 
-> **Pro tip**: Want remote access to your second brain? Since GNO binds to localhost only, use a tunnel:
+> **Pro tip**: Want remote access? Use a tunnel:
 >
-> - [Tailscale Serve](https://tailscale.com/kb/1312/serve) — Expose to your Tailnet (private, your devices only)
-> - [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) — Free tier, add Cloudflare Access for auth
+> - [Tailscale Serve](https://tailscale.com/kb/1312/serve) — Expose to your Tailnet
+> - [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) — Free tier with auth
 > - [ngrok](https://ngrok.com/) — Quick setup, supports basic auth
-> - [localcan](https://localcan.com/) — macOS-native, simple
->
-> These handle auth/encryption so you can safely access GNO from anywhere.
 
 ---
 
@@ -178,8 +292,15 @@ Browser
    ▼
 ┌─────────────────────────────────────┐
 │  Bun.serve() on 127.0.0.1:3000     │
-│  ├── React SPA (/, /search, etc.)  │
-│  └── REST API (/api/*)             │
+│  ├── React SPA                      │
+│  │   ├── Dashboard (/, stats)       │
+│  │   ├── Search (/search)           │
+│  │   ├── Browse (/browse)           │
+│  │   ├── DocView (/doc)             │
+│  │   ├── Editor (/edit)             │
+│  │   ├── Collections (/collections) │
+│  │   └── Ask (/ask)                 │
+│  └── REST API (/api/*)              │
 ├─────────────────────────────────────┤
 │  ServerContext                      │
 │  ├── SqliteAdapter (FTS5)          │
@@ -189,71 +310,59 @@ Browser
 └─────────────────────────────────────┘
 ```
 
-The frontend is a React SPA served by Bun's fullstack dev server. API routes handle search, document retrieval, and AI answers.
-
 ---
 
 ## Troubleshooting
 
 ### "Port already in use"
 
-Another process is using port 3000:
-
 ```bash
 gno serve --port 3001
-```
-
-Or find and kill the process:
-
-```bash
+# Or find and kill the process:
 lsof -i :3000
 kill -9 <PID>
 ```
 
 ### "No results" in search
 
-Ensure documents are indexed:
-
 ```bash
 gno status
 gno ls
-```
-
-If empty, run indexing:
-
-```bash
+# If empty, run:
 gno index
 ```
 
 ### AI answers not working
 
-Check if generation model is available:
-
 ```bash
 gno models list
-```
-
-Download if needed:
-
-```bash
 gno models pull
 ```
 
-### Slow performance
+### Editor not loading content
 
-- Use **Slim** preset for faster responses
-- Reduce result limit in search
-- Check disk space for model cache
+Refresh the page. If content still doesn't appear, check browser console for errors.
+
+### Changes not saving
+
+- Check browser console for API errors
+- Verify collection folder has write permissions
+- Check disk space
 
 ---
 
 ## API Access
 
-The Web UI is powered by a REST API that you can also use programmatically. See the [API Reference](./API.md) for curl examples and endpoint documentation.
+The Web UI is powered by a REST API. See [API Reference](./API.md) for details.
 
 ```bash
-# Example: Search via API
-curl -X POST http://localhost:3000/api/query \
+# Create document
+curl -X POST http://localhost:3000/api/docs \
   -H "Content-Type: application/json" \
-  -d '{"query": "authentication patterns"}'
+  -d '{"collection": "notes", "relPath": "new-note.md", "content": "# Hello"}'
+
+# Update document
+curl -X PUT http://localhost:3000/api/docs/abc123 \
+  -H "Content-Type: application/json" \
+  -d '{"content": "# Updated content"}'
 ```

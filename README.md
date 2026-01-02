@@ -122,7 +122,7 @@ Output formats: `--json`, `--files`, `--csv`, `--md`, `--xml`
 
 ## Web UI
 
-Visual dashboard for search, browsing, and AI answers—right in your browser.
+Visual dashboard for search, browsing, editing, and AI answers—right in your browser.
 
 ```bash
 gno serve                    # Start on port 3000
@@ -135,8 +135,33 @@ Open `http://localhost:3000` to:
 
 - **Search** — BM25, vector, or hybrid modes with visual results
 - **Browse** — Paginated document list, filter by collection
+- **Edit** — Create, edit, and delete documents with live preview
 - **Ask** — AI-powered Q&A with citations
+- **Manage Collections** — Add, remove, and re-index collections
 - **Switch presets** — Change models live without restart
+
+### Document Editing
+
+![GNO Document Editor](./assets/screenshots/webui-editor.jpg)
+
+Full-featured markdown editor with:
+
+| Feature                 | Description                          |
+| :---------------------- | :----------------------------------- |
+| **Split View**          | Side-by-side editor and live preview |
+| **Auto-save**           | 2-second debounced saves             |
+| **Syntax Highlighting** | CodeMirror 6 with markdown support   |
+| **Keyboard Shortcuts**  | ⌘S save, ⌘B bold, ⌘I italic, ⌘K link |
+| **Quick Capture**       | ⌘N creates new note from anywhere    |
+
+### Collections Management
+
+![GNO Collections](./assets/screenshots/webui-collections.jpg)
+
+- Add collections with folder path input
+- View document count, chunk count, embedding status
+- Re-index individual collections
+- Remove collections (documents preserved)
 
 Everything runs locally. No cloud, no accounts, no data leaving your machine.
 
@@ -163,17 +188,24 @@ curl -X POST http://localhost:3000/api/ask \
 curl http://localhost:3000/api/status
 ```
 
-| Endpoint             | Method   | Description                 |
-| :------------------- | :------- | :-------------------------- |
-| `/api/query`         | POST     | Hybrid search (recommended) |
-| `/api/search`        | POST     | BM25 keyword search         |
-| `/api/ask`           | POST     | AI-powered Q&A              |
-| `/api/docs`          | GET      | List documents              |
-| `/api/doc`           | GET      | Get document content        |
-| `/api/status`        | GET      | Index statistics            |
-| `/api/presets`       | GET/POST | Model preset management     |
-| `/api/models/pull`   | POST     | Download models             |
-| `/api/models/status` | GET      | Download progress           |
+| Endpoint                   | Method | Description                 |
+| :------------------------- | :----- | :-------------------------- |
+| `/api/query`               | POST   | Hybrid search (recommended) |
+| `/api/search`              | POST   | BM25 keyword search         |
+| `/api/ask`                 | POST   | AI-powered Q&A              |
+| `/api/docs`                | GET    | List documents              |
+| `/api/docs`                | POST   | Create document             |
+| `/api/docs/:id`            | PUT    | Update document content     |
+| `/api/docs/:id/deactivate` | POST   | Remove from index           |
+| `/api/doc`                 | GET    | Get document content        |
+| `/api/collections`         | POST   | Add collection              |
+| `/api/collections/:name`   | DELETE | Remove collection           |
+| `/api/sync`                | POST   | Trigger re-index            |
+| `/api/status`              | GET    | Index statistics            |
+| `/api/presets`             | GET    | List model presets          |
+| `/api/presets`             | POST   | Switch preset               |
+| `/api/models/pull`         | POST   | Download models             |
+| `/api/models/status`       | GET    | Download progress           |
 
 No authentication. No rate limits. Build custom tools, automate workflows, integrate with any language.
 
@@ -253,18 +285,20 @@ graph TD
 
 ## Features
 
-| Feature           | Description                                          |
-| :---------------- | :--------------------------------------------------- |
-| **Hybrid Search** | BM25 + vector + RRF fusion + cross-encoder reranking |
-| **Web UI**        | Visual dashboard for search, browse, and AI Q&A      |
-| **REST API**      | HTTP API for custom tools and integrations           |
-| **Multi-Format**  | Markdown, PDF, DOCX, XLSX, PPTX, plain text          |
-| **Local LLM**     | AI answers via llama.cpp—no API keys                 |
-| **Privacy First** | 100% offline, zero telemetry, your data stays yours  |
-| **MCP Server**    | Works with Claude Desktop, Cursor, Zed, + 8 more     |
-| **Collections**   | Organize sources with patterns, excludes, contexts   |
-| **Multilingual**  | 30+ languages, auto-detection, cross-lingual search  |
-| **Incremental**   | SHA-256 tracking—only changed files re-indexed       |
+| Feature             | Description                                           |
+| :------------------ | :---------------------------------------------------- |
+| **Hybrid Search**   | BM25 + vector + RRF fusion + cross-encoder reranking  |
+| **Document Editor** | Create, edit, delete docs with live markdown preview  |
+| **Web UI**          | Visual dashboard for search, browse, edit, and AI Q&A |
+| **REST API**        | HTTP API for custom tools and integrations            |
+| **Multi-Format**    | Markdown, PDF, DOCX, XLSX, PPTX, plain text           |
+| **Local LLM**       | AI answers via llama.cpp—no API keys                  |
+| **Privacy First**   | 100% offline, zero telemetry, your data stays yours   |
+| **MCP Server**      | Works with Claude Desktop, Cursor, Zed, + 8 more      |
+| **Collections**     | Organize sources with patterns, excludes, contexts    |
+| **Multilingual**    | 30+ languages, auto-detection, cross-lingual search   |
+| **Incremental**     | SHA-256 tracking—only changed files re-indexed        |
+| **Keyboard First**  | ⌘N capture, ⌘K search, ⌘/ shortcuts, ⌘S save          |
 
 ---
 

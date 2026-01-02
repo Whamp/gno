@@ -230,7 +230,10 @@ Add a folder to the index as a new collection. Starts background indexing job.
 ```json
 {
   "jobId": "550e8400-e29b-41d4-a716-446655440000",
-  "collection": "notes"
+  "collection": {
+    "name": "notes",
+    "path": "/Users/you/notes"
+  }
 }
 ```
 
