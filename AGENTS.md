@@ -1,138 +1,269 @@
-## Bun-First Development
+**Note**: This project uses [bd (beads)](https://github.com/steveyegge/beads) for issue tracking. Use `bd` commands instead of markdown TODOs.
 
-**CRITICAL**: This project uses Bun, not Node.js. Always prefer Bun native APIs.
+Default to using Bun instead of Node.js.
 
-### Before Adding Any `node:*` Import
+- Use `bun <file>` instead of `node <file>` or `ts-node <file>`
+- Use `bun test` instead of `jest` or `vitest`
+- Use `bun build <file.html|file.ts|file.css>` instead of `webpack` or `esbuild`
+- Use `bun install` instead of `npm install` or `yarn install` or `pnpm install`
+- Use `bun run <script>` instead of `npm run <script>` or `yarn run <script>` or `pnpm run <script>`
+- Bun automatically loads .env, so don't use dotenv.
 
-1. **Check CLAUDE.md** - Is there a Bun alternative listed?
-2. **Search Bun docs** - `node_modules/bun-types/docs/**.md`
-3. **Only if no alternative exists** - Use node:\* with a comment explaining why
+## APIs - BUN FIRST!
 
-### Common Mistakes to Avoid
+**CRITICAL**: Always prefer Bun native APIs over Node.js equivalents. Search for Bun alternatives before using `node:*` imports.
 
-```typescript
-// ❌ BAD: Using node:fs for file reads
-import { readFile } from 'node:fs/promises';
-const content = await readFile(path, 'utf8');
+### Must Use Bun
 
-// ✅ GOOD: Using Bun.file
-const content = await Bun.file(path).text();
+| Task            | Use This                    | NOT This                   |
+| --------------- | --------------------------- | -------------------------- |
+| HTTP server     | `Bun.serve()`               | express, fastify, koa      |
+| SQLite          | `bun:sqlite`                | better-sqlite3, sqlite3    |
+| Redis           | `Bun.redis`                 | ioredis, redis             |
+| Postgres        | `Bun.sql`                   | pg, postgres.js            |
+| WebSockets      | `WebSocket` (built-in)      | ws                         |
+| File read/write | `Bun.file()`, `Bun.write()` | node:fs readFile/writeFile |
+| File existence  | `Bun.file(path).exists()`   | node:fs stat/access        |
+| Shell commands  | `Bun.$\`cmd\``              | execa, child_process       |
+| YAML            | `Bun.YAML`                  | js-yaml, yaml              |
+| Env loading     | (automatic)                 | dotenv                     |
 
-// ❌ BAD: Using stat for existence check
-import { stat } from 'node:fs/promises';
-try { await stat(path); } catch { /* not found */ }
+### Acceptable node:\* (No Bun Equivalent)
 
-// ✅ GOOD: Using Bun.file or pathExists utility
-const exists = await Bun.file(path).exists();
-// or for files AND directories:
-import { pathExists } from '../config';
-const exists = await pathExists(path);
+| Module             | Functions                                      | Why                           |
+| ------------------ | ---------------------------------------------- | ----------------------------- |
+| `node:path`        | join, dirname, basename, isAbsolute, normalize | No Bun path utils             |
+| `node:os`          | homedir, platform, tmpdir                      | No Bun os utils               |
+| `node:fs/promises` | mkdir, rename, unlink, rm, mkdtemp             | Filesystem structure ops only |
 
-// ❌ BAD: Using external YAML lib
-import yaml from 'js-yaml';
+**Rule**: If you add a `node:*` import, comment WHY there's no Bun alternative.
 
-// ✅ GOOD: Using Bun.YAML
-const data = Bun.YAML.parse(content);
-const str = Bun.YAML.stringify(obj);
+## Testing
+
+Use `bun test` to run tests.
+
+```ts#index.test.ts
+import { test, expect } from "bun:test";
+
+test("hello world", () => {
+  expect(1).toBe(1);
+});
 ```
 
-### Acceptable node:\* Uses
+## Development Scripts
 
-- `node:path` - path manipulation (join, dirname, etc.)
-- `node:os` - system info (homedir, platform)
-- `node:fs/promises` - filesystem structure ONLY (mkdir, rename, unlink)
+**scripts/** - Development and testing utilities (not published)
 
----
+| Script                      | Purpose                                                                                                                    |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `perf-test.ts`              | Performance testing for search pipeline. Tests different configurations (expand/rerank combinations) and measures timing.  |
+| `test-rerank-size.ts`       | Tests reranker performance at different document sizes (1K-128K chars). Used to identify optimal chunk size for reranking. |
+| `docs-verify.ts`            | Verifies documentation is up-to-date with implementation.                                                                  |
+| `generate-test-fixtures.ts` | Generates test fixtures for unit tests.                                                                                    |
 
-## Spec-Driven Development
-
-GNO follows spec-driven development. **No implementation merges without spec updates and contract tests.**
-
-### Spec Files
-
-| File                         | Purpose                                         |
-| ---------------------------- | ----------------------------------------------- |
-| `spec/cli.md`                | CLI commands, flags, exit codes, output formats |
-| `spec/mcp.md`                | MCP tools, resources, schemas, versioning       |
-| `spec/output-schemas/*.json` | JSON Schema (draft-07) for all outputs          |
-| `spec/db/schema.sql`         | Database schema and migrations                  |
-| `docs/prd.md`                | Full PRD (§14-16 for interface contracts)       |
-
-### Workflow
-
-1. **Before implementing**: Read the relevant spec
-2. **If spec is missing/incomplete**: Update spec first, get review
-3. **Add/update JSON schema** if output shape changes
-4. **Add contract tests** in `test/spec/schemas/`
-5. **Implement the feature**
-6. **Verify**: `bun test` passes
-
-### Contract Tests
-
-Contract tests validate JSON outputs against schemas using Ajv:
+**Usage:**
 
 ```bash
-bun test                           # run all tests
-bun test test/spec/schemas/        # run schema tests only
+bun scripts/perf-test.ts        # Run full performance test suite
+bun scripts/test-rerank-size.ts # Test rerank scaling with doc size
 ```
 
-### Definition of Done (per epic)
+## Directory Structure
 
-From PRD §21:
+**docs/** - User-facing documentation only. Published to website.
 
-- Specs updated and reviewed
-- Contract tests and golden fixtures added/updated
-- Unit and integration tests pass
-- Eval gates pass where applicable
-- CLI help updated
+- QUICKSTART.md, CLI.md, CONFIGURATION.md, etc.
+- Do NOT put internal docs, spikes, plans, or dev notes here
 
-### Documentation Drift Prevention
+**notes/** - Internal documentation, spikes, plans, dev notes (gitignored)
 
-**CRITICAL**: After completing ANY task, run this checklist:
+- Not published, not user-facing, not tracked in git
+- Spike results, implementation plans, architecture decisions
+
+**spec/** - Interface contracts and schemas (see `spec/CLAUDE.md`)
+
+**src/cli/** - CLI commands (see `src/cli/CLAUDE.md`)
+
+**src/mcp/** - MCP server (see `src/mcp/CLAUDE.md`)
+
+**src/serve/** - Web UI server (see `src/serve/CLAUDE.md`)
+
+**test/** - Test suite (see `test/CLAUDE.md`)
+
+**website/** - Jekyll documentation site (see `website/CLAUDE.md`)
+
+## Versioning & Release
+
+Version is managed in `package.json` (single source of truth). `src/app/constants.ts` imports it.
+
+**IMPORTANT**: Bump version on EVERY merge to main:
+
+- Features/new functionality → `version:minor`
+- Bug fixes/patches → `version:patch`
+- Breaking changes → `version:major`
+
+**Bump version:**
+
+```bash
+bun run version:patch   # 0.1.0 → 0.1.1 (bug fixes)
+bun run version:minor   # 0.1.0 → 0.2.0 (features)
+bun run version:major   # 0.1.0 → 1.0.0 (breaking)
+```
+
+**Release workflow:**
+
+```bash
+bun run prerelease       # lint:check + test
+bun run release:dry-run  # trigger CI without publishing
+bun run release:trigger  # trigger CI with publish (uses OIDC, no token needed)
+```
+
+**Manual workflow dispatch:**
+
+```bash
+gh workflow run publish.yml -f publish=false  # dry run
+gh workflow run publish.yml -f publish=true   # actual publish
+```
+
+**Post-merge workflow (EVERY merge to main):**
+
+1. `bun run version:patch` (or minor/major based on changes)
+2. **Update CHANGELOG.md** - Move [Unreleased] items to new version section
+3. `git add package.json CHANGELOG.md`
+4. `git commit -m "chore: bump to vX.Y.Z"`
+5. `git tag vX.Y.Z && git push --tags`
+6. Workflow auto-triggers on `v*` tag push
+
+**Note**: `website/changelog.md` is auto-copied from root CHANGELOG.md during build (gitignored).
+
+**CHANGELOG format** (Keep a Changelog):
+
+```markdown
+## [Unreleased]
+### Added
+- New feature description
+
+## [0.2.0] - 2025-01-15
+### Added
+- Feature from this release
+### Fixed
+- Bug that was fixed
+```
+
+**Requirements:**
+
+- Configure npm trusted publisher at https://www.npmjs.com/package/@gmickel/gno/access
+  - Owner: `gmickel`, Repo: `gno`, Workflow: `publish.yml`
+
+## CI/CD
+
+See [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) for CI matrix, caching, and release process.
+
+## npm Package Gotchas
+
+**"Works locally, breaks on npm install"** - Check these:
+
+1. **`files` array in package.json** - Only listed files/dirs ship to npm
+   - Runtime deps must be in `dependencies`, not `devDependencies`
+   - Config files like `bunfig.toml` must be explicitly listed
+   - Current: `assets`, `bunfig.toml`, `src`, `THIRD_PARTY_NOTICES.md`, `vendor`
+
+2. **bunfig.toml** - Required for Bun.serve() plugins
+   - Must be in `files` array to ship with npm package
+   - Contains `[serve.static] plugins = ["bun-plugin-tailwind"]` for CSS
+
+3. **Dependencies vs devDependencies**
+   - `tailwindcss`, `bun-plugin-tailwind` - runtime (dependencies)
+   - `@biomejs/biome`, `oxlint` - build only (devDependencies)
+
+4. **Pre-built assets** - Some things can't resolve at runtime from global installs
+   - CSS is pre-built with `bun run build:css` (CI runs this before publish)
+   - `globals.built.css` ships in package, `globals.css` is source
+
+**Test npm package locally:**
+
+```bash
+# Build and pack
+bun run build:css && npm pack
+
+# Install globally from tarball
+npm install -g ./gmickel-gno-*.tgz
+
+# Test
+gno --version
+gno serve  # Check CSS loads at http://localhost:3000
+
+# Cleanup
+npm uninstall -g @gmickel/gno
+rm gmickel-gno-*.tgz
+```
+
+## Architecture Pattern
+
+GNO uses **"Ports without DI"** - a pragmatic simplification of hexagonal architecture:
+
+- **Port interfaces exist**: `EmbeddingPort`, `GenerationPort`, `RerankPort`, `VectorIndexPort`
+- **Pipeline code receives ports as params**: Enables testing, clear dependencies
+- **No dependency injection**: Adapters instantiated directly in commands (`new LlmAdapter()`, `new SqliteAdapter()`)
+- **Single implementation per port**: No swappable backends (only node-llama-cpp, only SQLite)
+
+This is intentional - full hexagonal would add complexity without benefit for a CLI tool with fixed backends.
 
 ```
-[ ] README.md         - Current capabilities documented?
-[ ] CLAUDE.md         - Agent instructions accurate?
-[ ] AGENTS.md         - Workflow guidance current?
-[ ] spec/*.md         - Specs match implementation?
-[ ] spec/output-schemas/*.json - Schemas match outputs?
-[ ] docs/prd.md       - Completed items marked ✓?
-[ ] Beads             - Comments/descriptions current?
+CLI/MCP/Serve → new Adapter() → adapter.createPort() → Port interface → Pipeline
 ```
 
-**Rules:**
+## Specifications
 
-- Update docs in the SAME commit as code changes
-- Never merge code that makes docs stale
-- If behavior changes, docs MUST change too
-- Add bead comments when specs are relevant to a task
+**IMPORTANT**: Before implementing CLI commands, MCP tools, or output formats, consult the specs:
 
-## Landing the Plane (Session Completion)
+- `spec/cli.md` - CLI commands, flags, exit codes, output formats
+- `spec/mcp.md` - MCP tools, resources, schemas, versioning
+- `spec/output-schemas/*.json` - JSON schemas for all structured outputs
+- `spec/db/schema.sql` - Database schema (when implemented)
 
-**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+Contract tests in `test/spec/schemas/` validate outputs against schemas. Run `bun test` to verify compliance.
 
-**MANDATORY WORKFLOW:**
+When adding new commands or modifying outputs:
 
-1. **File issues for remaining work** - Create issues for anything that needs follow-up
-2. **Run quality gates** (if code changed) - Tests, linters, builds
-3. **Update issue status** - Close finished work, update in-progress items
-4. **PUSH TO REMOTE** - This is MANDATORY:
-   ```bash
-   git pull --rebase
-   bd sync
-   git push
-   git status  # MUST show "up to date with origin"
-   ```
-5. **Clean up** - Clear stashes, prune remote branches
-6. **Verify** - All changes committed AND pushed
-7. **Hand off** - Provide context for next session
+1. Update the relevant spec first
+2. Add/update JSON schema if output shape changes
+3. Add contract tests for the schema
+4. Implement the feature
+5. Verify tests pass
 
-**CRITICAL RULES:**
+### Avoiding Documentation Drift
 
-- Work is NOT complete until `git push` succeeds
-- NEVER stop before pushing - that leaves work stranded locally
-- NEVER say "ready to push when you are" - YOU must push
-- If push fails, resolve and retry until it succeeds
+**CRITICAL**: After completing any task, verify documentation is current:
+
+- [ ] README.md - Does it reflect current capabilities?
+- [ ] CLAUDE.md / AGENTS.md - Are instructions still accurate?
+- [ ] spec/\*.md - Do specs match implementation?
+- [ ] spec/output-schemas/\*.json - Do schemas match actual outputs?
+- [ ] docs/\*.md - User-facing docs accurate?
+  - CLI.md, QUICKSTART.md, ARCHITECTURE.md
+  - WEB-UI.md, API.md (for `gno serve` and REST API)
+  - MCP.md (for `gno mcp`)
+- [ ] website/\_data/features.yml - Feature bento cards current?
+- [ ] website/ - Auto-synced from docs/ via `bun run website:sync-docs`
+- [ ] Beads - Are descriptions and comments up to date?
+
+**Website sync**: The `website/docs/` directory is auto-populated from `docs/` during build.
+Run `bun run website:sync-docs` to manually sync. CHANGELOG.md is also copied.
+
+If you change behavior, update docs in the same commit. Never leave docs out of sync.
+
+## Session Completion
+
+**When ending a work session:**
+
+1. **File issues** - Create beads for remaining/discovered work
+2. **Quality gates** (if code changed) - `bun run lint:check && bun test`
+3. **Update beads** - Close finished, update in-progress
+4. **Sync & push** - `bd sync && git push` (see Versioning for release pushes)
+5. **Verify** - `git status` shows up to date with origin
+
+Work is NOT complete until pushed to remote.
 
 <!-- BEGIN BEADS INTEGRATION -->
 

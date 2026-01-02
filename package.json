@@ -54,6 +54,7 @@
     "website:dev": "cd website && make serve",
     "website:build": "cd website && make build",
     "website:demos": "cd website/demos && ./build-demos.sh",
+    "sync:agents": "scripts/sync-agents.sh",
     "build:css": "bunx @tailwindcss/cli -i src/serve/public/globals.css -o src/serve/public/globals.built.css --minify",
     "serve": "bun src/index.ts serve",
     "serve:dev": "NODE_ENV=development bun --hot src/index.ts serve",

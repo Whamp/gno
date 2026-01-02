@@ -80,7 +80,17 @@ bun scripts/test-rerank-size.ts # Test rerank scaling with doc size
 - Not published, not user-facing, not tracked in git
 - Spike results, implementation plans, architecture decisions
 
-**spec/** - Interface contracts and schemas
+**spec/** - Interface contracts and schemas (see `spec/CLAUDE.md`)
+
+**src/cli/** - CLI commands (see `src/cli/CLAUDE.md`)
+
+**src/mcp/** - MCP server (see `src/mcp/CLAUDE.md`)
+
+**src/serve/** - Web UI server (see `src/serve/CLAUDE.md`)
+
+**test/** - Test suite (see `test/CLAUDE.md`)
+
+**website/** - Jekyll documentation site (see `website/CLAUDE.md`)
 
 ## Versioning & Release
 
@@ -243,150 +253,17 @@ Run `bun run website:sync-docs` to manually sync. CHANGELOG.md is also copied.
 
 If you change behavior, update docs in the same commit. Never leave docs out of sync.
 
-## Frontend
+## Session Completion
 
-Use HTML imports with `Bun.serve()`. Don't use `vite`. HTML imports fully support React, CSS, Tailwind.
+**When ending a work session:**
 
-Server:
+1. **File issues** - Create beads for remaining/discovered work
+2. **Quality gates** (if code changed) - `bun run lint:check && bun test`
+3. **Update beads** - Close finished, update in-progress
+4. **Sync & push** - `bd sync && git push` (see Versioning for release pushes)
+5. **Verify** - `git status` shows up to date with origin
 
-```ts#index.ts
-import index from "./index.html"
-
-Bun.serve({
-  routes: {
-    "/": index,
-    "/api/users/:id": {
-      GET: (req) => {
-        return new Response(JSON.stringify({ id: req.params.id }));
-      },
-    },
-  },
-  // optional websocket support
-  websocket: {
-    open: (ws) => {
-      ws.send("Hello, world!");
-    },
-    message: (ws, message) => {
-      ws.send(message);
-    },
-    close: (ws) => {
-      // handle close
-    }
-  },
-  development: {
-    hmr: true,
-    console: true,
-  }
-})
-```
-
-HTML files can import .tsx, .jsx or .js files directly and Bun's bundler will transpile & bundle automatically. `<link>` tags can point to stylesheets and Bun's CSS bundler will bundle.
-
-```html#index.html
-<html>
-  <body>
-    <h1>Hello, world!</h1>
-    <script type="module" src="./frontend.tsx"></script>
-  </body>
-</html>
-```
-
-With the following `frontend.tsx`:
-
-```tsx#frontend.tsx
-import React from "react";
-
-// import .css files directly and it works
-import './index.css';
-
-import { createRoot } from "react-dom/client";
-
-const root = createRoot(document.body);
-
-export default function Frontend() {
-  return <h1>Hello, world!</h1>;
-}
-
-root.render(<Frontend />);
-```
-
-Then, run index.ts
-
-```sh
-bun --hot ./index.ts
-```
-
-For more information, read the Bun API docs in `node_modules/bun-types/docs/**.md`.
-
-## Terminal Demos (VHS)
-
-The documentation website includes animated terminal demos built with [VHS](https://github.com/charmbracelet/vhs).
-
-### Structure
-
-```
-website/
-├── demos/
-│   ├── build-demos.sh       # Build script
-│   └── tapes/               # VHS tape files
-│       ├── hero.tape
-│       ├── quickstart.tape
-│       └── search-modes.tape
-└── assets/demos/            # Generated GIFs
-```
-
-### Building Demos
-
-```bash
-# Build all demos
-bun run website:demos
-
-# Build specific demo
-./website/demos/build-demos.sh hero
-
-# List available tapes
-./website/demos/build-demos.sh
-```
-
-### Creating New Demos
-
-1. Create `website/demos/tapes/your-demo.tape`:
-
-```tape
-Output "your-demo.gif"
-Set Theme "TokyoNight"
-Set FontFamily "JetBrains Mono"
-Set FontSize 16
-Set Width 900
-Set Height 500
-
-# Hidden setup (not recorded)
-Hide
-Type `export DEMO_DIR=$(mktemp -d)`
-Enter
-# ... setup commands ...
-Show
-
-# Visible demo
-Type "gno search 'query'"
-Enter
-Sleep 3s
-```
-
-2. Build: `./website/demos/build-demos.sh your-demo`
-
-3. Use in docs:
-
-```html
-<div class="demo-container">
-  <img src="/assets/demos/your-demo.gif" alt="Demo" class="demo-gif">
-</div>
-```
-
-### Requirements
-
-- VHS: `brew install charmbracelet/tap/vhs`
-- GNO linked globally: `bun link`
+Work is NOT complete until pushed to remote.
 
 <!-- BEGIN BEADS INTEGRATION -->
 
