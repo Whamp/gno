@@ -80,6 +80,56 @@ gno mcp uninstall --target X    # Remove GNO from a target
 
 **Note**: Warp terminal requires manual UI configuration. See [Warp MCP docs](https://docs.warp.dev/knowledge-and-collaboration/mcp).
 
+## Raycast AI Integration
+
+Use GNO directly in [Raycast AI](https://www.raycast.com/core-features/ai) chat with `@gno` mentions.
+
+> **Requires**: Raycast Pro subscription (for AI features)
+
+### Setup
+
+**Option 1: Via Raycast UI**
+
+1. Open Raycast → Search "Install MCP Server"
+2. Configure:
+   - **Name**: `GNO`
+   - **Command**: `gno`
+   - **Args**: `mcp`
+
+**Option 2: Via Deeplink**
+
+Open in browser:
+
+```
+raycast://mcp/install?%7B%22name%22%3A%22GNO%22%2C%22command%22%3A%22gno%22%2C%22args%22%3A%5B%22mcp%22%5D%7D
+```
+
+### Usage
+
+In any Raycast AI chat:
+
+```
+@gno search for notes about TypeScript
+@gno what documents mention authentication?
+@gno how many collections do I have?
+@gno find my meeting notes from last week
+```
+
+Raycast AI will call GNO's MCP tools and synthesize answers from your indexed documents.
+
+### Model Quality Matters
+
+**Recommended**: Claude Sonnet 3.5+ or GPT-4+
+
+Smaller models may hallucinate incorrect parameters (e.g., wrong collection names). Sonnet 4.5 tested and works well.
+
+### Requirements
+
+- GNO installed and in PATH
+- At least one collection indexed (`gno add <path>`)
+- `gno serve` **NOT required** (MCP uses stdio, accesses SQLite directly)
+- Restart Raycast after PATH changes
+
 ## Manual Configuration
 
 ### Claude Desktop
