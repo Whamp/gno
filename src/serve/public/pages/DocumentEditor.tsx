@@ -16,8 +16,10 @@ import {
   CloudIcon,
   EyeIcon,
   EyeOffIcon,
+  LinkIcon,
   Loader2Icon,
   PenIcon,
+  UnlinkIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -131,10 +133,80 @@ export default function DocumentEditor({ navigate }: PageProps) {
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const [showPreview, setShowPreview] = useState(true);
+  const [syncScroll, setSyncScroll] = useState(true);
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
   const editorRef = useRef<CodeMirrorEditorRef>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+  // Event-based suppression: ignore the echo event caused by programmatic scroll
+  const ignoreNextEditorScroll = useRef(false);
+  const ignoreNextPreviewScroll = useRef(false);
 
   const hasUnsavedChanges = content !== originalContent;
+
+  // Reset ignore flags when sync is toggled to prevent stale state
+  useEffect(() => {
+    ignoreNextEditorScroll.current = false;
+    ignoreNextPreviewScroll.current = false;
+  }, [syncScroll, showPreview]);
+
+  // Scroll sync handlers with event-based loop prevention
+  // Note: Uses percentage-based mapping which provides approximate correspondence.
+  // For very different layouts (headings, code blocks, images), perfect alignment
+  // would require anchor-based mapping between editor lines and rendered elements.
+  const handleEditorScroll = useCallback(
+    (scrollPercent: number) => {
+      // Clear ignore flag first, even if we early-return (prevents lingering)
+      if (ignoreNextEditorScroll.current) {
+        ignoreNextEditorScroll.current = false;
+        return;
+      }
+      if (!syncScroll || !showPreview) return;
+      if (!Number.isFinite(scrollPercent)) return;
+
+      const clamped = Math.max(0, Math.min(1, scrollPercent));
+      const preview = previewRef.current;
+      if (!preview) return;
+
+      const maxScroll = preview.scrollHeight - preview.clientHeight;
+      if (maxScroll <= 0) return;
+
+      const targetScroll = clamped * maxScroll;
+      // Only set ignore flag if scroll position actually changes (avoids lingering flag)
+      if (Math.abs(preview.scrollTop - targetScroll) > 0.5) {
+        ignoreNextPreviewScroll.current = true;
+        preview.scrollTop = targetScroll;
+      }
+    },
+    [syncScroll, showPreview]
+  );
+
+  const handlePreviewScroll = useCallback(() => {
+    // Clear ignore flag first, even if we early-return (prevents lingering)
+    if (ignoreNextPreviewScroll.current) {
+      ignoreNextPreviewScroll.current = false;
+      return;
+    }
+    if (!syncScroll) return;
+
+    const preview = previewRef.current;
+    if (!preview) return;
+
+    const maxScroll = preview.scrollHeight - preview.clientHeight;
+    if (maxScroll <= 0) return;
+
+    const scrollPercentRaw = preview.scrollTop / maxScroll;
+    if (!Number.isFinite(scrollPercentRaw)) return;
+    const scrollPercent = Math.max(0, Math.min(1, scrollPercentRaw));
+
+    // Set ignore flag BEFORE programmatic scroll to prevent race condition
+    ignoreNextEditorScroll.current = true;
+    const didScroll =
+      editorRef.current?.scrollToPercent(scrollPercent) ?? false;
+    // Clear flag if no scroll actually occurred (avoids lingering)
+    if (!didScroll) {
+      ignoreNextEditorScroll.current = false;
+    }
+  }, [syncScroll]);
 
   // Save function
   const saveDocument = useCallback(
@@ -442,6 +514,36 @@ export default function DocumentEditor({ navigate }: PageProps) {
             </Tooltip>
           </TooltipProvider>
 
+          {/* Sync scroll toggle (only show when preview is visible) */}
+          {showPreview && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    aria-label={
+                      syncScroll ? "Disable scroll sync" : "Enable scroll sync"
+                    }
+                    className="transition-all duration-200"
+                    onClick={() => setSyncScroll(!syncScroll)}
+                    size="sm"
+                    variant={syncScroll ? "secondary" : "ghost"}
+                  >
+                    {syncScroll ? (
+                      <LinkIcon className="size-4" />
+                    ) : (
+                      <UnlinkIcon className="size-4" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    {syncScroll ? "Disable scroll sync" : "Enable scroll sync"}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+
           {/* Save button */}
           <Button
             disabled={!hasUnsavedChanges || saveStatus === "saving"}
@@ -468,13 +570,20 @@ export default function DocumentEditor({ navigate }: PageProps) {
             className="h-full"
             initialContent={content}
             onChange={handleContentChange}
+            onScroll={
+              syncScroll && showPreview ? handleEditorScroll : undefined
+            }
             ref={editorRef}
           />
         </div>
 
         {/* Preview pane */}
         {showPreview && (
-          <div className="w-1/2 min-h-0 overflow-auto bg-background p-6">
+          <div
+            className="w-1/2 min-h-0 overflow-auto bg-background p-6"
+            onScroll={handlePreviewScroll}
+            ref={previewRef}
+          >
             <div className="mx-auto max-w-3xl">
               <MarkdownPreview content={content} />
             </div>

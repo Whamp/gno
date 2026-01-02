@@ -21,6 +21,8 @@ export interface CodeMirrorEditorProps {
   initialContent: string;
   /** Called when content changes */
   onChange: (content: string) => void;
+  /** Called when scroll position changes (0-1 percentage) */
+  onScroll?: (scrollPercent: number) => void;
   /** Additional CSS classes */
   className?: string;
 }
@@ -36,20 +38,27 @@ export interface CodeMirrorEditorRef {
   wrapSelection: (prefix: string, suffix: string) => void;
   /** Insert text at cursor position */
   insertAtCursor: (text: string) => void;
+  /** Scroll to percentage position (0-1). Returns true if scroll actually changed. */
+  scrollToPercent: (percent: number) => boolean;
 }
 
 function CodeMirrorEditorInner(
-  { initialContent, onChange, className }: CodeMirrorEditorProps,
+  { initialContent, onChange, onScroll, className }: CodeMirrorEditorProps,
   ref: ForwardedRef<CodeMirrorEditorRef>
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
+  const onScrollRef = useRef(onScroll);
 
-  // Keep onChange ref current to avoid recreating editor on callback change
+  // Keep callback refs current to avoid recreating editor
   useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
+
+  useEffect(() => {
+    onScrollRef.current = onScroll;
+  }, [onScroll]);
 
   // Initialize CodeMirror
   useEffect(() => {
@@ -81,8 +90,28 @@ function CodeMirrorEditorInner(
       parent: containerRef.current,
     });
 
+    // Attach scroll listener directly to scrollDOM for reliable event capture
+    // (scroll events don't bubble, so domEventHandlers may miss them)
+    const scroller = view.scrollDOM;
+    const handleScroll = () => {
+      const maxScroll = scroller.scrollHeight - scroller.clientHeight;
+      if (maxScroll > 0 && onScrollRef.current) {
+        const percent = Math.max(
+          0,
+          Math.min(1, scroller.scrollTop / maxScroll)
+        );
+        if (Number.isFinite(percent)) {
+          onScrollRef.current(percent);
+        }
+      }
+    };
+    scroller.addEventListener("scroll", handleScroll, { passive: true });
+
     viewRef.current = view;
-    return () => view.destroy();
+    return () => {
+      scroller.removeEventListener("scroll", handleScroll);
+      view.destroy();
+    };
     // Only run on mount - initialContent should not trigger re-creation
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -133,6 +162,23 @@ function CodeMirrorEditorInner(
         selection: { anchor: pos + text.length },
       });
       view.focus();
+    },
+    scrollToPercent: (percent: number): boolean => {
+      const view = viewRef.current;
+      if (!view || !Number.isFinite(percent)) return false;
+
+      const clamped = Math.max(0, Math.min(1, percent));
+      const scroller = view.scrollDOM;
+      const maxScroll = scroller.scrollHeight - scroller.clientHeight;
+      if (maxScroll > 0) {
+        const targetScroll = clamped * maxScroll;
+        // Only scroll if position actually changes (avoids unnecessary events)
+        if (Math.abs(scroller.scrollTop - targetScroll) > 0.5) {
+          scroller.scrollTop = targetScroll;
+          return true;
+        }
+      }
+      return false;
     },
   }));
 
