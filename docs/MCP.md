@@ -82,9 +82,11 @@ gno mcp uninstall --target X    # Remove GNO from a target
 
 ## Raycast AI Integration
 
-Use GNO directly in [Raycast AI](https://www.raycast.com/core-features/ai) chat with `@gno` mentions.
+Use GNO directly in [Raycast AI](https://www.raycast.com/core-features/ai) with `@gno` mentions. Works in both Quick AI and AI Chat.
 
-> **Requires**: Raycast Pro subscription (for AI features)
+> **Requires**: Raycast Pro subscription (for AI features) — or 50 free messages for non-Pro users
+>
+> **Docs**: [Raycast AI](https://manual.raycast.com/ai) · [MCP Support](https://manual.raycast.com/model-context-protocol)
 
 ### Setup
 
@@ -104,24 +106,51 @@ Open in browser:
 raycast://mcp/install?%7B%22name%22%3A%22GNO%22%2C%22command%22%3A%22gno%22%2C%22args%22%3A%5B%22mcp%22%5D%7D
 ```
 
-### Usage
+### Where to Use GNO
 
-In any Raycast AI chat:
+Once installed, `@gno` works anywhere in Raycast AI:
+
+| Mode            | Access                                       | Best For                                |
+| --------------- | -------------------------------------------- | --------------------------------------- |
+| **Quick AI**    | Press Tab in Raycast, or assign hotkey       | Fast one-off queries, floating overlay  |
+| **AI Chat**     | Search "AI Chat" or assign hotkey (e.g., ⌥J) | Extended research, conversation history |
+| **AI Commands** | Custom commands with `@gno`                  | Repeatable workflows                    |
+
+**Quick AI** appears as a floating window above your apps — ideal for quick lookups:
 
 ```
-@gno search for notes about TypeScript
-@gno what documents mention authentication?
+@gno what's in my notes about TypeScript generics?
+```
+
+**AI Chat** is a full window with sidebar and history — better for research sessions:
+
+```
+@gno which model scored highest on gmickel-bench
+```
+
+The AI will call GNO tools (gno_query, gno_get) and synthesize answers from your documents.
+
+### Example Queries
+
+```
+@gno search for notes about authentication
+@gno what documents mention API design?
 @gno how many collections do I have?
 @gno find my meeting notes from last week
+@gno get the contents of my project README
 ```
-
-Raycast AI will call GNO's MCP tools and synthesize answers from your indexed documents.
 
 ### Model Quality Matters
 
 **Recommended**: Claude Sonnet 3.5+ or GPT-4+
 
-Smaller models may hallucinate incorrect parameters (e.g., wrong collection names). Sonnet 4.5 tested and works well.
+Smaller/weaker models may:
+
+- Hallucinate collection names (e.g., `collection: gno` instead of `*`)
+- Use incorrect parameter values
+- Fail to call the right tools
+
+Sonnet 4.5 tested and works well — correctly uses `Collection: *` and proper `gno://` URIs.
 
 ### Requirements
 
