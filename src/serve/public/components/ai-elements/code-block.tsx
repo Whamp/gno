@@ -81,21 +81,28 @@ export const CodeBlock = ({
 }: CodeBlockProps) => {
   const [html, setHtml] = useState<string>("");
   const [darkHtml, setDarkHtml] = useState<string>("");
-  const mounted = useRef(false);
+  const requestIdRef = useRef(0);
 
   useEffect(() => {
-    void highlightCode(code, language, showLineNumbers).then(
-      ([light, dark]) => {
-        if (!mounted.current) {
-          setHtml(light);
-          setDarkHtml(dark);
-          mounted.current = true;
-        }
-      }
-    );
+    let cancelled = false;
+    const requestId = ++requestIdRef.current;
 
+    async function highlight() {
+      const [light, dark] = await highlightCode(
+        code,
+        language,
+        showLineNumbers
+      );
+      // Only apply if this is still the latest request AND not cancelled
+      if (!cancelled && requestId === requestIdRef.current) {
+        setHtml(light);
+        setDarkHtml(dark);
+      }
+    }
+
+    void highlight();
     return () => {
-      mounted.current = false;
+      cancelled = true;
     };
   }, [code, language, showLineNumbers]);
 
