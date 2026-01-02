@@ -14,6 +14,7 @@ import {
   SourcesContent,
   SourcesTrigger,
 } from "../components/ai-elements/sources";
+import { AIModelSelector } from "../components/AIModelSelector";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
@@ -212,20 +213,23 @@ export default function Ask({ navigate }: PageProps) {
             Back
           </Button>
           <h1 className="font-semibold text-xl">Ask</h1>
-          {capabilities && (
-            <div className="ml-auto flex items-center gap-2">
-              {capabilities.vector && (
-                <Badge className="font-mono text-[10px]" variant="secondary">
-                  vectors
-                </Badge>
-              )}
-              {capabilities.answer && (
-                <Badge className="font-mono text-[10px]" variant="secondary">
-                  AI
-                </Badge>
-              )}
-            </div>
-          )}
+          <div className="ml-auto flex items-center gap-3">
+            <AIModelSelector />
+            {capabilities && (
+              <div className="flex items-center gap-2">
+                {capabilities.vector && (
+                  <Badge className="font-mono text-[10px]" variant="secondary">
+                    vectors
+                  </Badge>
+                )}
+                {capabilities.answer && (
+                  <Badge className="font-mono text-[10px]" variant="secondary">
+                    AI
+                  </Badge>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </header>
 

@@ -1,13 +1,17 @@
-import { ArrowLeft, FileText, Search as SearchIcon, Zap } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ArrowLeft, FileText, Search as SearchIcon } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Loader } from "../components/ai-elements/loader";
+import {
+  ThoroughnessSelector,
+  type Thoroughness,
+} from "../components/ThoroughnessSelector";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
-import { ButtonGroup } from "../components/ui/button-group";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { apiFetch } from "../hooks/use-api";
+import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 
 /**
  * Render snippet with <mark> tags as highlighted spans.
@@ -85,11 +89,11 @@ interface Capabilities {
   answer: boolean;
 }
 
-type SearchMode = "bm25" | "hybrid";
+const THOROUGHNESS_ORDER: Thoroughness[] = ["fast", "balanced", "thorough"];
 
 export default function Search({ navigate }: PageProps) {
   const [query, setQuery] = useState("");
-  const [mode, setMode] = useState<SearchMode>("bm25");
+  const [thoroughness, setThoroughness] = useState<Thoroughness>("balanced");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [meta, setMeta] = useState<SearchResponse["meta"] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -103,14 +107,32 @@ export default function Search({ navigate }: PageProps) {
       const { data } = await apiFetch<Capabilities>("/api/capabilities");
       if (data) {
         setCapabilities(data);
-        // Auto-select hybrid if available
+        // Auto-select balanced if hybrid available, otherwise fast (BM25)
         if (data.hybrid) {
-          setMode("hybrid");
+          setThoroughness("balanced");
+        } else {
+          setThoroughness("fast");
         }
       }
     }
     void fetchCapabilities();
   }, []);
+
+  // Cycle thoroughness with 't' key
+  const cycleThoroughness = useCallback(() => {
+    setThoroughness((current) => {
+      const currentIdx = THOROUGHNESS_ORDER.indexOf(current);
+      const nextIdx = (currentIdx + 1) % THOROUGHNESS_ORDER.length;
+      return THOROUGHNESS_ORDER[nextIdx];
+    });
+  }, []);
+
+  const shortcuts = useMemo(
+    () => [{ key: "t", action: cycleThoroughness }],
+    [cycleThoroughness]
+  );
+
+  useKeyboardShortcuts(shortcuts);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,12 +144,30 @@ export default function Search({ navigate }: PageProps) {
     setError(null);
     setSearched(true);
 
-    // Use /api/query for hybrid, /api/search for bm25
-    const endpoint = mode === "hybrid" ? "/api/query" : "/api/search";
+    // Fast uses BM25 (/api/search), balanced/thorough use hybrid (/api/query)
+    const useBm25 = thoroughness === "fast";
+    const endpoint = useBm25 ? "/api/search" : "/api/query";
+
+    // Build request body
+    const body: Record<string, unknown> = { query, limit: 20 };
+
+    if (!useBm25) {
+      // Map thoroughness to noExpand/noRerank flags
+      // balanced: with reranking, no expansion (~2-3s)
+      // thorough: full pipeline (~5-8s)
+      if (thoroughness === "balanced") {
+        body.noExpand = true;
+        body.noRerank = false;
+      } else {
+        // thorough
+        body.noExpand = false;
+        body.noRerank = false;
+      }
+    }
 
     const { data, error } = await apiFetch<SearchResponse>(endpoint, {
       method: "POST",
-      body: JSON.stringify({ query, limit: 20 }),
+      body: JSON.stringify(body),
     });
 
     setLoading(false);
@@ -142,6 +182,14 @@ export default function Search({ navigate }: PageProps) {
   };
 
   const hybridAvailable = capabilities?.hybrid ?? false;
+
+  // Description for current thoroughness
+  const thoroughnessDesc =
+    thoroughness === "fast"
+      ? "Keyword search (BM25)"
+      : thoroughness === "balanced"
+        ? "Hybrid + reranking"
+        : "Full pipeline with expansion";
 
   return (
     <div className="min-h-screen">
@@ -170,6 +218,7 @@ export default function Search({ navigate }: PageProps) {
             <div className="relative">
               <SearchIcon className="absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted-foreground transition-colors duration-200 group-focus-within:text-primary" />
               <Input
+                autoFocus
                 className="border-border/50 bg-card py-6 pr-4 pl-12 text-lg transition-all duration-200 focus:border-primary focus:bg-card/80 focus:shadow-[0_0_20px_-5px_hsl(var(--primary)/0.3)]"
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search your documents..."
@@ -187,49 +236,25 @@ export default function Search({ navigate }: PageProps) {
             </div>
           </div>
 
-          {/* Mode selector */}
-          <div className="mt-4 flex items-center gap-4">
-            <span className="text-muted-foreground text-sm">Mode:</span>
-            <ButtonGroup>
-              <Button
-                className={
-                  mode === "bm25"
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                    : ""
-                }
-                onClick={() => setMode("bm25")}
-                size="sm"
-                type="button"
-                variant={mode === "bm25" ? "default" : "outline"}
-              >
-                BM25
-              </Button>
-              <Button
-                className={
-                  mode === "hybrid"
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                    : ""
-                }
-                disabled={!hybridAvailable}
-                onClick={() => setMode("hybrid")}
-                size="sm"
-                title={
-                  hybridAvailable
-                    ? "Hybrid search with vector + reranking"
-                    : "Hybrid search not available (no embedding model)"
-                }
-                type="button"
-                variant={mode === "hybrid" ? "default" : "outline"}
-              >
-                <Zap className="mr-1 size-3" />
-                Hybrid
-              </Button>
-            </ButtonGroup>
+          {/* Thoroughness selector */}
+          <div className="mt-4 flex flex-wrap items-center gap-4">
+            <ThoroughnessSelector
+              disabled={
+                loading || (!hybridAvailable && thoroughness !== "fast")
+              }
+              onChange={setThoroughness}
+              value={thoroughness}
+            />
+
             <span className="text-muted-foreground/70 text-xs">
-              {mode === "bm25"
-                ? "Keyword-based full-text search"
-                : "BM25 + vector + query expansion + reranking"}
+              {thoroughnessDesc}
             </span>
+
+            {!hybridAvailable && thoroughness !== "fast" && (
+              <span className="text-amber-500/70 text-xs">
+                (vectors not available)
+              </span>
+            )}
           </div>
         </form>
 
@@ -265,12 +290,8 @@ export default function Search({ navigate }: PageProps) {
               <Button onClick={() => setQuery("")} size="sm" variant="outline">
                 Clear search
               </Button>
-              <Button
-                onClick={() => setMode(mode === "bm25" ? "hybrid" : "bm25")}
-                size="sm"
-                variant="ghost"
-              >
-                Try {mode === "bm25" ? "hybrid" : "keyword"} mode
+              <Button onClick={cycleThoroughness} size="sm" variant="ghost">
+                Try different mode
               </Button>
             </div>
           </div>
