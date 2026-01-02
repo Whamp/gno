@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Percentage-based position mapping with event-based loop prevention
   - Epsilon checks prevent unnecessary updates and jitter
 
+### Fixed
+
+- **Raycast MCP docs** - Fixed deeplinks with correct `mcpServers` wrapper format, added clipboard auto-fill JSON
+
 ## [0.9.0] - 2026-01-02
 
 ### Added
