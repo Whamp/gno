@@ -528,6 +528,19 @@ body.layout-feature .site-main {
 
 .content-home {
   max-width: 1200px;
+
+  // Markdown content images (screenshots) - constrained with styling
+  > p > img,
+  > img {
+    display: block;
+    max-width: 800px;
+    width: 100%;
+    height: auto;
+    margin: $space-6 auto;
+    border-radius: $radius-lg;
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
+  }
 }
 
 // -----------------------------------------------------------------------------
