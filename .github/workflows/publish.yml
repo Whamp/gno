@@ -84,6 +84,9 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Build CSS
+        run: bun run build:css
+
       - name: Pack
         run: npm pack
 
@@ -130,6 +133,9 @@ jobs:
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
+
+      - name: Build CSS
+        run: bun run build:css
 
       - name: Publish to npm
         run: npm publish --provenance --access public
