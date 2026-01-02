@@ -1,6 +1,6 @@
 {
   "name": "@gmickel/gno",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "Local semantic search for your documents. Index Markdown, PDF, and Office files with hybrid BM25 + vector search.",
   "keywords": [
     "embeddings",
@@ -88,6 +88,7 @@
     "franc": "^6.2.0",
     "lucide-react": "^0.562.0",
     "markitdown-ts": "^0.0.8",
+    "minimatch": "^10.1.1",
     "nanoid": "^5.1.6",
     "node-llama-cpp": "^3.14.5",
     "officeparser": "^5.2.2",
@@ -95,7 +96,6 @@
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-markdown": "^10.1.0",
-    "rehype-highlight": "^7.0.2",
     "rehype-sanitize": "^6.0.0",
     "shiki": "^3.20.0",
     "sqlite-vec": "^0.1.7-alpha.2",

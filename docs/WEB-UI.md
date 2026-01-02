@@ -48,7 +48,7 @@ Navigate to `http://localhost:3000`. The dashboard shows:
 
 ### 3. Create a Note
 
-Press **⌘N** (or click the floating + button) to open Quick Capture:
+Press **Ctrl+N** (or click the floating + button) to open Quick Capture:
 
 1. Enter a title
 2. Write your content (markdown supported)
@@ -59,7 +59,7 @@ The document is saved to disk and indexed automatically.
 
 ### 4. Search
 
-Click **Search** or press **⌘K**. Choose your mode:
+Click **Search** or press **Ctrl+K**. Choose your mode:
 
 | Mode   | Description                |
 | :----- | :------------------------- |
@@ -94,25 +94,25 @@ The split-view editor provides:
 
 ### Keyboard Shortcuts
 
-Press **⌘/** (Cmd+/) to view all shortcuts.
+Press **Ctrl+/** to view all shortcuts.
 
 #### Global Shortcuts
 
 | Shortcut | Action              |
 | :------- | :------------------ |
-| ⌘N       | New note (anywhere) |
-| ⌘K       | Focus search        |
-| ⌘/       | Show shortcut help  |
+| Ctrl+N   | New note (anywhere) |
+| Ctrl+K   | Focus search        |
+| Ctrl+/   | Show shortcut help  |
 | Escape   | Close modal         |
 
 #### Editor Shortcuts
 
 | Shortcut | Action           |
 | :------- | :--------------- |
-| ⌘S       | Save immediately |
-| ⌘B       | Bold selection   |
-| ⌘I       | Italic selection |
-| ⌘K       | Insert link      |
+| Ctrl+S   | Save immediately |
+| Ctrl+B   | Bold selection   |
+| Ctrl+I   | Italic selection |
+| Ctrl+K   | Insert link      |
 | Escape   | Close editor     |
 
 ### Opening the Editor
@@ -121,7 +121,7 @@ From any document view, click **Edit** to open the split-view editor. Changes ar
 
 ### Creating Documents
 
-Use Quick Capture (⌘N) for new notes:
+Use Quick Capture (Ctrl+N) for new notes:
 
 1. Enter a title (generates filename automatically)
 2. Write content in markdown

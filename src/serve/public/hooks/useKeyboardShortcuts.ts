@@ -22,13 +22,11 @@ export interface Shortcut {
   skipInInput?: boolean;
 }
 
-/** Platform detection for modifier key display */
-export const isMac =
-  typeof navigator !== "undefined" &&
-  navigator.platform.toUpperCase().includes("MAC");
-
-/** Modifier key symbol */
-export const modKey = isMac ? "⌘" : "Ctrl";
+/**
+ * Web apps use Ctrl on all platforms to avoid browser shortcut conflicts.
+ * Cmd+N/K/T etc are reserved by browsers on Mac (new window, location bar, new tab).
+ */
+export const modKey = "Ctrl";
 
 /**
  * Check if event target is an input element
@@ -56,10 +54,8 @@ export function useKeyboardShortcuts(shortcuts: Shortcut[]): void {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       for (const shortcut of memoizedShortcuts) {
-        // Check modifiers
-        const metaMatch = shortcut.meta
-          ? e.metaKey || e.ctrlKey
-          : !e.metaKey && !e.ctrlKey;
+        // Check modifiers (always Ctrl, never Cmd - avoids browser conflicts)
+        const metaMatch = shortcut.meta ? e.ctrlKey : !e.ctrlKey;
         const shiftMatch = shortcut.shift ? e.shiftKey : !e.shiftKey;
 
         // Check key
