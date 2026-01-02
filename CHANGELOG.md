@@ -5,6 +5,44 @@ All notable changes to GNO will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-01-02
+
+### Added
+
+- **Document Editor** - Split-view markdown editor with live preview
+  - CodeMirror 6 with syntax highlighting and word wrap
+  - Auto-save with 2s debounce
+  - Keyboard shortcuts: ⌘B bold, ⌘I italic, ⌘K link, ⌘S save
+  - Unsaved changes warning on navigation
+- **Document CRUD** - Full create, read, update, delete via Web UI
+  - `PUT /api/docs/:id` - Update document content
+  - `DELETE /api/docs/:id` - Delete document and file
+  - DocView edit/delete buttons with confirmation dialogs
+- **Collections Management** - Add and remove collections from Web UI
+  - AddCollectionDialog with folder path input
+  - IndexingProgress component with real-time status
+  - Re-index action per collection
+- **Keyboard Shortcuts** - Global and editor shortcuts
+  - ⌘N new note, ⌘K focus search, ⌘/ show help
+  - ShortcutHelpModal with tactile keyboard key styling
+  - Platform-aware modifier display (⌘ vs Ctrl)
+- **Quick Capture** - Floating action button for instant note creation
+  - CaptureModal with title, content, collection fields
+  - Remembers last used collection
+  - Shows indexing progress after creation
+
+### Changed
+
+- **Design Polish** - Enhanced visual refinements
+  - Hero Documents card with gradient and glow
+  - Card hover lift effects with shadows
+  - Enhanced glass effect with saturation
+  - Search input with gradient focus border
+  - Improved empty states with actionable suggestions
+  - CaptureButton with pulse glow animation
+- Fixed transparent backgrounds in dialogs, dropdowns, selects
+- Changed collection remove icon from Trash to FolderMinus
+
 ## [0.7.0] - 2026-01-01
 
 ### Added
