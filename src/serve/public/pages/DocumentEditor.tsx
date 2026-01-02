@@ -218,10 +218,38 @@ export default function DocumentEditor({ navigate }: PageProps) {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const isMeta = e.metaKey || e.ctrlKey;
+
       // Cmd+S / Ctrl+S - Save
-      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+      if (isMeta && e.key === "s") {
         e.preventDefault();
         handleForceSave();
+        return;
+      }
+
+      // Cmd+B - Bold
+      if (isMeta && e.key === "b") {
+        e.preventDefault();
+        editorRef.current?.wrapSelection("**", "**");
+        return;
+      }
+
+      // Cmd+I - Italic
+      if (isMeta && e.key === "i") {
+        e.preventDefault();
+        editorRef.current?.wrapSelection("*", "*");
+        return;
+      }
+
+      // Cmd+K - Link (only in editor context, skip if not editing)
+      if (isMeta && e.key === "k") {
+        // Only handle if focus is in editor area
+        const target = e.target as HTMLElement;
+        if (target.closest(".cm-editor")) {
+          e.preventDefault();
+          editorRef.current?.wrapSelection("[", "](url)");
+          return;
+        }
       }
 
       // Escape - Close (with warning if unsaved)

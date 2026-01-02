@@ -32,6 +32,10 @@ export interface CodeMirrorEditorRef {
   setValue: (content: string) => void;
   /** Focus the editor */
   focus: () => void;
+  /** Wrap selected text with prefix and suffix */
+  wrapSelection: (prefix: string, suffix: string) => void;
+  /** Insert text at cursor position */
+  insertAtCursor: (text: string) => void;
 }
 
 function CodeMirrorEditorInner(
@@ -97,6 +101,37 @@ function CodeMirrorEditorInner(
     },
     focus: () => {
       viewRef.current?.focus();
+    },
+    wrapSelection: (prefix: string, suffix: string) => {
+      const view = viewRef.current;
+      if (!view) return;
+
+      const { from, to } = view.state.selection.main;
+      const selectedText = view.state.doc.sliceString(from, to);
+
+      view.dispatch({
+        changes: {
+          from,
+          to,
+          insert: `${prefix}${selectedText}${suffix}`,
+        },
+        selection: {
+          anchor: from + prefix.length,
+          head: from + prefix.length + selectedText.length,
+        },
+      });
+      view.focus();
+    },
+    insertAtCursor: (text: string) => {
+      const view = viewRef.current;
+      if (!view) return;
+
+      const pos = view.state.selection.main.head;
+      view.dispatch({
+        changes: { from: pos, to: pos, insert: text },
+        selection: { anchor: pos + text.length },
+      });
+      view.focus();
     },
   }));
 

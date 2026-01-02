@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 
+import { ShortcutHelpModal } from "./components/ShortcutHelpModal";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import Ask from "./pages/Ask";
 import Browse from "./pages/Browse";
 import Collections from "./pages/Collections";
@@ -35,6 +37,7 @@ function App() {
   const [location, setLocation] = useState<string>(
     window.location.pathname + window.location.search
   );
+  const [shortcutHelpOpen, setShortcutHelpOpen] = useState(false);
 
   useEffect(() => {
     const handlePopState = () =>
@@ -43,7 +46,7 @@ function App() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  const navigate = (to: string | number) => {
+  const navigate = useCallback((to: string | number) => {
     if (typeof to === "number") {
       // Handle history.go(-1) style navigation
       window.history.go(to);
@@ -51,13 +54,51 @@ function App() {
     }
     window.history.pushState({}, "", to);
     setLocation(to);
-  };
+  }, []);
+
+  // Global keyboard shortcuts
+  const shortcuts = useMemo(
+    () => [
+      {
+        key: "k",
+        meta: true,
+        action: () => {
+          // Focus search input on current page or navigate to search
+          const searchInput = document.querySelector<HTMLInputElement>(
+            'input[type="search"], input[placeholder*="Search"], input[id*="search"]'
+          );
+          if (searchInput) {
+            searchInput.focus();
+            searchInput.select();
+          } else {
+            navigate("/search");
+          }
+        },
+      },
+      {
+        key: "/",
+        meta: true,
+        action: () => setShortcutHelpOpen(true),
+      },
+    ],
+    [navigate]
+  );
+
+  useKeyboardShortcuts(shortcuts);
 
   // Extract base path for routing (ignore query params)
   const basePath = location.split("?")[0] as Route;
   const Page = routes[basePath] || Dashboard;
 
-  return <Page navigate={navigate} />;
+  return (
+    <>
+      <Page navigate={navigate} />
+      <ShortcutHelpModal
+        onOpenChange={setShortcutHelpOpen}
+        open={shortcutHelpOpen}
+      />
+    </>
+  );
 }
 
 const rootElement = document.getElementById("root");

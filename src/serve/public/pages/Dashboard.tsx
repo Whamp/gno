@@ -1,13 +1,21 @@
 import {
   BookOpen,
+  CheckCircle2Icon,
   Database,
+  FolderIcon,
   Layers,
+  Loader2Icon,
   MessageSquare,
+  PenIcon,
+  RefreshCwIcon,
   Search,
   Sparkles,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
+import { CaptureButton } from "../components/CaptureButton";
+import { CaptureModal } from "../components/CaptureModal";
+import { IndexingProgress } from "../components/IndexingProgress";
 import { PresetSelector } from "../components/preset-selector";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -18,6 +26,10 @@ import {
   CardHeader,
 } from "../components/ui/card";
 import { apiFetch } from "../hooks/use-api";
+
+interface SyncResponse {
+  jobId: string;
+}
 
 interface PageProps {
   navigate: (to: string | number) => void;
@@ -41,16 +53,48 @@ interface StatusData {
 export default function Dashboard({ navigate }: PageProps) {
   const [status, setStatus] = useState<StatusData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [syncJobId, setSyncJobId] = useState<string | null>(null);
+  const [captureOpen, setCaptureOpen] = useState(false);
+
+  const loadStatus = useCallback(async () => {
+    const { data, error: err } = await apiFetch<StatusData>("/api/status");
+    if (err) {
+      setError(err);
+    } else {
+      setStatus(data);
+      setError(null);
+    }
+  }, []);
 
   useEffect(() => {
-    void apiFetch<StatusData>("/api/status").then(({ data, error }) => {
-      if (error) {
-        setError(error);
-      } else {
-        setStatus(data);
-      }
+    void loadStatus();
+  }, [loadStatus]);
+
+  const handleSync = async () => {
+    setSyncing(true);
+    setSyncJobId(null);
+
+    const { data, error: err } = await apiFetch<SyncResponse>("/api/sync", {
+      method: "POST",
     });
-  }, []);
+
+    if (err) {
+      setSyncing(false);
+      setError(err);
+      return;
+    }
+
+    if (data?.jobId) {
+      setSyncJobId(data.jobId);
+    }
+  };
+
+  const handleSyncComplete = () => {
+    setSyncing(false);
+    setSyncJobId(null);
+    void loadStatus();
+  };
 
   return (
     <div className="min-h-screen">
@@ -65,11 +109,40 @@ export default function Dashboard({ navigate }: PageProps) {
                 GNO
               </h1>
             </div>
-            <PresetSelector />
+            <div className="flex items-center gap-3">
+              <Button
+                disabled={syncing}
+                onClick={handleSync}
+                size="sm"
+                variant="outline"
+              >
+                {syncing ? (
+                  <Loader2Icon className="mr-1.5 size-4 animate-spin" />
+                ) : (
+                  <RefreshCwIcon className="mr-1.5 size-4" />
+                )}
+                {syncing ? "Syncing..." : "Update All"}
+              </Button>
+              <PresetSelector />
+            </div>
           </div>
           <p className="text-lg text-muted-foreground">
             Your Local Knowledge Index
           </p>
+
+          {/* Sync progress */}
+          {syncJobId && (
+            <div className="mt-4 rounded-lg border border-border/50 bg-background/50 p-4">
+              <IndexingProgress
+                jobId={syncJobId}
+                onComplete={handleSyncComplete}
+                onError={() => {
+                  setSyncing(false);
+                  setSyncJobId(null);
+                }}
+              />
+            </div>
+          )}
         </div>
       </header>
 
@@ -113,7 +186,7 @@ export default function Dashboard({ navigate }: PageProps) {
 
         {/* Stats Grid */}
         {status && (
-          <div className="mb-10 grid animate-fade-in gap-6 opacity-0 md:grid-cols-3">
+          <div className="mb-10 grid animate-fade-in gap-6 opacity-0 md:grid-cols-4">
             <Card className="group transition-colors hover:border-primary/50">
               <CardHeader className="pb-2">
                 <CardDescription className="flex items-center gap-2">
@@ -144,15 +217,43 @@ export default function Dashboard({ navigate }: PageProps) {
 
             <Card className="group stagger-2 animate-fade-in opacity-0 transition-colors hover:border-primary/50">
               <CardHeader className="pb-2">
-                <CardDescription>Status</CardDescription>
+                <CardDescription className="flex items-center gap-2">
+                  <FolderIcon className="size-4" />
+                  Collections
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <Badge
-                  className="px-3 py-1 text-lg"
-                  variant={status.healthy ? "default" : "secondary"}
-                >
-                  {status.healthy ? "● Healthy" : "○ Degraded"}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-4xl tracking-tight">
+                    {status.collections.length}
+                  </span>
+                  {status.healthy && (
+                    <CheckCircle2Icon className="size-5 text-green-500" />
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Capture Card */}
+            <Card
+              className="group stagger-3 animate-fade-in cursor-pointer opacity-0 transition-all hover:border-primary/50 hover:bg-primary/5"
+              onClick={() => setCaptureOpen(true)}
+            >
+              <CardHeader className="pb-2">
+                <CardDescription className="flex items-center gap-2">
+                  <PenIcon className="size-4" />
+                  Quick Capture
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-lg transition-colors group-hover:text-primary">
+                    New Note
+                  </span>
+                  <Badge className="font-mono text-xs" variant="outline">
+                    ⌘N
+                  </Badge>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -175,12 +276,22 @@ export default function Dashboard({ navigate }: PageProps) {
                   style={{ animationDelay: `${0.4 + i * 0.1}s` }}
                 >
                   <CardContent className="flex items-center justify-between py-4">
-                    <div>
-                      <div className="font-medium text-lg transition-colors group-hover:text-primary">
-                        {c.name}
-                      </div>
-                      <div className="font-mono text-muted-foreground text-sm">
-                        {c.path}
+                    <div className="flex items-center gap-3">
+                      {/* Health indicator */}
+                      {syncing ? (
+                        <Loader2Icon className="size-4 animate-spin text-amber-500" />
+                      ) : c.embeddedCount >= c.chunkCount ? (
+                        <CheckCircle2Icon className="size-4 text-green-500" />
+                      ) : (
+                        <div className="size-4 rounded-full border-2 border-amber-500" />
+                      )}
+                      <div>
+                        <div className="font-medium text-lg transition-colors group-hover:text-primary">
+                          {c.name}
+                        </div>
+                        <div className="font-mono text-muted-foreground text-sm">
+                          {c.path}
+                        </div>
                       </div>
                     </div>
                     <div className="text-right">
@@ -188,7 +299,9 @@ export default function Dashboard({ navigate }: PageProps) {
                         {c.documentCount.toLocaleString()} docs
                       </div>
                       <div className="text-muted-foreground text-sm">
-                        {c.chunkCount.toLocaleString()} chunks
+                        {c.embeddedCount === c.chunkCount
+                          ? `${c.chunkCount.toLocaleString()} chunks`
+                          : `${c.embeddedCount}/${c.chunkCount} embedded`}
                       </div>
                     </div>
                   </CardContent>
@@ -198,6 +311,16 @@ export default function Dashboard({ navigate }: PageProps) {
           </section>
         )}
       </main>
+
+      {/* Capture Modal */}
+      <CaptureModal
+        onOpenChange={setCaptureOpen}
+        onSuccess={() => void loadStatus()}
+        open={captureOpen}
+      />
+
+      {/* Floating Action Button */}
+      <CaptureButton onSuccess={() => void loadStatus()} />
     </div>
   );
 }
