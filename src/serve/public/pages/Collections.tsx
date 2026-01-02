@@ -14,12 +14,12 @@ import {
   DatabaseIcon,
   FileTextIcon,
   FolderIcon,
+  FolderMinusIcon,
   FolderPlusIcon,
   LayersIcon,
   Loader2Icon,
   MoreVerticalIcon,
   RefreshCwIcon,
-  TrashIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -151,7 +151,7 @@ function CollectionCard({
                 className="text-destructive focus:text-destructive"
                 onClick={onRemove}
               >
-                <TrashIcon className="mr-2 size-4" />
+                <FolderMinusIcon className="mr-2 size-4" />
                 Remove
               </DropdownMenuItem>
             </DropdownMenuContent>

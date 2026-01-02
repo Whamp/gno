@@ -61,6 +61,7 @@ function CodeMirrorEditorInner(
         basicSetup,
         markdown(),
         oneDark,
+        EditorView.lineWrapping,
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
             onChangeRef.current(update.state.doc.toString());
