@@ -1,8 +1,20 @@
 # GNO vs QMD
 
-A detailed comparison of GNO and [QMD](https://github.com/tobi/qmd) (Tobi Lütke's markdown search tool).
+**Verdict**: GNO offers more features (Web UI, REST API, RAG answers, multi-format support) while QMD focuses on markdown-only simplicity. Choose GNO for a complete knowledge platform, QMD for lightweight markdown search.
 
 Both tools provide semantic search for local documents with AI-powered features. Here's how they compare.
+
+## Get Started
+
+```bash
+# GNO
+bun install -g @gmickel/gno
+gno init ~/notes --name notes && gno index
+
+# QMD
+bun install -g qmd
+qmd init && qmd index
+```
 
 ## Quick Summary
 
