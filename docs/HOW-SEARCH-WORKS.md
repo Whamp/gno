@@ -16,7 +16,7 @@ The diagram below shows how your query flows through GNO's search system:
 
 **Stage 3: RRF Fusion** → Results are merged using Reciprocal Rank Fusion. Original query gets 2× weight. Top-ranked documents get tiered bonuses.
 
-**Stage 4: Reranking** → Top candidates rescored by Qwen3-Reranker with full document context (up to 32K tokens).
+**Stage 4: Reranking** → Top candidates rescored by Qwen3-Reranker using best chunk per document (4K chars).
 
 ```
 ┌───────────────────────────────────────────────────────────────┐
@@ -75,9 +75,9 @@ The diagram below shows how your query flows through GNO's search system:
                                 │
                                 ▼
 ┌───────────────────────────────────────────────────────────────┐
-│  STAGE 4: RERANKING (Qwen3-Reranker, 32K context)             │
+│  STAGE 4: RERANKING (Qwen3-Reranker)                          │
 │                                                               │
-│  Full document content passed to cross-encoder.               │
+│  Best chunk per document passed to cross-encoder (4K chars).  │
 │                                                               │
 │  Position-aware blending:                                     │
 │    1-3: 75% fusion / 25% rerank                               │

@@ -174,7 +174,7 @@ Model configuration for embeddings and AI answers.
 All presets use:
 
 - **bge-m3** for embeddings (1024 dimensions, multilingual)
-- **Qwen3-Reranker-0.6B** for reranking (32K context, full documents)
+- **Qwen3-Reranker-0.6B** for reranking (scores best chunk per document)
 
 | Preset   | Embed     | Rerank                 | Gen           |
 | -------- | --------- | ---------------------- | ------------- |

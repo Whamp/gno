@@ -295,7 +295,7 @@ graph TD
 1. **Query Expansion**: LLM generates lexical variants, semantic rephrases, and a [HyDE](https://arxiv.org/abs/2212.10496) passage
 2. **Parallel Retrieval**: Document-level BM25 + chunk-level vector search on all variants
 3. **Fusion**: RRF with 2× weight for original query, tiered bonus for top ranks
-4. **Reranking**: Qwen3-Reranker scores full documents (32K context), blended with fusion
+4. **Reranking**: Qwen3-Reranker scores best chunk per document (4K), blended with fusion
 
 > **Deep dive**: [How Search Works](https://gno.sh/docs/HOW-SEARCH-WORKS/)
 

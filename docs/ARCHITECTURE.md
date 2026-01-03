@@ -96,7 +96,7 @@ User query
     │
     ▼ RRF Fusion (k=60, 2× weight for original, tiered bonus)
     │
-    ▼ [Optional] Rerank with full documents (Qwen3, 32K context)
+    ▼ [Optional] Rerank best chunk per document (Qwen3, 4K chars)
     │
     ▼ Results (sorted by blended score)
 ```

@@ -149,7 +149,7 @@ Neural network that converts text to vectors. Default: bge-m3 (multilingual, 102
 
 ### Rerank Model
 
-Cross-encoder that scores query-document pairs. Default: Qwen3-Reranker-0.6B (32K context). GNO passes **full document content** to the reranker, not truncated snippets, ensuring the model sees tables, code examples, and all sections.
+Cross-encoder that scores query-document pairs. Default: Qwen3-Reranker-0.6B. GNO passes the **best chunk per document** (up to 4K chars) to the reranker for efficiency.
 
 ### Gen Model
 
