@@ -26,7 +26,10 @@ All commands accept these flags:
 | `--no-color`      | boolean | Disable colored output                                   |
 | `--verbose`       | boolean | Enable verbose logging to stderr                         |
 | `--yes`           | boolean | Non-interactive mode: accept safe defaults, never prompt |
+| `--quiet`         | boolean | Suppress non-essential output                            |
+| `--offline`       | boolean | Offline mode: use cached models only                     |
 | `--no-pager`      | boolean | Disable automatic paging of long output                  |
+| `--skill`         | boolean | Output SKILL.md for agent discovery and exit             |
 
 ### Output Format Flags
 

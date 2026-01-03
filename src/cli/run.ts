@@ -6,6 +6,8 @@
  */
 
 import { CommanderError } from "commander";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { CLI_NAME, PRODUCT_NAME } from "../app/constants";
 import { CliError, exitCodeFor, formatErrorForOutput } from "./errors";
@@ -52,6 +54,32 @@ function isKnownValueFlag(arg: string): boolean {
     }
   }
   return false;
+}
+
+/**
+ * Check if --skill flag is present in argv (before end-of-options marker).
+ */
+function argvWantsSkill(argv: string[]): boolean {
+  for (const arg of argv) {
+    if (arg === "--") {
+      break;
+    }
+    if (arg === "--skill") {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Output SKILL.md content for agent discovery.
+ * Clean output with no extra text (suitable for piping/parsing).
+ */
+async function printSkillFile(): Promise<void> {
+  const __dirname = dirname(fileURLToPath(import.meta.url));
+  const skillPath = join(__dirname, "../../assets/skill/SKILL.md");
+  const content = await Bun.file(skillPath).text();
+  process.stdout.write(content);
 }
 
 /**
@@ -145,6 +173,12 @@ export async function runCli(argv: string[]): Promise<number> {
   resetGlobals();
 
   const isJson = argvWantsJson(argv);
+
+  // Handle --skill flag: output SKILL.md for agent discovery
+  if (argvWantsSkill(argv)) {
+    await printSkillFile();
+    return 0;
+  }
 
   // Handle "no subcommand" case before Commander (avoids full help display)
   if (hasNoSubcommand(argv)) {

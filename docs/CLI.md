@@ -36,6 +36,7 @@ All commands accept:
 --verbose         Enable verbose logging
 --yes             Non-interactive mode
 --offline         Use cached models only (no auto-download)
+--skill           Output SKILL.md for agent discovery and exit
 ```
 
 **Pager**: Long output is automatically piped through a pager when in terminal mode. Uses `$PAGER` if set, otherwise `less -R` (Unix) or `more` (Windows). Disable with `--no-pager`.
