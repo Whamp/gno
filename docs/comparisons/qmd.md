@@ -28,6 +28,7 @@ Both tools provide semantic search for local documents with AI-powered features.
 | **MCP Install CLI**     | ✓ 10+ targets                  | ✗ Manual config      |
 | **Skills**              | ✓ Claude Code, Codex, OpenCode | ✗                    |
 | **Model Presets**       | slim/balanced/quality          | Single config        |
+| **Search Depth**        | fast/balanced/thorough         | ✗                    |
 | **Incremental Index**   | ✓ SHA-256 tracking             | ✓                    |
 | **Collection Contexts** | ✓ Semantic hints               | ✓                    |
 | **Output Formats**      | JSON, CSV, MD, XML, files      | JSON, CSV, MD, XML   |
