@@ -5,6 +5,19 @@ All notable changes to GNO will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.4] - 2026-01-03
+
+### Changed
+
+- **Default model preset switched to "slim"** - Better eval scores (69% vs ~50%), faster inference, smaller download (~1GB)
+  - Balanced preset still available via `gno models use balanced`
+- **Updated model names** - slim: Qwen3-1.7B, balanced: Qwen2.5-3B-Instruct, quality: Qwen3-4B-Instruct
+
+### Internal
+
+- Evalite v1 evaluation harness (local-only quality gates for releases)
+- Fixed `--full` flag ranking order bug in search results
+
 ## [0.9.3] - 2026-01-03
 
 ### Added
