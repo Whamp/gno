@@ -5,6 +5,18 @@ All notable changes to GNO will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.5] - 2026-01-03
+
+### Added
+
+- **`--skill` flag for agent discovery** - `gno --skill` outputs SKILL.md for AI agents to discover capabilities
+  - Follows Agent Skills specification format
+  - Clean output suitable for piping/parsing
+
+### Fixed
+
+- **SKILL.md refresh** - Updated with ~15 missing CLI commands (serve, models, context, mcp, skill subcommands, doctor, etc.)
+
 ## [0.9.4] - 2026-01-03
 
 ### Changed
