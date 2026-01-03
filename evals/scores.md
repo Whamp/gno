@@ -15,10 +15,10 @@ Last updated: 2026-01-03
 | Eval         | Score | Status | Cases | Duration |
 | ------------ | ----- | ------ | ----- | -------- |
 | expansion    | 100%  | PASS   | 15    | 5ms      |
-| thoroughness | 88%   | PASS   | 24    | 44ms     |
-| vsearch      | 84%   | PASS   | 25    | 31ms     |
-| query        | 83%   | PASS   | 10    | 51ms     |
-| multilingual | 38%   | FAIL   | 4     | 29ms     |
+| thoroughness | 88%   | PASS   | 24    | 22ms     |
+| vsearch      | 84%   | PASS   | 25    | 24ms     |
+| query        | 83%   | PASS   | 10    | 23ms     |
+| multilingual | 38%   | FAIL   | 4     | 21ms     |
 
 ## Breakdown by Level
 
