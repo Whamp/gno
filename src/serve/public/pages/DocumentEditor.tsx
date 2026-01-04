@@ -237,7 +237,7 @@ export default function DocumentEditor({ navigate }: PageProps) {
   );
 
   // Debounced auto-save
-  const { debouncedFn: debouncedSave, flush: flushSave } = useDebouncedCallback(
+  const { debouncedFn: debouncedSave } = useDebouncedCallback(
     saveDocument,
     2000
   );
@@ -254,12 +254,35 @@ export default function DocumentEditor({ navigate }: PageProps) {
     [originalContent, debouncedSave]
   );
 
-  // Force save (Cmd+S)
-  const handleForceSave = useCallback(() => {
-    if (hasUnsavedChanges) {
-      flushSave(content);
+  // Force save (Cmd+S) - saves and triggers embedding
+  const handleForceSave = useCallback(async () => {
+    if (!hasUnsavedChanges || !doc) return;
+
+    setSaveStatus("saving");
+    setSaveError(null);
+
+    // Save document
+    const { error: err } = await apiFetch(
+      `/api/docs/${encodeURIComponent(doc.docid)}`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ content }),
+      }
+    );
+
+    if (err) {
+      setSaveStatus("error");
+      setSaveError(err);
+      return;
     }
-  }, [hasUnsavedChanges, flushSave, content]);
+
+    setSaveStatus("saved");
+    setOriginalContent(content);
+    setLastSaved(new Date());
+
+    // Trigger embedding (fire and forget - don't block on result)
+    void apiFetch("/api/embed", { method: "POST" });
+  }, [hasUnsavedChanges, doc, content]);
 
   // Load document
   useEffect(() => {
@@ -299,7 +322,7 @@ export default function DocumentEditor({ navigate }: PageProps) {
       // Cmd+S / Ctrl+S - Save
       if (isMeta && e.key === "s") {
         e.preventDefault();
-        handleForceSave();
+        void handleForceSave();
         return;
       }
 
@@ -374,6 +397,8 @@ export default function DocumentEditor({ navigate }: PageProps) {
   // Save and close
   const handleSaveAndClose = async () => {
     await saveDocument(content);
+    // Trigger embedding (fire and forget)
+    void apiFetch("/api/embed", { method: "POST" });
     setShowUnsavedDialog(false);
     navigate(-1);
   };

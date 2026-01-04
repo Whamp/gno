@@ -49,6 +49,7 @@ function createMockContextHolder(config?: Partial<Config>): ContextHolder {
   return {
     current: { config: fullConfig } as ContextHolder["current"],
     config: fullConfig,
+    scheduler: null,
   };
 }
 

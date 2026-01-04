@@ -8,6 +8,7 @@
 import type { Config, ModelPreset } from "../../config/types";
 import type { AskResult, Citation, SearchOptions } from "../../pipeline/types";
 import type { SqliteAdapter } from "../../store/sqlite/adapter";
+import type { EmbedScheduler } from "../embed-scheduler";
 
 import { modelsPull } from "../../cli/commands/models/pull";
 import { addCollection, removeCollection } from "../../collection";
@@ -40,6 +41,7 @@ import { getJobStatus, startJob } from "../jobs";
 export interface ContextHolder {
   current: ServerContext;
   config: Config;
+  scheduler: EmbedScheduler | null;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -776,6 +778,7 @@ export async function handleUpdateDoc(
     const fileUri = pathToFileURL(fullPath).href;
 
     // Run sync via job system (non-blocking) only if content changed
+    // Note: embedding handled separately by embed-scheduler (not inline)
     let jobId: string | null = null;
     if (contentToWrite !== undefined) {
       const jobResult = startJob("sync", async (): Promise<SyncResult> => {
@@ -784,6 +787,8 @@ export async function handleUpdateDoc(
           store,
           { runUpdateCmd: false }
         );
+        // Notify scheduler after sync completes
+        ctxHolder.scheduler?.notifySyncComplete([doc.docid]);
         return {
           collections: [result],
           totalDurationMs: result.durationMs,
@@ -914,12 +919,17 @@ export async function handleCreateDoc(
     const gnoUri = `gno://${collection.name}/${normalizedRelPath}`;
 
     // Run sync via job system (non-blocking)
+    // Note: embedding handled separately by embed-scheduler (not inline)
     const jobResult = startJob("sync", async (): Promise<SyncResult> => {
       const result = await defaultSyncService.syncCollection(
         collection,
         store,
         { runUpdateCmd: false }
       );
+      // Notify scheduler after sync completes (use gnoUri as docid placeholder)
+      // The sync will create a proper docid, but we don't have it here yet
+      // Using normalizedRelPath as identifier since docid is generated during sync
+      ctxHolder.scheduler?.notifySyncComplete([normalizedRelPath]);
       return {
         collections: [result],
         totalDurationMs: result.durationMs,
@@ -1484,6 +1494,70 @@ export function handleJob(jobId: string): Response {
     return errorResponse("NOT_FOUND", "Job not found or expired", 404);
   }
   return jsonResponse(status);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Embed Scheduler
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * POST /api/embed
+ * Trigger immediate embedding (bypasses debounce).
+ * Used by Cmd+S to force embed after save.
+ */
+export async function handleEmbed(
+  scheduler: EmbedScheduler | null
+): Promise<Response> {
+  if (!scheduler) {
+    return jsonResponse({
+      embedded: 0,
+      errors: 0,
+      note: "No embedding port available",
+    });
+  }
+
+  const state = scheduler.getState();
+  if (state.running) {
+    return jsonResponse({
+      running: true,
+      pendingCount: state.pendingDocCount,
+      note: "Embedding already in progress",
+    });
+  }
+
+  const result = await scheduler.triggerNow();
+  if (!result) {
+    return jsonResponse({
+      embedded: 0,
+      errors: 0,
+      note: "No embedding port available",
+    });
+  }
+
+  return jsonResponse({
+    embedded: result.embedded,
+    errors: result.errors,
+  });
+}
+
+/**
+ * GET /api/embed/status
+ * Get current embed scheduler state (for debugging).
+ */
+export function handleEmbedStatus(scheduler: EmbedScheduler | null): Response {
+  if (!scheduler) {
+    return jsonResponse({
+      available: false,
+      pendingDocCount: 0,
+      running: false,
+    });
+  }
+
+  const state = scheduler.getState();
+  return jsonResponse({
+    available: true,
+    ...state,
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

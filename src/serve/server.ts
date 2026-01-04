@@ -10,8 +10,10 @@ import type { ContextHolder } from "./routes/api";
 
 import { getIndexDbPath } from "../app/constants";
 import { getConfigPaths, isInitialized, loadConfig } from "../config";
+import { getActivePreset } from "../llm/registry";
 import { SqliteAdapter } from "../store/sqlite/adapter";
 import { createServerContext, disposeServerContext } from "./context";
+import { createEmbedScheduler } from "./embed-scheduler";
 // HTML import - Bun handles bundling TSX/CSS automatically via routes
 import homepage from "./public/index.html";
 import {
@@ -24,6 +26,8 @@ import {
   handleDeleteCollection,
   handleDoc,
   handleDocs,
+  handleEmbed,
+  handleEmbedStatus,
   handleHealth,
   handleJob,
   handleModelPull,
@@ -152,9 +156,21 @@ export async function startServer(
 
   // Create server context with LLM ports for hybrid search and AI answers
   // Use holder pattern to allow hot-reloading presets
+  const ctx = await createServerContext(store, config);
+
+  // Create embed scheduler for debounced background embedding
+  const preset = getActivePreset(config);
+  const scheduler = createEmbedScheduler({
+    db: store.getRawDb(),
+    embedPort: ctx.embedPort,
+    vectorIndex: ctx.vectorIndex,
+    modelUri: preset.embed,
+  });
+
   const ctxHolder: ContextHolder = {
-    current: await createServerContext(store, config),
+    current: ctx,
     config, // Keep original config for reloading
+    scheduler,
   };
 
   // Shutdown controller for clean lifecycle
@@ -163,6 +179,7 @@ export async function startServer(
   // Graceful shutdown handler
   const shutdown = async () => {
     console.log("\nShutting down...");
+    scheduler.dispose();
     await disposeServerContext(ctxHolder.current);
     await store.close();
     shutdownController.abort();
@@ -344,6 +361,21 @@ export async function startServer(
             const id = decodeURIComponent(url.pathname.split("/").pop() || "");
             return withSecurityHeaders(handleJob(id), isDev);
           },
+        },
+        "/api/embed": {
+          POST: async (req: Request) => {
+            if (!isRequestAllowed(req, port)) {
+              return withSecurityHeaders(forbiddenResponse(), isDev);
+            }
+            return withSecurityHeaders(
+              await handleEmbed(ctxHolder.scheduler),
+              isDev
+            );
+          },
+        },
+        "/api/embed/status": {
+          GET: () =>
+            withSecurityHeaders(handleEmbedStatus(ctxHolder.scheduler), isDev),
         },
         "/api/collections/:name": {
           DELETE: async (req: Request) => {
