@@ -8,9 +8,9 @@
 import type { Database } from "bun:sqlite";
 
 import type { EmbeddingPort } from "../llm/types";
-import type { BacklogItem, VectorIndexPort, VectorRow } from "../store/vector";
+import type { VectorIndexPort } from "../store/vector";
 
-import { formatDocForEmbedding } from "../pipeline/contextual";
+import { embedBacklog } from "../embed";
 import { createVectorStatsPort } from "../store/vector";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -83,7 +83,7 @@ export function createEmbedScheduler(deps: EmbedSchedulerDeps): EmbedScheduler {
   const stats = createVectorStatsPort(db);
 
   /**
-   * Run embedding for pending docs.
+   * Run embedding for pending docs using shared helper.
    * Uses global backlog - we don't filter by docIds since:
    * 1. Backlog query is already efficient (only unembedded chunks)
    * 2. Filtering by docId would require joining through documents table
@@ -99,87 +99,20 @@ export function createEmbedScheduler(deps: EmbedSchedulerDeps): EmbedScheduler {
       return { embedded: 0, errors: 0 };
     }
 
-    let embedded = 0;
-    let errors = 0;
-    let cursor: { mirrorHash: string; seq: number } | undefined;
+    const result = await embedBacklog({
+      statsPort: stats,
+      embedPort,
+      vectorIndex,
+      modelUri,
+      batchSize: BATCH_SIZE,
+    });
 
-    try {
-      // Process all backlog in batches
-      while (true) {
-        const batchResult = await stats.getBacklog(modelUri, {
-          limit: BATCH_SIZE,
-          after: cursor,
-        });
-
-        if (!batchResult.ok) {
-          console.error(
-            "[embed-scheduler] Backlog query failed:",
-            batchResult.error.message
-          );
-          break;
-        }
-
-        const batch = batchResult.value;
-        if (batch.length === 0) {
-          break;
-        }
-
-        // Advance cursor
-        const lastItem = batch.at(-1);
-        if (lastItem) {
-          cursor = { mirrorHash: lastItem.mirrorHash, seq: lastItem.seq };
-        }
-
-        // Embed batch
-        const embedResult = await embedPort.embedBatch(
-          batch.map((b: BacklogItem) =>
-            formatDocForEmbedding(b.text, b.title ?? undefined)
-          )
-        );
-
-        if (!embedResult.ok) {
-          console.error(
-            "[embed-scheduler] Embed failed:",
-            embedResult.error.message
-          );
-          errors += batch.length;
-          continue;
-        }
-
-        const embeddings = embedResult.value;
-        if (embeddings.length !== batch.length) {
-          errors += batch.length;
-          continue;
-        }
-
-        // Store vectors with current model URI
-        const vectors: VectorRow[] = batch.map(
-          (b: BacklogItem, idx: number) => ({
-            mirrorHash: b.mirrorHash,
-            seq: b.seq,
-            model: modelUri,
-            embedding: new Float32Array(embeddings[idx] as number[]),
-            embeddedAt: new Date().toISOString(),
-          })
-        );
-
-        const storeResult = await vectorIndex.upsertVectors(vectors);
-        if (!storeResult.ok) {
-          console.error(
-            "[embed-scheduler] Store failed:",
-            storeResult.error.message
-          );
-          errors += batch.length;
-          continue;
-        }
-
-        embedded += batch.length;
-      }
-    } catch (e) {
-      console.error("[embed-scheduler] Unexpected error:", e);
+    if (!result.ok) {
+      console.error("[embed-scheduler] Embed failed:", result.error.message);
+      return { embedded: 0, errors: 0 };
     }
 
-    return { embedded, errors };
+    return result.value;
   }
 
   /**

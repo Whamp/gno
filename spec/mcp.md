@@ -756,6 +756,111 @@ Reindex one or all collections (write-enabled).
 
 ---
 
+### gno_embed
+
+Generate embeddings for unembedded chunks (write-enabled). Runs as background job.
+
+**Input Schema:**
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "force": {
+      "type": "boolean",
+      "description": "Re-embed all chunks (default: false, backlog only)",
+      "default": false
+    }
+  }
+}
+```
+
+**Output Schema:** `gno://schemas/mcp-embed-result@1.0`
+
+**Response:**
+
+```json
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Job: <uuid>\nStatus: started\nModel: <model-uri>"
+    }
+  ],
+  "structuredContent": {
+    "jobId": "<uuid>",
+    "status": "started",
+    "model": "<model-uri>"
+  }
+}
+```
+
+**Notes:**
+
+- Requires `--enable-write` flag
+- Fails fast if embedding model not cached (run `gno models pull embed` first)
+- Poll job status with `gno_job_status`
+
+---
+
+### gno_index
+
+Full index: sync files + generate embeddings (write-enabled). Runs as background job.
+
+**Input Schema:**
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "collection": {
+      "type": "string",
+      "description": "Collection to index (all if omitted)"
+    },
+    "gitPull": {
+      "type": "boolean",
+      "description": "Run git pull before sync",
+      "default": false
+    }
+  }
+}
+```
+
+**Output Schema:** `gno://schemas/mcp-index-result@1.0`
+
+**Response:**
+
+```json
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Job: <uuid>\nStatus: started\nCollections: work, notes\nPhases: sync → embed"
+    }
+  ],
+  "structuredContent": {
+    "jobId": "<uuid>",
+    "status": "started",
+    "collections": ["work", "notes"],
+    "phases": ["sync", "embed"],
+    "options": {
+      "gitPull": false,
+      "runUpdateCmd": false
+    }
+  }
+}
+```
+
+**Notes:**
+
+- Requires `--enable-write` flag
+- Runs sync phase first, then embed phase
+- `runUpdateCmd` is always false for MCP (security)
+- Fails fast if embedding model not cached
+- Poll job status with `gno_job_status`
+
+---
+
 ### gno_remove_collection
 
 Remove a collection from config (write-enabled). Indexed data is retained.

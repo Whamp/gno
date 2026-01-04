@@ -13,7 +13,9 @@ import type { ToolContext } from "../server";
 import { normalizeTag } from "../../core/tags";
 import { handleAddCollection } from "./add-collection";
 import { handleCapture } from "./capture";
+import { handleEmbed } from "./embed";
 import { handleGet } from "./get";
+import { handleIndex } from "./index-cmd";
 import { handleJobStatus } from "./job-status";
 import { handleListJobs } from "./list-jobs";
 import { handleListTags } from "./list-tags";
@@ -74,6 +76,15 @@ const syncInputSchema = z.object({
   collection: z.string().optional(),
   gitPull: z.boolean().default(false),
   runUpdateCmd: z.boolean().default(false),
+});
+
+const embedInputSchema = z.object({
+  force: z.boolean().default(false),
+});
+
+const indexInputSchema = z.object({
+  collection: z.string().optional(),
+  gitPull: z.boolean().default(false),
 });
 
 const removeCollectionInputSchema = z.object({
@@ -185,6 +196,44 @@ export async function runTool<T>(
   }
 }
 
+/**
+ * Run a tool without acquiring the mutex.
+ * For read-only in-memory tools (job_status, list_jobs) that should not block.
+ * Fixes mutex starvation where status queries block while jobs run.
+ */
+export async function runToolNoMutex<T>(
+  ctx: ToolContext,
+  name: string,
+  fn: () => Promise<T>,
+  formatText: (data: T) => string
+): Promise<ToolResult> {
+  // Check shutdown
+  if (ctx.isShuttingDown()) {
+    return {
+      isError: true,
+      content: [{ type: "text", text: "Error: Server is shutting down" }],
+    };
+  }
+
+  try {
+    const data = await fn();
+    return {
+      content: [{ type: "text", text: formatText(data) }],
+      structuredContent: data as { [x: string]: unknown },
+    };
+  } catch (e) {
+    // Exception firewall: never throw, always return isError
+    const message = e instanceof Error ? e.message : String(e);
+    console.error(`[MCP] ${name} error:`, message);
+    const parsedError = parseErrorMessage(message);
+    return {
+      isError: true,
+      content: [{ type: "text", text: `Error: ${message}` }],
+      structuredContent: parsedError,
+    };
+  }
+}
+
 function parseErrorMessage(message: string): { [x: string]: unknown } {
   const match = message.match(/^([A-Z_]+):\s*(.*)$/);
   if (match) {
@@ -274,6 +323,20 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
       "Sync one or all collections",
       syncInputSchema.shape,
       (args) => handleSync(args, ctx)
+    );
+
+    server.tool(
+      "gno_embed",
+      "Generate embeddings for unembedded chunks",
+      embedInputSchema.shape,
+      (args) => handleEmbed(args, ctx)
+    );
+
+    server.tool(
+      "gno_index",
+      "Full index: sync files + generate embeddings",
+      indexInputSchema.shape,
+      (args) => handleIndex(args, ctx)
     );
 
     server.tool(

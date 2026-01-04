@@ -7,7 +7,7 @@
 import type { JobRecord } from "../../core/job-manager";
 import type { ToolContext } from "../server";
 
-import { runTool, type ToolResult } from "./index";
+import { runToolNoMutex, type ToolResult } from "./index";
 
 interface ListJobsInput {
   limit?: number;
@@ -69,7 +69,8 @@ export function handleListJobs(
   args: ListJobsInput,
   ctx: ToolContext
 ): Promise<ToolResult> {
-  return runTool(
+  // Use runToolNoMutex - job list is in-memory only, should not block
+  return runToolNoMutex(
     ctx,
     "gno_list_jobs",
     async () => {

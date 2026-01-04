@@ -11,7 +11,7 @@ Use GNO as an MCP server for AI assistants like Claude Desktop, Cursor, and othe
 MCP (Model Context Protocol) allows AI assistants to access external tools and resources. GNO provides:
 
 - **Tools (read)**: gno_search, gno_vsearch, gno_query, gno_get, gno_multi_get, gno_status, gno_list_tags
-- **Tools (write, opt-in)**: gno_capture, gno_add_collection, gno_sync, gno_remove_collection, gno_tag
+- **Tools (write, opt-in)**: gno_capture, gno_add_collection, gno_sync, gno_embed, gno_index, gno_remove_collection, gno_tag
 - **Tools (jobs)**: gno_job_status, gno_list_jobs
 - **Resources**: Access documents via `gno://collection/path`
 
@@ -568,7 +568,28 @@ Add a folder to the index (requires `--enable-write`).
 
 ### gno_sync
 
-Reindex one or all collections (requires `--enable-write`).
+Reindex one or all collections (requires `--enable-write`). FTS sync only (no embedding).
+
+### gno_embed
+
+Generate embeddings for unembedded chunks (requires `--enable-write`). Runs as background job.
+
+```
+force: false  # Re-embed all chunks (default: backlog only)
+```
+
+Poll job status with `gno_job_status`. Fails fast if embedding model not cached.
+
+### gno_index
+
+Full index: sync files + generate embeddings (requires `--enable-write`). Runs as background job.
+
+```
+collection: "notes"  # Optional: limit to one collection
+gitPull: false       # Optional: run git pull before sync
+```
+
+Equivalent to CLI `gno index`. Runs sync then embed as single job.
 
 ### gno_remove_collection
 

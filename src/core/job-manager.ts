@@ -13,9 +13,28 @@ const JOB_EXPIRATION_MS = 60 * 60 * 1000;
 const JOB_MAX_RECENT = 100;
 const DEFAULT_LOCK_TIMEOUT_MS = 5000;
 
-export type JobType = "add" | "sync";
+export type JobType = "add" | "sync" | "embed" | "index";
 
 export type JobStatus = "running" | "completed" | "failed";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Discriminated union for job results
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface EmbedJobResult {
+  embedded: number;
+  errors: number;
+}
+
+export interface IndexJobResult {
+  sync: SyncResult;
+  embed: EmbedJobResult;
+}
+
+export type JobResult =
+  | { kind: "sync"; value: SyncResult }
+  | { kind: "embed"; value: EmbedJobResult }
+  | { kind: "index"; value: IndexJobResult };
 
 export interface JobRecord {
   id: string;
@@ -23,7 +42,9 @@ export interface JobRecord {
   status: JobStatus;
   startedAt: number;
   completedAt?: number;
+  /** @deprecated Use typedResult for new job types */
   result?: SyncResult;
+  typedResult?: JobResult;
   error?: string;
   serverInstanceId: string;
 }
@@ -99,6 +120,27 @@ export class JobManager {
     }
 
     return this.#startJobWithLock(type, fn, lock);
+  }
+
+  /**
+   * Start a job with typed result (for embed/index jobs).
+   * Uses discriminated union for type-safe results.
+   */
+  async startTypedJobWithLock(
+    type: JobType,
+    lock: WriteLockHandle,
+    fn: () => Promise<JobResult>
+  ): Promise<string> {
+    this.#cleanupExpiredJobs();
+
+    if (this.#activeJobId) {
+      throw new JobError(
+        "JOB_CONFLICT",
+        `${MCP_ERRORS.JOB_CONFLICT.message} (${this.#activeJobId})`
+      );
+    }
+
+    return this.#startTypedJobWithLock(type, fn, lock);
   }
 
   getJob(jobId: string): JobRecord | undefined {
@@ -183,6 +225,57 @@ export class JobManager {
     this.#track(jobPromise);
 
     return jobId;
+  }
+
+  #startTypedJobWithLock(
+    type: JobType,
+    fn: () => Promise<JobResult>,
+    lock: WriteLockHandle
+  ): string {
+    const jobId = crypto.randomUUID();
+    const job: JobRecord = {
+      id: jobId,
+      type,
+      status: "running",
+      startedAt: Date.now(),
+      serverInstanceId: this.#serverInstanceId,
+    };
+
+    this.#jobs.set(jobId, job);
+    this.#activeJobId = jobId;
+
+    const jobPromise = this.#runTypedJob(job, fn, lock);
+    this.#track(jobPromise);
+
+    return jobId;
+  }
+
+  async #runTypedJob(
+    job: JobRecord,
+    fn: () => Promise<JobResult>,
+    lock: { release: () => Promise<void> }
+  ): Promise<void> {
+    try {
+      const release = await this.#toolMutex.acquire();
+      try {
+        const result = await fn();
+        job.status = "completed";
+        job.typedResult = result;
+      } catch (e) {
+        job.status = "failed";
+        job.error = e instanceof Error ? e.message : String(e);
+      } finally {
+        release();
+      }
+    } catch (e) {
+      job.status = "failed";
+      job.error = e instanceof Error ? e.message : String(e);
+    } finally {
+      job.completedAt = Date.now();
+      this.#activeJobId = null;
+      await lock.release().catch(() => undefined);
+      this.#cleanupExpiredJobs();
+    }
   }
 
   #cleanupExpiredJobs(now: number = Date.now()): void {
