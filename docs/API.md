@@ -298,6 +298,8 @@ POST /api/sync
 
 Trigger re-indexing of all collections or a specific one.
 
+**Note**: After sync completes, embeddings are automatically generated for any new/updated chunks (debounced, runs in background).
+
 **Request Body**:
 
 ```json
