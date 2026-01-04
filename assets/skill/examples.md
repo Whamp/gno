@@ -121,6 +121,21 @@ gno ls work
 gno ls --json
 ```
 
+## Search & Retrieve Full Content
+
+### Pipeline: Search then get
+
+```bash
+# Find documents, get full content of top result
+gno search "api design" --files | head -1 | cut -d, -f3 | xargs gno get
+
+# JSON pipeline - get first result's full content
+gno query "auth" --json | jq -r '.results[0].uri' | xargs gno get
+
+# Get multiple results
+gno search "error handling" --json | jq -r '.results[].uri' | xargs gno multi-get
+```
+
 ## JSON Output (Scripting)
 
 ### Search results to JSON

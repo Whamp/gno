@@ -14,6 +14,8 @@ All commands accept:
 | `--verbose`       | Enable verbose logging                   |
 | `--yes`           | Non-interactive mode                     |
 | `--json`          | JSON output (where supported)            |
+| `--no-pager`      | Disable automatic paging                 |
+| `--offline`       | Use cached models only                   |
 
 ## Initialization
 
@@ -224,6 +226,14 @@ gno context list [--json|--md]
 gno context rm <scope>
 ```
 
+### gno context check
+
+Validate context configuration.
+
+```bash
+gno context check [--json]
+```
+
 ## Tags
 
 ### gno tags
@@ -366,6 +376,90 @@ Show MCP installation status.
 
 ```bash
 gno mcp status [--json]
+```
+
+## Web UI
+
+### gno serve
+
+Start web UI for browsing, searching, and querying documents.
+
+```bash
+gno serve [options]
+```
+
+| Option       | Default | Description      |
+| ------------ | ------- | ---------------- |
+| `-p, --port` | 3000    | Port to serve on |
+| `--host`     | 0.0.0.0 | Host to bind     |
+
+Features: Dashboard, search, browse collections, document viewer, AI Q&A with citations.
+
+## Skill Management
+
+### gno skill install
+
+Install GNO skill for AI coding assistants.
+
+```bash
+gno skill install [options]
+```
+
+| Option         | Default | Description                      |
+| -------------- | ------- | -------------------------------- |
+| `-t, --target` | claude  | Target: `claude`, `codex`, `amp` |
+| `-s, --scope`  | user    | Scope: `user`, `project`         |
+| `-f, --force`  | false   | Overwrite existing               |
+| `--dry-run`    | false   | Preview changes                  |
+
+Examples:
+
+```bash
+gno skill install --target claude --scope project
+gno skill install --target codex --scope user
+```
+
+### gno skill uninstall
+
+Remove GNO skill from AI assistant.
+
+```bash
+gno skill uninstall [-t <target>] [-s <scope>]
+```
+
+### gno skill show
+
+Preview skill files that would be installed.
+
+```bash
+gno skill show [--json]
+```
+
+### gno skill paths
+
+Show skill installation paths for each target.
+
+```bash
+gno skill paths [--json]
+```
+
+## Additional Admin Commands
+
+### gno reset
+
+Delete all GNO data (database, embeddings, config). Use with caution.
+
+```bash
+gno reset [--force]
+```
+
+### gno completion
+
+Install shell tab completion.
+
+```bash
+gno completion install [--shell <bash|zsh|fish>]
+gno completion uninstall
 ```
 
 ## Exit Codes

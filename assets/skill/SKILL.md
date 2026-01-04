@@ -6,270 +6,87 @@ allowed-tools: Bash(gno:*) Read
 
 # GNO - Local Knowledge Engine
 
-Fast local semantic search for your documents. Index once, search instantly. No cloud, no API keys.
-
-**Role**: Document search and knowledge retrieval assistant
-**Goal**: Help users index, search, query, and get answers from their local documents
+Fast local semantic search. Index once, search instantly. No cloud, no API keys.
 
 ## When to Use This Skill
 
 - User asks to **search files, documents, or notes**
 - User wants to **find information** in local folders
 - User needs to **index a directory** for searching
-- User mentions **PDFs, markdown, Word docs, code** they want to search
+- User mentions **PDFs, markdown, Word docs, code** to search
 - User asks about **knowledge base** or **RAG** setup
 - User wants **semantic/vector search** over their files
 - User needs to **set up MCP** for document access
 - User wants a **web UI** to browse/search documents
 - User asks to **get AI answers** from their documents
-- User wants to **tag, categorize, or label** documents
-- User needs to **filter search by tags** or categories
+- User wants to **tag, categorize, or filter** documents
 
 ## Quick Start
 
 ```bash
-# 1. Initialize in any directory
-gno init
-
-# 2. Add a collection (folder of docs)
-gno collection add ~/docs --name docs
-
-# 3. Index documents
-gno index
-
-# 4. Search
-gno search "your query"
+gno init                              # Initialize in current directory
+gno collection add ~/docs --name docs # Add folder to index
+gno index                             # Build index (ingest + embed)
+gno search "your query"               # BM25 keyword search
 ```
 
-## Core Commands
+## Command Overview
 
-### Search Commands
+| Category     | Commands                                                         | Description                                            |
+| ------------ | ---------------------------------------------------------------- | ------------------------------------------------------ |
+| **Search**   | `search`, `vsearch`, `query`, `ask`                              | Find documents by keywords, meaning, or get AI answers |
+| **Retrieve** | `get`, `multi-get`, `ls`                                         | Fetch document content by URI or ID                    |
+| **Index**    | `init`, `collection add/list/remove`, `index`, `update`, `embed` | Set up and maintain document index                     |
+| **Tags**     | `tags`, `tags add`, `tags rm`                                    | Organize and filter documents                          |
+| **Context**  | `context add/list/rm/check`                                      | Add hints to improve search relevance                  |
+| **Models**   | `models list/use/pull/clear/path`                                | Manage local AI models                                 |
+| **Serve**    | `serve`                                                          | Web UI for browsing and searching                      |
+| **MCP**      | `mcp`, `mcp install/uninstall/status`                            | AI assistant integration                               |
+| **Skill**    | `skill install/uninstall/show/paths`                             | Install skill for AI agents                            |
+| **Admin**    | `status`, `doctor`, `cleanup`, `reset`, `completion`             | Maintenance and diagnostics                            |
 
-| Command               | Description                                 |
-| --------------------- | ------------------------------------------- |
-| `gno search <query>`  | BM25 keyword search (fast, exact terms)     |
-| `gno vsearch <query>` | Vector semantic search (meaning-based)      |
-| `gno query <query>`   | Hybrid search (BM25 + vector + rerank)      |
-| `gno ask <question>`  | Get AI answer with citations from your docs |
+## Search Modes
 
-### Search Options
+| Command                | Speed   | Best For                           |
+| ---------------------- | ------- | ---------------------------------- |
+| `gno search`           | instant | Exact keyword matching             |
+| `gno vsearch`          | ~0.5s   | Finding similar concepts           |
+| `gno query --fast`     | ~0.7s   | Quick lookups                      |
+| `gno query`            | ~2-3s   | Balanced (default)                 |
+| `gno query --thorough` | ~5-8s   | Best recall, complex queries       |
+| `gno ask --answer`     | ~3-5s   | AI-generated answer with citations |
 
-```bash
-# Limit results
-gno search "api" -n 10
+**Retry strategy**: Use default first. If no results: rephrase query, then try `--thorough`.
 
-# Filter by collection
-gno query "auth" --collection work
+## Common Flags
 
-# Filter by tags
-gno search "api" --tags-any project,work     # Has ANY of these tags
-gno query "auth" --tags-all security,prod    # Has ALL of these tags
-
-# Search modes (for query/ask)
-gno query "topic" --fast       # ~0.7s, skip expansion/rerank
-gno query "topic"              # ~2-3s, default with rerank
-gno query "topic" --thorough   # ~5-8s, full pipeline
-
-# Get AI answer
-gno ask "how does auth work" --answer
-
-# Output formats
-gno search "test" --json       # JSON for parsing
-gno search "test" --files      # URIs for piping
 ```
-
-### Document Retrieval
-
-| Command                   | Description                  |
-| ------------------------- | ---------------------------- |
-| `gno get <ref>`           | Get document by URI or docid |
-| `gno multi-get <refs...>` | Get multiple documents       |
-| `gno ls [scope]`          | List indexed documents       |
-
-```bash
-gno get gno://work/readme.md
-gno get "#a1b2c3d4" --line-numbers
-gno ls notes
-gno ls --json
-```
-
-### Indexing
-
-| Command                                   | Description                         |
-| ----------------------------------------- | ----------------------------------- |
-| `gno init`                                | Initialize GNO in current directory |
-| `gno collection add <path> --name <name>` | Add folder to index                 |
-| `gno index`                               | Full index (ingest + embed)         |
-| `gno update`                              | Sync files without embedding        |
-| `gno embed`                               | Generate embeddings only            |
-
-```bash
-gno init
-gno collection add ~/notes --name notes --pattern "**/*.md"
-gno index
-gno index --collection notes  # Single collection
-```
-
-### Model Management
-
-| Command            | Description                           |
-| ------------------ | ------------------------------------- |
-| `gno models list`  | Show available model presets          |
-| `gno models use`   | Switch preset (slim/balanced/quality) |
-| `gno models pull`  | Download models                       |
-| `gno models clear` | Remove cached models                  |
-| `gno models path`  | Show model cache directory            |
-
-```bash
-gno models use slim       # Default, fast (~1GB)
-gno models use balanced   # Larger model (~2GB)
-gno models use quality    # Best answers (~2.5GB)
-gno models pull --all
-```
-
-### Context Hints
-
-| Command                          | Description            |
-| -------------------------------- | ---------------------- |
-| `gno context add <scope> "text"` | Add context for scope  |
-| `gno context list`               | List all contexts      |
-| `gno context check`              | Validate configuration |
-| `gno context rm <scope>`         | Remove a context       |
-
-```bash
-gno context add "/" "Corporate knowledge base"
-gno context add "work:" "Work documents and contracts"
-```
-
-### Tags
-
-| Command                    | Description               |
-| -------------------------- | ------------------------- |
-| `gno tags`                 | List all tags with counts |
-| `gno tags add <doc> <tag>` | Add tag to document       |
-| `gno tags rm <doc> <tag>`  | Remove tag from document  |
-
-```bash
-# List tags
-gno tags
-gno tags --collection work
-gno tags --prefix project/      # Hierarchical tags
-
-# Add/remove tags
-gno tags add gno://work/readme.md project/api
-gno tags rm "#a1b2c3d4" draft
-
-# Filter searches by tags
-gno search "api" --tags-any project,work
-gno query "auth" --tags-all security,reviewed
-```
-
-Tag format: lowercase, alphanumeric, hyphens, dots. Hierarchical with `/` (e.g., `project/web`, `status/draft`).
-
-### Web UI
-
-| Command             | Description              |
-| ------------------- | ------------------------ |
-| `gno serve`         | Start web UI (port 3000) |
-| `gno serve -p 8080` | Custom port              |
-
-Features: Dashboard, search, browse, document editor, AI Q&A with citations.
-
-### MCP Server
-
-| Command             | Description                     |
-| ------------------- | ------------------------------- |
-| `gno mcp`           | Start MCP server (stdio)        |
-| `gno mcp install`   | Install for Claude Desktop, etc |
-| `gno mcp uninstall` | Remove MCP configuration        |
-| `gno mcp status`    | Show installation status        |
-
-```bash
-gno mcp install --target claude-desktop
-gno mcp install --target cursor
-gno mcp install --target claude-code --scope project
-```
-
-### Skill Management
-
-| Command               | Description                 |
-| --------------------- | --------------------------- |
-| `gno skill install`   | Install skill for AI agents |
-| `gno skill uninstall` | Remove skill                |
-| `gno skill show`      | Preview skill files         |
-| `gno skill paths`     | Show installation paths     |
-
-```bash
-gno skill install --target claude --scope project
-gno skill install --target codex --scope user
-```
-
-### Admin Commands
-
-| Command          | Description                   |
-| ---------------- | ----------------------------- |
-| `gno status`     | Show index status             |
-| `gno doctor`     | Check system health           |
-| `gno cleanup`    | Remove orphaned data          |
-| `gno reset`      | Delete all data (use caution) |
-| `gno completion` | Shell tab completion          |
-
-```bash
-gno status --json
-gno doctor
-gno completion install
+-n <num>              Max results (default: 5)
+-c, --collection      Filter to collection
+--tags-any <t1,t2>    Has ANY of these tags
+--tags-all <t1,t2>    Has ALL of these tags
+--json                JSON output
+--files               URI list output
+--line-numbers        Include line numbers
 ```
 
 ## Global Flags
 
 ```
---index <name>    Use alternate index (default: "default")
---config <path>   Override config file path
---no-color        Disable colored output
---no-pager        Disable automatic paging
---verbose         Enable verbose logging
+--index <name>    Alternate index (default: "default")
+--config <path>   Override config file
+--verbose         Verbose logging
+--json            JSON output
 --yes             Non-interactive mode
 --offline         Use cached models only
---json            JSON output (where supported)
+--no-color        Disable colors
+--no-pager        Disable paging
 ```
 
-## Common Patterns
+## Reference Documentation
 
-### Search & Get Full Content
-
-```bash
-# Find documents, get full content
-gno search "api design" --files | head -1 | cut -d, -f3 | xargs gno get
-
-# JSON pipeline
-gno query "auth" --json | jq -r '.results[0].uri' | xargs gno get
-```
-
-### AI-Powered Q&A
-
-```bash
-# Get answer with sources
-gno ask "what are the deployment steps" --answer
-
-# Show all retrieved sources
-gno ask "summarize the auth discussion" --answer --show-sources
-```
-
-### Scripting
-
-```bash
-# Check if indexed
-gno status --json | jq '.healthy'
-
-# List all URIs
-gno ls --files
-
-# Batch get
-gno multi-get abc123 def456 ghi789 --max-bytes 10000
-```
-
-## Reference
-
-For complete CLI details, see [cli-reference.md](cli-reference.md).
-For MCP server setup, see [mcp-reference.md](mcp-reference.md).
-For usage examples, see [examples.md](examples.md).
+| Topic                                                 | File                                 |
+| ----------------------------------------------------- | ------------------------------------ |
+| Complete CLI reference (all commands, options, flags) | [cli-reference.md](cli-reference.md) |
+| MCP server setup and tools                            | [mcp-reference.md](mcp-reference.md) |
+| Usage examples and patterns                           | [examples.md](examples.md)           |
