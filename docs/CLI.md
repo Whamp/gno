@@ -11,7 +11,9 @@ GNO command-line interface guide.
 | Command          | Description                     |
 | ---------------- | ------------------------------- |
 | `gno init`       | Initialize config and database  |
-| `gno update`     | Index all collections           |
+| `gno index`      | Full index (sync + embed)       |
+| `gno update`     | Sync files from disk (no embed) |
+| `gno embed`      | Generate embeddings only        |
 | `gno search`     | BM25 full-text search           |
 | `gno vsearch`    | Vector similarity search        |
 | `gno query`      | Hybrid search (BM25 + vector)   |
@@ -19,6 +21,7 @@ GNO command-line interface guide.
 | `gno get`        | Retrieve document content       |
 | `gno ls`         | List indexed documents          |
 | `gno serve`      | Start web UI server             |
+| `gno mcp`        | Start MCP server for AI clients |
 | `gno models`     | Manage models (list, pull, use) |
 | `gno skill`      | Install GNO skill for AI agents |
 | `gno tags`       | Manage document tags            |
