@@ -136,11 +136,21 @@ export async function createVectorIndexPort(
     ? db.prepare(`DELETE FROM ${tableName} WHERE chunk_id LIKE ? || ':%'`)
     : null;
 
+  // Track if vec0 writes failed this session (needs sync)
+  let vecDirty = false;
+  let vecErrorLogged = false; // Rate-limit warning to once per run
+
   return ok({
     searchAvailable,
     model,
     dimensions,
     loadError,
+    get vecDirty() {
+      return vecDirty;
+    },
+    set vecDirty(v: boolean) {
+      vecDirty = v;
+    },
 
     upsertVectors(rows: VectorRow[]): Promise<StoreResult<void>> {
       // 1. Always store in content_vectors first (critical path)
@@ -173,9 +183,15 @@ export async function createVectorIndexPort(
               upsertVecStmt.run(chunkId, encodeEmbedding(row.embedding));
             }
           })();
-        } catch {
-          // Vec0 write failed - storage succeeded, search may be degraded
-          // This is expected when dimensions mismatch or vec extension issues
+        } catch (e) {
+          // Vec0 write failed - storage succeeded, search needs sync
+          vecDirty = true;
+          if (!vecErrorLogged) {
+            vecErrorLogged = true;
+            console.warn(
+              `[vec] Index write failed, will sync after embed: ${e instanceof Error ? e.message : String(e)}`
+            );
+          }
         }
       }
 

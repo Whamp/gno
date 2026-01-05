@@ -116,6 +116,20 @@ export async function embedBacklog(
       embedded += batch.length;
     }
 
+    // Sync vec index once at end if any vec0 writes failed
+    if (vectorIndex.vecDirty) {
+      const syncResult = await vectorIndex.syncVecIndex();
+      if (syncResult.ok) {
+        const { added, removed } = syncResult.value;
+        if (added > 0 || removed > 0) {
+          console.log(`[vec] Synced index: +${added} -${removed}`);
+        }
+        vectorIndex.vecDirty = false;
+      } else {
+        console.warn(`[vec] Sync failed: ${syncResult.error.message}`);
+      }
+    }
+
     return ok({ embedded, errors });
   } catch (e) {
     return err(

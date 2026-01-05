@@ -169,6 +169,7 @@ export function createProgram(): Command {
   wireSearchCommands(program);
   wireOnboardingCommands(program);
   wireManagementCommands(program);
+  wireVecCommands(program);
   wireRetrievalCommands(program);
   wireTagsCommands(program);
   wireLinksCommands(program);
@@ -1316,6 +1317,62 @@ function wireManagementCommands(program: Command): void {
         keepCache: Boolean(cmdOpts.keepCache),
       });
       process.stdout.write(`${formatReset(result)}\n`);
+    });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Vec Commands (sync, rebuild)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function wireVecCommands(program: Command): void {
+  const vecCmd = program.command("vec").description("Vector index maintenance");
+
+  // vec sync
+  vecCmd
+    .command("sync")
+    .description("Sync vec0 index with content_vectors")
+    .option("--json", "JSON output")
+    .action(async (cmdOpts: Record<string, unknown>) => {
+      const format = getFormat(cmdOpts);
+      const globals = getGlobals();
+
+      const { vecSync, formatVecSync } = await import("./commands/vec");
+      const result = await vecSync({
+        configPath: globals.config,
+        json: format === "json",
+      });
+
+      if (!result.success) {
+        throw new CliError("RUNTIME", result.error);
+      }
+
+      process.stdout.write(
+        `${formatVecSync(result, { json: format === "json" })}\n`
+      );
+    });
+
+  // vec rebuild
+  vecCmd
+    .command("rebuild")
+    .description("Rebuild vec0 index from content_vectors")
+    .option("--json", "JSON output")
+    .action(async (cmdOpts: Record<string, unknown>) => {
+      const format = getFormat(cmdOpts);
+      const globals = getGlobals();
+
+      const { vecRebuild, formatVecRebuild } = await import("./commands/vec");
+      const result = await vecRebuild({
+        configPath: globals.config,
+        json: format === "json",
+      });
+
+      if (!result.success) {
+        throw new CliError("RUNTIME", result.error);
+      }
+
+      process.stdout.write(
+        `${formatVecRebuild(result, { json: format === "json" })}\n`
+      );
     });
 }
 
