@@ -29,15 +29,17 @@ export interface LinkResponse {
     /** Whether target doc was resolved (found in index) */
     resolved?: boolean;
     /** Resolved target document ID (if found) */
-    targetDocid?: string;
+    resolvedDocid?: string;
     /** Resolved target URI (if found) */
-    targetUri?: string;
+    resolvedUri?: string;
     /** Resolved target title (if found) */
-    targetTitle?: string;
+    resolvedTitle?: string;
   }>;
   meta: {
     docid: string;
     totalLinks: number;
+    resolvedCount: number;
+    resolutionAvailable: boolean;
     typeFilter?: "wiki" | "markdown";
   };
 }
@@ -86,31 +88,43 @@ function errorResponse(code: string, message: string, status = 400): Response {
   return jsonResponse({ error: { code, message } }, status);
 }
 
-/**
- * Parse and validate a positive integer query param.
- * Returns default if missing, NaN, or out of bounds.
- */
+type ParseResult = { ok: true; value: number } | { ok: false; message: string };
+
 function parsePositiveInt(
+  name: string,
   value: string | null,
   defaultValue: number,
   min: number,
   max: number
-): number {
-  if (!value) return defaultValue;
+): ParseResult {
+  if (!value) return { ok: true, value: defaultValue };
   const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return defaultValue;
-  return Math.min(Math.max(Math.floor(parsed), min), max);
+  if (!Number.isFinite(parsed) || !Number.isInteger(parsed)) {
+    return {
+      ok: false,
+      message: `${name} must be an integer between ${min} and ${max}`,
+    };
+  }
+  if (parsed < min || parsed > max) {
+    return { ok: false, message: `${name} must be between ${min} and ${max}` };
+  }
+  return { ok: true, value: parsed };
 }
 
-/**
- * Parse and validate a float query param in [0, 1].
- * Returns default if missing, NaN, or out of bounds.
- */
-function parseThreshold(value: string | null, defaultValue: number): number {
-  if (!value) return defaultValue;
+function parseThreshold(
+  name: string,
+  value: string | null,
+  defaultValue: number
+): ParseResult {
+  if (!value) return { ok: true, value: defaultValue };
   const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return defaultValue;
-  return Math.max(0, Math.min(1, parsed));
+  if (!Number.isFinite(parsed)) {
+    return { ok: false, message: `${name} must be a number between 0 and 1` };
+  }
+  if (parsed < 0 || parsed > 1) {
+    return { ok: false, message: `${name} must be between 0 and 1` };
+  }
+  return { ok: true, value: parsed };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -170,17 +184,19 @@ export async function handleDocLinks(
 
   // Resolve targets - batch query for efficiency
   // Note: targetCollection may be empty string "" for same-collection links
-  const resolvedTargets = await store.resolveLinks(
+  const resolvedResult = await store.resolveLinks(
     links.map((l) => ({
       targetRefNorm: l.targetRefNorm,
       targetCollection: l.targetCollection || doc.collection,
       linkType: l.linkType,
     }))
   );
+  const resolutionAvailable = resolvedResult.ok;
+  const resolvedTargets = resolutionAvailable ? resolvedResult.value : null;
 
   const response: LinkResponse = {
     links: links.map((l, idx) => {
-      const resolved = resolvedTargets.ok ? resolvedTargets.value[idx] : null;
+      const resolved = resolvedTargets?.[idx] ?? null;
       return {
         targetRef: l.targetRef,
         targetRefNorm: l.targetRefNorm,
@@ -194,18 +210,24 @@ export async function handleDocLinks(
         endLine: l.endLine,
         endCol: l.endCol,
         source: l.source,
-        // Resolved target info
-        resolved: resolved !== null,
-        ...(resolved && {
-          targetDocid: resolved.docid,
-          targetUri: resolved.uri,
-          targetTitle: resolved.title ?? undefined,
+        ...(resolutionAvailable && {
+          // Resolved target info
+          resolved: resolved !== null,
+          ...(resolved && {
+            resolvedDocid: resolved.docid,
+            resolvedUri: resolved.uri,
+            resolvedTitle: resolved.title ?? undefined,
+          }),
         }),
       };
     }),
     meta: {
       docid: doc.docid,
       totalLinks: links.length,
+      resolvedCount: resolvedTargets
+        ? resolvedTargets.filter(Boolean).length
+        : 0,
+      resolutionAvailable,
       ...(validatedType && { typeFilter: validatedType }),
     },
   };
@@ -273,7 +295,7 @@ export async function handleDocBacklinks(
  *   ?threshold=0.5 (min similarity score 0-1, default 0.5)
  *   ?crossCollection=true (search across all collections, default false)
  *
- * Algorithm: avg embedding of stored doc chunks -> vector search -> exclude self
+ * Algorithm: seq=0 embedding (fallback to first available) -> vector search -> exclude self
  */
 export async function handleDocSimilar(
   ctx: ServerContext,
@@ -302,9 +324,26 @@ export async function handleDocSimilar(
     );
   }
 
-  // Parse and validate query params (guard against NaN)
-  const limit = parsePositiveInt(url.searchParams.get("limit"), 5, 1, 20);
-  const threshold = parseThreshold(url.searchParams.get("threshold"), 0.5);
+  const limitResult = parsePositiveInt(
+    "limit",
+    url.searchParams.get("limit"),
+    5,
+    1,
+    20
+  );
+  if (!limitResult.ok) {
+    return errorResponse("VALIDATION", limitResult.message, 400);
+  }
+  const thresholdResult = parseThreshold(
+    "threshold",
+    url.searchParams.get("threshold"),
+    0.5
+  );
+  if (!thresholdResult.ok) {
+    return errorResponse("VALIDATION", thresholdResult.message, 400);
+  }
+  const limit = limitResult.value;
+  const threshold = thresholdResult.value;
   const crossCollection = url.searchParams.get("crossCollection") === "true";
 
   // Check document has content
@@ -324,20 +363,28 @@ export async function handleDocSimilar(
   // Get embedding model from context
   const embedModel = ctx.vectorIndex.model;
 
-  // Get document's stored embeddings from content_vectors
+  // Get document embedding from content_vectors (prefer seq=0)
   const db = store.getRawDb();
 
   interface VectorRow {
     embedding: Uint8Array;
   }
 
-  const vectors = db
+  const vectorRow = db
     .query<VectorRow, [string, string]>(
-      "SELECT embedding FROM content_vectors WHERE mirror_hash = ? AND model = ?"
+      "SELECT embedding FROM content_vectors WHERE mirror_hash = ? AND model = ? AND seq = 0 LIMIT 1"
     )
-    .all(doc.mirrorHash, embedModel);
+    .get(doc.mirrorHash, embedModel);
 
-  if (vectors.length === 0) {
+  const fallbackRow =
+    vectorRow ??
+    db
+      .query<VectorRow, [string, string]>(
+        "SELECT embedding FROM content_vectors WHERE mirror_hash = ? AND model = ? ORDER BY seq LIMIT 1"
+      )
+      .get(doc.mirrorHash, embedModel);
+
+  if (!fallbackRow) {
     return jsonResponse({
       similar: [],
       meta: {
@@ -350,30 +397,12 @@ export async function handleDocSimilar(
     } satisfies SimilarDocResponse);
   }
 
-  // Compute average embedding from stored chunk embeddings
   let dimensions: number;
-  let avgEmbedding: Float32Array;
+  let embedding: Float32Array;
 
   try {
-    const firstVec = decodeEmbedding(vectors[0]!.embedding);
-    dimensions = firstVec.length;
-    avgEmbedding = new Float32Array(dimensions);
-
-    for (const v of vectors) {
-      const emb = decodeEmbedding(v.embedding);
-      if (emb.length !== dimensions) {
-        return errorResponse(
-          "RUNTIME",
-          "Inconsistent embedding dimensions in stored vectors",
-          500
-        );
-      }
-      for (let i = 0; i < dimensions; i++) {
-        const current = avgEmbedding[i] ?? 0;
-        const embVal = emb[i] ?? 0;
-        avgEmbedding[i] = current + embVal / vectors.length;
-      }
-    }
+    embedding = decodeEmbedding(fallbackRow.embedding);
+    dimensions = embedding.length;
   } catch (e) {
     return errorResponse(
       "RUNTIME",
@@ -382,23 +411,23 @@ export async function handleDocSimilar(
     );
   }
 
-  // Normalize the average embedding for cosine similarity
+  // Normalize embedding for cosine similarity
   let norm = 0;
   for (let i = 0; i < dimensions; i++) {
-    const val = avgEmbedding[i] ?? 0;
+    const val = embedding[i] ?? 0;
     norm += val * val;
   }
   norm = Math.sqrt(norm);
   if (norm > 0) {
     for (let i = 0; i < dimensions; i++) {
-      avgEmbedding[i] = (avgEmbedding[i] ?? 0) / norm;
+      embedding[i] = (embedding[i] ?? 0) / norm;
     }
   }
 
   // Search for similar docs (request extra to account for self-exclusion, filtering)
   const candidateLimit = Math.min(limit * 20, 200);
   const searchResult = await ctx.vectorIndex.searchNearest(
-    avgEmbedding,
+    embedding,
     candidateLimit,
     {}
   );

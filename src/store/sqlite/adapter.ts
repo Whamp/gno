@@ -26,6 +26,8 @@ import type {
   DocumentRow,
   FtsResult,
   FtsSearchOptions,
+  GetGraphOptions,
+  GraphResult,
   IndexStatus,
   IngestErrorInput,
   IngestErrorRow,
@@ -40,7 +42,7 @@ import type {
 import type { SqliteDbProvider } from "./types";
 
 import { buildUri, deriveDocid } from "../../app/constants";
-import { normalizeWikiName } from "../../core/links";
+import { normalizeWikiName, stripWikiMdExt } from "../../core/links";
 import { migrations, runMigrations } from "../migrations";
 import { err, ok } from "../types";
 import { loadFts5Snowball } from "./fts5-snowball";
@@ -1389,7 +1391,7 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
 
   /**
    * Get backlinks pointing to a document.
-   * Uses target_ref_norm for matching (wiki=normalized title, markdown=rel_path).
+   * Uses target_ref_norm for matching (wiki=normalized title with path fallbacks, markdown=rel_path).
    * Only returns links from active source documents.
    */
   async getBacklinksForDoc(
@@ -1413,8 +1415,35 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
         return ok([]);
       }
 
-      // Compute normalized wiki key from target title
-      const wikiKey = normalizeWikiName(target.title ?? "");
+      // Compute normalized wiki keys for fallback matching
+      const keySet = new Set<string>();
+      const addKey = (value: string): void => {
+        if (value) {
+          keySet.add(value);
+        }
+      };
+      const addVariants = (value: string): void => {
+        if (!value) return;
+        const base = stripWikiMdExt(value);
+        const md = `${base}.md`;
+        addKey(value);
+        addKey(base);
+        addKey(md);
+      };
+      const addVariantsWithBasename = (value: string): void => {
+        if (!value) return;
+        addVariants(value);
+        const basename = value.split("/").pop() ?? value;
+        if (basename !== value) {
+          addVariants(basename);
+        }
+      };
+
+      const titleKey = normalizeWikiName(target.title ?? "");
+      addVariants(titleKey);
+
+      const relPathKey = normalizeWikiName(target.rel_path);
+      addVariantsWithBasename(relPathKey);
 
       interface DbBacklinkRow {
         source_doc_id: number;
@@ -1426,31 +1455,61 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
         start_col: number;
       }
 
-      const targetCollection = options?.collection ?? target.collection;
+      const targetCollection = target.collection;
+      const sourceCollectionFilter = options?.collection;
 
-      // Query wiki backlinks (link_type='wiki')
+      // Query wiki backlinks (link_type='wiki') with path-style fallbacks
       // NULL target_collection means "same collection as source" - enforce this in SQL
-      const wikiBacklinks = wikiKey
-        ? db
-            .query<DbBacklinkRow, [string, string, string]>(
-              `SELECT dl.source_doc_id, src.docid, src.uri, src.title, dl.link_text, dl.start_line, dl.start_col
-               FROM doc_links dl
-               JOIN documents src ON src.id = dl.source_doc_id AND src.active = 1
-               WHERE dl.link_type = 'wiki'
-                 AND dl.target_ref_norm = ?
-                 AND (
-                   (dl.target_collection IS NULL AND src.collection = ?)
-                   OR dl.target_collection = ?
-                 )
-               ORDER BY src.uri, dl.start_line, dl.start_col`
-            )
-            .all(wikiKey, targetCollection, targetCollection)
-        : [];
+      const wikiConditions: string[] = [];
+      const wikiParams: string[] = [];
+
+      const addWikiExact = (value: string): void => {
+        wikiConditions.push("dl.target_ref_norm = ?");
+        wikiParams.push(value);
+      };
+
+      const addWikiSuffix = (value: string): void => {
+        wikiConditions.push(
+          `(substr(dl.target_ref_norm, -length(?)) = ?
+            AND (length(dl.target_ref_norm) = length(?)
+              OR substr(dl.target_ref_norm, -length(?) - 1, 1) = '/'))`
+        );
+        wikiParams.push(value, value, value, value);
+      };
+
+      for (const key of keySet) {
+        addWikiExact(key);
+        addWikiSuffix(key);
+      }
+
+      const wikiBacklinks =
+        wikiConditions.length > 0
+          ? db
+              .query<DbBacklinkRow, string[]>(
+                `SELECT dl.source_doc_id, src.docid, src.uri, src.title, dl.link_text, dl.start_line, dl.start_col
+                 FROM doc_links dl
+                 JOIN documents src ON src.id = dl.source_doc_id AND src.active = 1
+                 WHERE dl.link_type = 'wiki'
+                   AND (${wikiConditions.join(" OR ")})
+                   AND (
+                     (dl.target_collection IS NULL AND src.collection = ?)
+                     OR dl.target_collection = ?
+                   )
+                   ${sourceCollectionFilter ? "AND src.collection = ?" : ""}
+                 ORDER BY src.uri, dl.start_line, dl.start_col`
+              )
+              .all(
+                ...wikiParams,
+                targetCollection,
+                targetCollection,
+                ...(sourceCollectionFilter ? [sourceCollectionFilter] : [])
+              )
+          : [];
 
       // Query markdown backlinks (link_type='markdown')
       // NULL target_collection means "same collection as source" - enforce this in SQL
       const mdBacklinks = db
-        .query<DbBacklinkRow, [string, string, string]>(
+        .query<DbBacklinkRow, string[]>(
           `SELECT dl.source_doc_id, src.docid, src.uri, src.title, dl.link_text, dl.start_line, dl.start_col
            FROM doc_links dl
            JOIN documents src ON src.id = dl.source_doc_id AND src.active = 1
@@ -1460,9 +1519,15 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
                (dl.target_collection IS NULL AND src.collection = ?)
                OR dl.target_collection = ?
              )
+             ${sourceCollectionFilter ? "AND src.collection = ?" : ""}
            ORDER BY src.uri, dl.start_line, dl.start_col`
         )
-        .all(target.rel_path, targetCollection, targetCollection);
+        .all(
+          target.rel_path,
+          targetCollection,
+          targetCollection,
+          ...(sourceCollectionFilter ? [sourceCollectionFilter] : [])
+        );
 
       const allBacklinks = [...wikiBacklinks, ...mdBacklinks].map((r) => ({
         sourceDocId: r.source_doc_id,
@@ -1500,55 +1565,194 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
     try {
       const db = this.ensureOpen();
 
-      // For efficiency, batch resolve by building a map
-      // Key: "linkType:collection:refNorm" -> doc info
       const results: Array<{
         docid: string;
         uri: string;
         title: string | null;
-      } | null> = [];
+      } | null> = Array.from({ length: targets.length }, () => null);
 
-      for (const target of targets) {
-        let doc: { docid: string; uri: string; title: string | null } | null =
-          null;
+      const wikiTargets: Array<{
+        idx: number;
+        collection: string;
+        baseRef: string;
+        baseRefMd: string;
+      }> = [];
+      const mdTargets: Array<{
+        idx: number;
+        collection: string;
+        relPath: string;
+      }> = [];
 
+      for (const [idx, target] of targets.entries()) {
         if (target.linkType === "wiki") {
-          // Wiki links match on normalized title (lower+trim)
-          // ORDER BY id for deterministic results when multiple docs share title
-          const row = db
-            .query<
-              { docid: string; uri: string; title: string | null },
-              [string, string]
-            >(
-              `SELECT docid, uri, title FROM documents
-               WHERE active = 1
-                 AND collection = ?
-                 AND lower(trim(title)) = ?
-               ORDER BY id ASC
-               LIMIT 1`
-            )
-            .get(target.targetCollection, target.targetRefNorm);
-          doc = row ?? null;
+          const baseRef = stripWikiMdExt(target.targetRefNorm);
+          wikiTargets.push({
+            idx,
+            collection: target.targetCollection,
+            baseRef,
+            baseRefMd: `${baseRef}.md`,
+          });
         } else {
-          // Markdown links match on rel_path
-          // ORDER BY id for deterministic results
-          const row = db
-            .query<
-              { docid: string; uri: string; title: string | null },
-              [string, string]
-            >(
-              `SELECT docid, uri, title FROM documents
-               WHERE active = 1
-                 AND collection = ?
-                 AND rel_path = ?
-               ORDER BY id ASC
-               LIMIT 1`
-            )
-            .get(target.targetCollection, target.targetRefNorm);
-          doc = row ?? null;
+          mdTargets.push({
+            idx,
+            collection: target.targetCollection,
+            relPath: target.targetRefNorm,
+          });
         }
+      }
 
-        results.push(doc);
+      const chunkArray = <T>(items: T[], chunkSize: number): T[][] => {
+        const chunks: T[][] = [];
+        for (let i = 0; i < items.length; i += chunkSize) {
+          chunks.push(items.slice(i, i + chunkSize));
+        }
+        return chunks;
+      };
+
+      const MAX_SQL_PARAMS = 900;
+      const wikiBatchSize = Math.max(1, Math.floor(MAX_SQL_PARAMS / 4));
+      const mdBatchSize = Math.max(1, Math.floor(MAX_SQL_PARAMS / 3));
+
+      const titleExpr = "lower(trim(d.title))";
+      const relExpr = "lower(d.rel_path)";
+      const suffixMatchExprExpr = (
+        targetExpr: string,
+        valueExpr: string
+      ): string =>
+        `(substr(${targetExpr}, -length(${valueExpr})) = ${valueExpr}
+          AND (length(${targetExpr}) = length(${valueExpr})
+            OR substr(${targetExpr}, -length(${valueExpr}) - 1, 1) = '/'))`;
+
+      if (wikiTargets.length > 0) {
+        for (const batch of chunkArray(wikiTargets, wikiBatchSize)) {
+          const valuesClause = batch.map(() => "(?, ?, ?, ?)").join(", ");
+          const wikiParams = batch.flatMap((t) => [
+            t.idx,
+            t.collection,
+            t.baseRef,
+            t.baseRefMd,
+          ]);
+
+          const baseRefExpr = "t.base_ref";
+          const baseRefMdExpr = "t.base_ref_md";
+          const wikiWhere = `
+            ${titleExpr} = ${baseRefExpr}
+            OR ${titleExpr} = ${baseRefMdExpr}
+            OR ${suffixMatchExprExpr(baseRefExpr, titleExpr)}
+            OR ${suffixMatchExprExpr(baseRefMdExpr, `${titleExpr} || '.md'`)}
+            OR ${relExpr} = ${baseRefExpr}
+            OR ${relExpr} = ${baseRefMdExpr}
+            OR ${suffixMatchExprExpr(relExpr, baseRefMdExpr)}
+            OR ${suffixMatchExprExpr(relExpr, baseRefExpr)}
+            OR ${suffixMatchExprExpr(baseRefMdExpr, relExpr)}
+            OR ${suffixMatchExprExpr(baseRefExpr, relExpr)}
+          `;
+
+          const wikiRank = `CASE
+            WHEN ${titleExpr} = ${baseRefExpr} THEN 1
+            WHEN ${titleExpr} = ${baseRefMdExpr} THEN 2
+            WHEN ${suffixMatchExprExpr(baseRefExpr, titleExpr)} THEN 3
+            WHEN ${suffixMatchExprExpr(
+              baseRefMdExpr,
+              `${titleExpr} || '.md'`
+            )} THEN 4
+            WHEN ${relExpr} = ${baseRefExpr} THEN 5
+            WHEN ${relExpr} = ${baseRefMdExpr} THEN 6
+            WHEN ${suffixMatchExprExpr(relExpr, baseRefMdExpr)} THEN 7
+            WHEN ${suffixMatchExprExpr(relExpr, baseRefExpr)} THEN 8
+            WHEN ${suffixMatchExprExpr(baseRefMdExpr, relExpr)} THEN 9
+            WHEN ${suffixMatchExprExpr(baseRefExpr, relExpr)} THEN 10
+            ELSE 99
+          END`;
+
+          const wikiQuery = `
+            WITH targets(idx, collection, base_ref, base_ref_md) AS (
+              VALUES ${valuesClause}
+            ),
+            candidates AS (
+              SELECT
+                t.idx,
+                d.docid,
+                d.uri,
+                d.title,
+                d.id as doc_id,
+                ${wikiRank} as rank
+              FROM targets t
+              JOIN documents d ON d.active = 1 AND d.collection = t.collection
+              WHERE ${wikiWhere}
+            ),
+            ranked AS (
+              SELECT *,
+                ROW_NUMBER() OVER (PARTITION BY idx ORDER BY rank, doc_id) as rn
+              FROM candidates
+            )
+            SELECT idx, docid, uri, title
+            FROM ranked
+            WHERE rn = 1
+          `;
+
+          const wikiRows = db
+            .query<
+              { idx: number; docid: string; uri: string; title: string | null },
+              (string | number)[]
+            >(wikiQuery)
+            .all(...wikiParams);
+
+          for (const row of wikiRows) {
+            results[row.idx] = {
+              docid: row.docid,
+              uri: row.uri,
+              title: row.title,
+            };
+          }
+        }
+      }
+
+      if (mdTargets.length > 0) {
+        for (const batch of chunkArray(mdTargets, mdBatchSize)) {
+          const valuesClause = batch.map(() => "(?, ?, ?)").join(", ");
+          const mdParams = batch.flatMap((t) => [
+            t.idx,
+            t.collection,
+            t.relPath,
+          ]);
+          const mdQuery = `
+            WITH targets(idx, collection, rel_path) AS (
+              VALUES ${valuesClause}
+            ),
+            ranked AS (
+              SELECT
+                t.idx,
+                d.docid,
+                d.uri,
+                d.title,
+                d.id as doc_id,
+                ROW_NUMBER() OVER (PARTITION BY t.idx ORDER BY d.id) as rn
+              FROM targets t
+              JOIN documents d ON d.active = 1
+                AND d.collection = t.collection
+                AND d.rel_path = t.rel_path
+            )
+            SELECT idx, docid, uri, title
+            FROM ranked
+            WHERE rn = 1
+          `;
+
+          const mdRows = db
+            .query<
+              { idx: number; docid: string; uri: string; title: string | null },
+              (string | number)[]
+            >(mdQuery)
+            .all(...mdParams);
+
+          for (const row of mdRows) {
+            results[row.idx] = {
+              docid: row.docid,
+              uri: row.uri,
+              title: row.title,
+            };
+          }
+        }
       }
 
       return ok(results);
@@ -1556,6 +1760,572 @@ export class SqliteAdapter implements StorePort, SqliteDbProvider {
       return err(
         "QUERY_FAILED",
         cause instanceof Error ? cause.message : "Failed to resolve links",
+        cause
+      );
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Graph
+  // ─────────────────────────────────────────────────────────────────────────
+
+  async getGraph(options?: GetGraphOptions): Promise<StoreResult<GraphResult>> {
+    try {
+      const db = this.ensureOpen();
+
+      // Apply defaults
+      const collection = options?.collection ?? null;
+      // Clamp all limits defensively (store is last line of defense)
+      const limitNodes = Math.max(
+        1,
+        Math.min(5000, options?.limitNodes ?? 2000)
+      );
+      const limitEdges = Math.max(
+        1,
+        Math.min(50000, options?.limitEdges ?? 10000)
+      );
+      const includeSimilar = options?.includeSimilar ?? false;
+      const threshold = Math.max(0, Math.min(1, options?.threshold ?? 0.7));
+      const linkedOnly = options?.linkedOnly ?? true;
+      const similarTopK = Math.max(1, Math.min(20, options?.similarTopK ?? 5));
+
+      const warnings: string[] = [];
+
+      // Always probe sqlite-vec availability (not just when similarity requested)
+      let similarAvailable = false;
+      try {
+        db.query("SELECT vec_version()").get();
+        similarAvailable = true;
+      } catch {
+        // sqlite-vec not loaded
+      }
+
+      // Build active filter clause (always active=1 for consistency)
+      const activeClause = "AND d.active = 1";
+
+      const wikiTitleExpr = (alias: string): string =>
+        `lower(trim(${alias}.title))`;
+
+      const wikiRelPathExpr = (alias: string): string =>
+        `lower(${alias}.rel_path)`;
+
+      const suffixMatch = (targetExpr: string, valueExpr: string): string =>
+        `(substr(${targetExpr}, -length(${valueExpr})) = ${valueExpr}
+          AND (length(${targetExpr}) = length(${valueExpr})
+            OR substr(${targetExpr}, -length(${valueExpr}) - 1, 1) = '/'))`;
+
+      const wikiMatch = (alias: string, targetRefExpr: string): string => {
+        const titleExpr = wikiTitleExpr(alias);
+        const relExpr = wikiRelPathExpr(alias);
+        const targetBaseExpr = `CASE
+          WHEN ${targetRefExpr} LIKE '%.md' THEN substr(${targetRefExpr}, 1, length(${targetRefExpr}) - 3)
+          ELSE ${targetRefExpr}
+        END`;
+        const targetMdExpr = `${targetBaseExpr} || '.md'`;
+        return `(
+          ${titleExpr} = ${targetBaseExpr}
+          OR ${titleExpr} = ${targetMdExpr}
+          OR ${suffixMatch(targetBaseExpr, titleExpr)}
+          OR ${suffixMatch(targetMdExpr, `${titleExpr} || '.md'`)}
+          OR ${relExpr} = ${targetBaseExpr}
+          OR ${relExpr} = ${targetMdExpr}
+          OR ${suffixMatch(relExpr, targetMdExpr)}
+          OR ${suffixMatch(relExpr, targetBaseExpr)}
+          OR ${suffixMatch(targetMdExpr, relExpr)}
+          OR ${suffixMatch(targetBaseExpr, relExpr)}
+        )`;
+      };
+
+      const wikiOrder = (alias: string, targetRefExpr: string): string => {
+        const titleExpr = wikiTitleExpr(alias);
+        const relExpr = wikiRelPathExpr(alias);
+        const targetBaseExpr = `CASE
+          WHEN ${targetRefExpr} LIKE '%.md' THEN substr(${targetRefExpr}, 1, length(${targetRefExpr}) - 3)
+          ELSE ${targetRefExpr}
+        END`;
+        const targetMdExpr = `${targetBaseExpr} || '.md'`;
+        return `CASE
+          WHEN ${titleExpr} = ${targetBaseExpr} THEN 1
+          WHEN ${titleExpr} = ${targetMdExpr} THEN 2
+          WHEN ${suffixMatch(targetBaseExpr, titleExpr)} THEN 3
+          WHEN ${suffixMatch(targetMdExpr, `${titleExpr} || '.md'`)} THEN 4
+          WHEN ${relExpr} = ${targetBaseExpr} THEN 5
+          WHEN ${relExpr} = ${targetMdExpr} THEN 6
+          WHEN ${suffixMatch(relExpr, targetMdExpr)} THEN 7
+          WHEN ${suffixMatch(relExpr, targetBaseExpr)} THEN 8
+          WHEN ${suffixMatch(targetMdExpr, relExpr)} THEN 9
+          WHEN ${suffixMatch(targetBaseExpr, relExpr)} THEN 10
+          ELSE 11
+        END`;
+      };
+
+      const wikiBestMatch = (
+        collectionExpr: string,
+        targetRefExpr: string
+      ): string => `
+        SELECT t.id FROM documents t
+        WHERE t.active = 1
+          AND t.collection = ${collectionExpr}
+          AND ${wikiMatch("t", targetRefExpr)}
+          AND ${wikiOrder("t", targetRefExpr)} = (
+            SELECT MIN(${wikiOrder("t2", targetRefExpr)}) FROM documents t2
+            WHERE t2.active = 1
+              AND t2.collection = ${collectionExpr}
+              AND ${wikiMatch("t2", targetRefExpr)}
+          )
+        ORDER BY t.id LIMIT 1
+      `;
+
+      // Phase 1: Compute degrees for all documents (unique neighbor count)
+      // Degree = count of unique neighbors (in + out), not raw link occurrences
+      interface DegreeRow {
+        id: number;
+        docid: string;
+        uri: string;
+        title: string | null;
+        collection: string;
+        rel_path: string;
+        degree: number;
+      }
+
+      const degreeQuery = `
+        WITH outgoing AS (
+          SELECT DISTINCT
+            d.id as doc_id,
+            CASE dl.link_type
+              WHEN 'wiki' THEN (
+                ${wikiBestMatch(
+                  "COALESCE(dl.target_collection, d.collection)",
+                  "dl.target_ref_norm"
+                )}
+              )
+              WHEN 'markdown' THEN (
+                SELECT t.id FROM documents t
+                WHERE t.active = 1
+                  AND t.collection = COALESCE(dl.target_collection, d.collection)
+                  AND t.rel_path = dl.target_ref_norm
+                ORDER BY t.id LIMIT 1
+              )
+            END as target_id
+          FROM documents d
+          JOIN doc_links dl ON dl.source_doc_id = d.id
+          WHERE 1=1 ${activeClause}
+            ${collection ? "AND d.collection = ?" : ""}
+        ),
+        incoming AS (
+          SELECT DISTINCT
+            CASE dl.link_type
+              WHEN 'wiki' THEN (
+                ${wikiBestMatch(
+                  "COALESCE(dl.target_collection, src.collection)",
+                  "dl.target_ref_norm"
+                )}
+              )
+              WHEN 'markdown' THEN (
+                SELECT t.id FROM documents t
+                WHERE t.active = 1
+                  AND t.collection = COALESCE(dl.target_collection, src.collection)
+                  AND t.rel_path = dl.target_ref_norm
+                ORDER BY t.id LIMIT 1
+              )
+            END as doc_id,
+            src.id as source_id
+          FROM documents src
+          JOIN doc_links dl ON dl.source_doc_id = src.id
+          WHERE src.active = 1
+            ${collection ? "AND COALESCE(dl.target_collection, src.collection) = ?" : ""}
+        ),
+        degrees AS (
+          SELECT doc_id, COUNT(DISTINCT target_id) as out_deg
+          FROM outgoing WHERE target_id IS NOT NULL GROUP BY doc_id
+        ),
+        in_degrees AS (
+          SELECT doc_id, COUNT(DISTINCT source_id) as in_deg
+          FROM incoming WHERE doc_id IS NOT NULL GROUP BY doc_id
+        )
+        SELECT
+          d.id, d.docid, d.uri, d.title, d.collection, d.rel_path,
+          COALESCE(deg.out_deg, 0) + COALESCE(indeg.in_deg, 0) as degree
+        FROM documents d
+        LEFT JOIN degrees deg ON deg.doc_id = d.id
+        LEFT JOIN in_degrees indeg ON indeg.doc_id = d.id
+        WHERE 1=1 ${activeClause}
+          ${collection ? "AND d.collection = ?" : ""}
+          ${linkedOnly ? "AND (deg.out_deg > 0 OR indeg.in_deg > 0)" : ""}
+        ORDER BY degree DESC, d.id ASC
+        LIMIT ?
+      `;
+
+      // Build query params
+      const params: (string | number)[] = [];
+      if (collection) {
+        params.push(collection); // for outgoing CTE
+        params.push(collection); // for incoming CTE
+        params.push(collection); // for main query
+      }
+      params.push(limitNodes); // LIMIT param
+
+      const degreeRows = db
+        .query<DegreeRow, (string | number)[]>(degreeQuery)
+        .all(...params);
+
+      // Get total count with a separate query (only if we hit the limit)
+      let totalNodes = degreeRows.length;
+      if (degreeRows.length === limitNodes) {
+        const countParams: (string | number)[] = [];
+        if (collection) {
+          countParams.push(collection); // outgoing CTE
+          countParams.push(collection); // incoming CTE
+          countParams.push(collection); // main query
+        }
+        const countQuery = `
+          WITH outgoing AS (
+            SELECT DISTINCT
+              d.id as doc_id,
+              CASE dl.link_type
+                WHEN 'wiki' THEN (
+                  ${wikiBestMatch(
+                    "COALESCE(dl.target_collection, d.collection)",
+                    "dl.target_ref_norm"
+                  )}
+                )
+                WHEN 'markdown' THEN (
+                  SELECT t.id FROM documents t
+                  WHERE t.active = 1
+                    AND t.collection = COALESCE(dl.target_collection, d.collection)
+                    AND t.rel_path = dl.target_ref_norm
+                  ORDER BY t.id LIMIT 1
+                )
+              END as target_id
+            FROM documents d
+            JOIN doc_links dl ON dl.source_doc_id = d.id
+            WHERE 1=1 ${activeClause}
+              ${collection ? "AND d.collection = ?" : ""}
+          ),
+          incoming AS (
+            SELECT DISTINCT
+              CASE dl.link_type
+                WHEN 'wiki' THEN (
+                  ${wikiBestMatch(
+                    "COALESCE(dl.target_collection, src.collection)",
+                    "dl.target_ref_norm"
+                  )}
+                )
+                WHEN 'markdown' THEN (
+                  SELECT t.id FROM documents t
+                  WHERE t.active = 1
+                    AND t.collection = COALESCE(dl.target_collection, src.collection)
+                    AND t.rel_path = dl.target_ref_norm
+                  ORDER BY t.id LIMIT 1
+                )
+              END as doc_id,
+              src.id as source_id
+            FROM documents src
+            JOIN doc_links dl ON dl.source_doc_id = src.id
+            WHERE src.active = 1
+              ${collection ? "AND COALESCE(dl.target_collection, src.collection) = ?" : ""}
+          ),
+          degrees AS (
+            SELECT doc_id, COUNT(DISTINCT target_id) as out_deg
+            FROM outgoing WHERE target_id IS NOT NULL GROUP BY doc_id
+          ),
+          in_degrees AS (
+            SELECT doc_id, COUNT(DISTINCT source_id) as in_deg
+            FROM incoming WHERE doc_id IS NOT NULL GROUP BY doc_id
+          )
+          SELECT COUNT(*) as cnt
+          FROM documents d
+          LEFT JOIN degrees deg ON deg.doc_id = d.id
+          LEFT JOIN in_degrees indeg ON indeg.doc_id = d.id
+          WHERE 1=1 ${activeClause}
+            ${collection ? "AND d.collection = ?" : ""}
+            ${linkedOnly ? "AND (deg.out_deg > 0 OR indeg.in_deg > 0)" : ""}
+        `;
+        const cnt = db
+          .query<{ cnt: number }, (string | number)[]>(countQuery)
+          .get(...countParams);
+        totalNodes = cnt?.cnt ?? degreeRows.length;
+      }
+
+      const truncatedNodes = totalNodes > limitNodes;
+      const selectedRows = degreeRows;
+      const nodeIds = new Set(selectedRows.map((r) => r.id));
+      const nodeDocids = new Set(selectedRows.map((r) => r.docid));
+
+      // Build nodes array
+      const nodes = selectedRows.map((r) => ({
+        id: r.docid,
+        uri: r.uri,
+        title: r.title,
+        collection: r.collection,
+        relPath: r.rel_path,
+        degree: r.degree,
+      }));
+
+      // Phase 2: Fetch edges restricted to selected node IDs
+      // Only edges where BOTH source and target are in our node set
+      interface EdgeRow {
+        source_docid: string;
+        target_docid: string;
+        link_type: "wiki" | "markdown";
+        weight: number;
+      }
+
+      let totalEdgesUnresolved = 0;
+      const edgeMap = new Map<
+        string,
+        { type: "wiki" | "markdown" | "similar"; weight: number }
+      >();
+
+      if (nodeIds.size > 0) {
+        // Interpolate numeric IDs to avoid SQLite parameter limits on large lists.
+        // nodeIds are sourced from DB results, so injection risk is not user-controlled.
+        const nodeIdList = [...nodeIds].join(",");
+
+        // Count total edges and unresolved for meta
+        interface CountRow {
+          total: number;
+          unresolved: number;
+        }
+
+        const countQuery = `
+          SELECT
+            COUNT(*) as total,
+            SUM(CASE WHEN target_id IS NULL THEN 1 ELSE 0 END) as unresolved
+          FROM (
+            SELECT
+              dl.source_doc_id,
+              CASE dl.link_type
+                WHEN 'wiki' THEN (
+                  ${wikiBestMatch(
+                    "COALESCE(dl.target_collection, d.collection)",
+                    "dl.target_ref_norm"
+                  )}
+                )
+                WHEN 'markdown' THEN (
+                  SELECT t.id FROM documents t
+                  WHERE t.active = 1
+                    AND t.collection = COALESCE(dl.target_collection, d.collection)
+                    AND t.rel_path = dl.target_ref_norm
+                  ORDER BY t.id LIMIT 1
+                )
+              END as target_id
+            FROM documents d
+            JOIN doc_links dl ON dl.source_doc_id = d.id
+            WHERE d.id IN (${nodeIdList}) ${activeClause}
+          )
+        `;
+
+        const countRow = db.query<CountRow, []>(countQuery).get();
+        totalEdgesUnresolved = countRow?.unresolved ?? 0;
+
+        // Fetch collapsed edges (group by source, target, type with count as weight)
+        const edgeQuery = `
+          SELECT
+            src.docid as source_docid,
+            tgt.docid as target_docid,
+            dl.link_type,
+            COUNT(*) as weight
+          FROM documents src
+          JOIN doc_links dl ON dl.source_doc_id = src.id
+          JOIN documents tgt ON tgt.id = CASE dl.link_type
+            WHEN 'wiki' THEN (${wikiBestMatch(
+              "COALESCE(dl.target_collection, src.collection)",
+              "dl.target_ref_norm"
+            )})
+            WHEN 'markdown' THEN (
+              SELECT md.id FROM documents md
+              WHERE md.active = 1
+                AND md.collection = COALESCE(dl.target_collection, src.collection)
+                AND md.rel_path = dl.target_ref_norm
+              ORDER BY md.id LIMIT 1
+            )
+          END
+          WHERE src.id IN (${nodeIdList})
+            AND tgt.id IN (${nodeIdList})
+            ${activeClause.replace("d.", "src.")}
+          GROUP BY src.docid, tgt.docid, dl.link_type
+          ORDER BY weight DESC, src.docid, tgt.docid
+        `;
+
+        const edgeRows = db.query<EdgeRow, []>(edgeQuery).all();
+
+        for (const row of edgeRows) {
+          const key = `${row.source_docid}:${row.target_docid}:${row.link_type}`;
+          edgeMap.set(key, { type: row.link_type, weight: row.weight });
+        }
+      }
+
+      // Phase 3: Similarity edges (if requested)
+      let similarTruncatedByComputeBudget = false;
+
+      if (includeSimilar && nodeIds.size > 0 && similarAvailable) {
+        // Cap similarity work to avoid blocking the server event loop
+        const SIMILARITY_NODE_CAP = 200;
+        const nodesForSimilarity = [...nodeDocids].slice(
+          0,
+          SIMILARITY_NODE_CAP
+        );
+        if (nodeDocids.size > SIMILARITY_NODE_CAP) {
+          similarTruncatedByComputeBudget = true;
+          warnings.push(
+            `Similarity capped at ${SIMILARITY_NODE_CAP} nodes (requested ${nodeDocids.size})`
+          );
+        }
+
+        // Track if any similarity queries fail
+        let similarityFailures = 0;
+
+        const mirrorByDocid = new Map<string, string>();
+        if (nodesForSimilarity.length > 0) {
+          const placeholders = nodesForSimilarity.map(() => "?").join(",");
+          const mirrorRows = db
+            .query<{ docid: string; mirror_hash: string }, string[]>(
+              `SELECT docid, mirror_hash
+               FROM documents
+               WHERE active = 1
+                 AND docid IN (${placeholders})`
+            )
+            .all(...nodesForSimilarity);
+          for (const row of mirrorRows) {
+            if (row.mirror_hash) {
+              mirrorByDocid.set(row.docid, row.mirror_hash);
+            }
+          }
+        }
+        const allowedMirrorHashes = [...mirrorByDocid.values()];
+        if (allowedMirrorHashes.length === 0) {
+          warnings.push("Similarity unavailable: no embedded nodes in graph");
+        }
+        const allowedPlaceholders = allowedMirrorHashes
+          .map(() => "?")
+          .join(",");
+
+        // Get kNN for each node
+        // Query content_vectors for embedded chunks, find similar
+        for (const docid of nodesForSimilarity) {
+          if (allowedMirrorHashes.length === 0) break;
+          const mirrorHash = mirrorByDocid.get(docid);
+          if (!mirrorHash) continue;
+
+          // Find similar docs using vec_distance, aggregate by doc to get max score
+          interface SimilarRow {
+            target_docid: string;
+            score: number;
+          }
+
+          // Use GROUP BY to get one best score per doc (avoids duplicate rows from multi-chunk docs)
+          const similarQuery = `
+            SELECT
+              d.docid as target_docid,
+              MAX(1 - vec_distance_cosine(v1.embedding, v2.embedding)) as score
+            FROM content_vectors v1
+            JOIN content_vectors v2 ON v2.model = v1.model
+              AND v2.mirror_hash != v1.mirror_hash
+              AND v2.seq = 0
+            JOIN documents d ON d.mirror_hash = v2.mirror_hash AND d.active = 1
+            WHERE v1.mirror_hash = ? AND v1.seq = 0
+              AND d.docid != ?
+              AND v2.mirror_hash IN (${allowedPlaceholders})
+            GROUP BY d.docid
+            HAVING score >= ?
+            ORDER BY score DESC
+            LIMIT ?
+          `;
+
+          try {
+            const similarRows = db
+              .query<SimilarRow, (string | number)[]>(similarQuery)
+              .all(
+                mirrorHash,
+                docid,
+                ...allowedMirrorHashes,
+                threshold,
+                similarTopK
+              );
+
+            for (const sim of similarRows) {
+              if (!nodeDocids.has(sim.target_docid)) continue;
+
+              // Clamp score to [0, 1] for schema compliance
+              const clampedScore = Math.max(0, Math.min(1, sim.score));
+
+              // Canonicalize by lexicographic order (undirected edge)
+              const [a, b] =
+                docid < sim.target_docid
+                  ? [docid, sim.target_docid]
+                  : [sim.target_docid, docid];
+              const key = `${a}:${b}:similar`;
+
+              // Keep max score
+              const existing = edgeMap.get(key);
+              if (!existing || clampedScore > existing.weight) {
+                edgeMap.set(key, { type: "similar", weight: clampedScore });
+              }
+            }
+          } catch {
+            similarityFailures++;
+          }
+        }
+
+        // Report partial failures
+        if (similarityFailures > 0) {
+          warnings.push(
+            `Similarity query failed for ${similarityFailures} nodes; results may be incomplete`
+          );
+        }
+      } else if (includeSimilar && !similarAvailable) {
+        warnings.push("Similarity edges unavailable: sqlite-vec not loaded");
+      }
+
+      // Convert edge map to array, apply limit
+      const allEdges = [...edgeMap.entries()].map(([key, val]) => {
+        const parts = key.split(":");
+        return {
+          source: parts[0] ?? "",
+          target: parts[1] ?? "",
+          type: val.type,
+          weight: val.weight,
+        };
+      });
+
+      const truncatedEdges = allEdges.length > limitEdges;
+      const links = allEdges.slice(0, limitEdges);
+
+      // Add truncation warnings
+      if (truncatedNodes) {
+        warnings.push(`Nodes truncated: ${totalNodes} → ${limitNodes}`);
+      }
+      if (truncatedEdges) {
+        warnings.push(`Edges truncated: ${allEdges.length} → ${limitEdges}`);
+      }
+
+      return ok({
+        nodes,
+        links,
+        meta: {
+          collection,
+          nodeLimit: limitNodes,
+          edgeLimit: limitEdges,
+          totalNodes,
+          // totalEdges = collapsed edge count within selected nodes (matches allEdges)
+          totalEdges: allEdges.length,
+          totalEdgesUnresolved,
+          returnedNodes: nodes.length,
+          returnedEdges: links.length,
+          truncated: truncatedNodes || truncatedEdges,
+          linkedOnly,
+          includedSimilar: includeSimilar && similarAvailable,
+          similarAvailable,
+          similarTopK,
+          similarTruncatedByComputeBudget,
+          warnings,
+        },
+      });
+    } catch (cause) {
+      return err(
+        "QUERY_FAILED",
+        cause instanceof Error ? cause.message : "Failed to get graph",
         cause
       );
     }

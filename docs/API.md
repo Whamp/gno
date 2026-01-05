@@ -37,6 +37,7 @@ All endpoints are JSON-based and run entirely on your machine.
 | `/api/doc/:id/links`     | GET    | Get outgoing links from doc |
 | `/api/doc/:id/backlinks` | GET    | Get docs linking to this    |
 | `/api/doc/:id/similar`   | GET    | Find semantically similar   |
+| `/api/graph`             | GET    | Knowledge graph of links    |
 | `/api/tags`              | GET    | List tags with counts       |
 | `/api/search`            | POST   | BM25 keyword search         |
 | `/api/query`             | POST   | Hybrid search               |
@@ -590,7 +591,11 @@ Get outgoing links from a document (wiki links and markdown links).
       "startCol": 1,
       "endLine": 5,
       "endCol": 17,
-      "source": "parsed"
+      "source": "parsed",
+      "resolved": true,
+      "resolvedDocid": "#def456",
+      "resolvedUri": "gno://notes/other.md",
+      "resolvedTitle": "Other Note"
     },
     {
       "targetRef": "./related.md",
@@ -608,18 +613,31 @@ Get outgoing links from a document (wiki links and markdown links).
   "meta": {
     "docid": "#abc123",
     "totalLinks": 2,
+    "resolvedCount": 1,
+    "resolutionAvailable": true,
     "typeFilter": "wiki"
   }
 }
 ```
 
-| Field          | Description                                |
-| :------------- | :----------------------------------------- |
-| `targetRef`    | Target path or wiki name                   |
-| `linkType`     | `wiki` ([[Name]]) or `markdown` ([](path)) |
-| `targetAnchor` | Fragment/anchor without #                  |
-| `linkText`     | Display text of the link                   |
-| `source`       | `parsed`, `user`, or `suggested`           |
+| Field           | Description                                |
+| :-------------- | :----------------------------------------- |
+| `targetRef`     | Target path or wiki name                   |
+| `linkType`      | `wiki` ([[Name]]) or `markdown` ([](path)) |
+| `targetAnchor`  | Fragment/anchor without #                  |
+| `linkText`      | Display text of the link                   |
+| `source`        | `parsed`, `user`, or `suggested`           |
+| `resolved`      | Whether target doc exists in index         |
+| `resolvedDocid` | Docid of resolved target (if found)        |
+| `resolvedUri`   | URI of resolved target (if found)          |
+| `resolvedTitle` | Title of resolved target (if found)        |
+
+Resolution fields are only included when `meta.resolutionAvailable` is true.
+
+| Meta Field            | Description                           |
+| :-------------------- | :------------------------------------ |
+| `resolvedCount`       | Number of links resolved              |
+| `resolutionAvailable` | Whether resolution completed normally |
 
 **Example**:
 
@@ -690,7 +708,8 @@ curl "http://localhost:3000/api/doc/%23abc123/backlinks" | jq
 GET /api/doc/:id/similar?limit=5&threshold=0.7&crossCollection=true
 ```
 
-Find semantically similar documents using vector embeddings.
+Find semantically similar documents using vector embeddings. Uses the doc's
+`seq=0` embedding (falls back to first chunk).
 
 **URL Parameters**:
 
@@ -752,6 +771,107 @@ curl "http://localhost:3000/api/doc/%23abc123/similar?limit=10" | jq
 
 # Find similar across all collections
 curl "http://localhost:3000/api/doc/%23abc123/similar?crossCollection=true&threshold=0.6" | jq
+```
+
+---
+
+### Get Knowledge Graph
+
+```http
+GET /api/graph
+```
+
+Returns a knowledge graph of document links (wiki links, markdown links, and optionally similarity edges).
+
+**Query Parameters**:
+
+| Param            | Type    | Default | Description                       |
+| :--------------- | :------ | :------ | :-------------------------------- |
+| `collection`     | string  | -       | Filter to single collection       |
+| `limit`          | number  | 2000    | Max nodes (1-5000)                |
+| `edgeLimit`      | number  | 10000   | Max edges (1-50000)               |
+| `includeSimilar` | boolean | false   | Include similarity edges          |
+| `threshold`      | number  | 0.7     | Similarity threshold (0-1)        |
+| `linkedOnly`     | boolean | true    | Exclude isolated nodes (no links) |
+| `similarTopK`    | number  | 5       | Similar docs per node (1-20)      |
+
+> **Note**: When `collection` is specified, nodes are limited to that collection and edges are drawn only between those nodes, but node `degree` may reflect links to documents outside the filtered view.
+> **Note**: Similarity edges use `seq=0` embeddings only (no fallback).
+
+**Response**:
+
+```json
+{
+  "nodes": [
+    {
+      "id": "#abc123",
+      "uri": "gno://notes/readme.md",
+      "title": "Project README",
+      "collection": "notes",
+      "relPath": "readme.md",
+      "degree": 5
+    }
+  ],
+  "links": [
+    {
+      "source": "#abc123",
+      "target": "#def456",
+      "type": "wiki",
+      "weight": 1
+    },
+    {
+      "source": "#abc123",
+      "target": "#ghi789",
+      "type": "similar",
+      "weight": 0.85
+    }
+  ],
+  "meta": {
+    "collection": null,
+    "nodeLimit": 2000,
+    "edgeLimit": 10000,
+    "totalNodes": 42,
+    "totalEdges": 67,
+    "totalEdgesUnresolved": 0,
+    "returnedNodes": 42,
+    "returnedEdges": 67,
+    "truncated": false,
+    "linkedOnly": true,
+    "includedSimilar": false,
+    "similarAvailable": true,
+    "similarTopK": 5,
+    "similarTruncatedByComputeBudget": false,
+    "warnings": []
+  }
+}
+```
+
+| Field                   | Description                                      |
+| :---------------------- | :----------------------------------------------- |
+| `nodes[].id`            | Document ID (hash)                               |
+| `nodes[].uri`           | Virtual URI                                      |
+| `nodes[].title`         | Document title                                   |
+| `nodes[].collection`    | Source collection                                |
+| `nodes[].relPath`       | Relative path in collection                      |
+| `nodes[].degree`        | Number of connections (in + out)                 |
+| `links[].source`        | Source node ID                                   |
+| `links[].target`        | Target node ID                                   |
+| `links[].type`          | Link type: `wiki`, `markdown`, or `similar`      |
+| `links[].weight`        | Edge weight (count for links, score for similar) |
+| `meta.truncated`        | True if results hit limit                        |
+| `meta.similarAvailable` | True if similarity edges can be computed         |
+
+**Example**:
+
+```bash
+# Get graph for notes collection
+curl "http://localhost:3000/api/graph?collection=notes" | jq
+
+# Include similarity edges with 0.8 threshold
+curl "http://localhost:3000/api/graph?includeSimilar=true&threshold=0.8" | jq
+
+# Get all nodes including isolated ones
+curl "http://localhost:3000/api/graph?linkedOnly=false&limit=500" | jq
 ```
 
 ---

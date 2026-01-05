@@ -41,6 +41,7 @@ import {
   handleTags,
   handleUpdateDoc,
 } from "./routes/api";
+import { handleGraph } from "./routes/graph";
 import {
   handleDocBacklinks,
   handleDocLinks,
@@ -213,6 +214,7 @@ export async function startServer(
         "/edit": homepage,
         "/collections": homepage,
         "/ask": homepage,
+        "/graph": homepage,
 
         // API routes with CSRF protection wrapper
         "/api/health": {
@@ -431,6 +433,12 @@ export async function startServer(
               await handleDocSimilar(ctxHolder.current, id, url),
               isDev
             );
+          },
+        },
+        "/api/graph": {
+          GET: async (req: Request) => {
+            const url = new URL(req.url);
+            return withSecurityHeaders(await handleGraph(store, url), isDev);
           },
         },
       },

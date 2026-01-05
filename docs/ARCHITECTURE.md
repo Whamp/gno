@@ -222,9 +222,11 @@ External URLs (https://) are NOT stored—only internal document links.
 
 Links are resolved at query time, not stored with target document IDs. This handles document renames gracefully:
 
-- **Wiki links**: Case-insensitive filename match via normalized reference
+- **Wiki links**: Normalized title match with path-style fallbacks (basename/rel_path, optional .md)
 - **Cross-collection**: `[[collection:Note]]` syntax with explicit collection prefix
 - **Markdown links**: Resolved path stored for matching
+
+Note: Case-insensitive matching relies on SQLite `lower()` (ASCII-only unless ICU).
 
 ### Storage
 
@@ -243,6 +245,5 @@ Links are extracted from original source content during sync, excluding frontmat
 For implementation details, see:
 
 - [How Search Works](HOW-SEARCH-WORKS.md) - Deep dive into query expansion, HyDE, and RRF fusion
-- [docs/NOTES.md](NOTES.md) - Internal architecture notes
 - [spec/cli.md](../spec/cli.md) - CLI specification
 - [spec/mcp.md](../spec/mcp.md) - MCP specification

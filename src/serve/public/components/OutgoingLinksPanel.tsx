@@ -24,6 +24,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "./ui/collapsible";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 /** Single link from the API response */
 export interface OutgoingLink {
@@ -41,11 +42,11 @@ export interface OutgoingLink {
   /** Whether target was resolved (found in index) */
   resolved?: boolean;
   /** Resolved target document ID */
-  targetDocid?: string;
+  resolvedDocid?: string;
   /** Resolved target URI */
-  targetUri?: string;
+  resolvedUri?: string;
   /** Resolved target title */
-  targetTitle?: string;
+  resolvedTitle?: string;
 }
 
 /** API response shape */
@@ -108,12 +109,12 @@ function LinkItem({
   const isWiki = link.linkType === "wiki";
   const isBroken = link.resolved === false;
   // Use resolved title if available, fall back to linkText or targetRef
-  const displayText = link.targetTitle || link.linkText || link.targetRef;
+  const displayText = link.resolvedTitle || link.linkText || link.targetRef;
 
   const handleClick = () => {
     // Only navigate if resolved and we have target URI
-    if (onNavigate && link.targetUri) {
-      onNavigate(link.targetUri);
+    if (onNavigate && link.resolvedUri) {
+      onNavigate(link.resolvedUri);
     }
   };
 
@@ -165,15 +166,27 @@ function LinkItem({
         )}
       </span>
 
-      {/* Link text and target */}
-      <div className="min-w-0 flex-1">
-        <span className="block truncate">{displayText}</span>
-        {link.targetAnchor && (
-          <span className="block truncate text-[10px] opacity-60">
-            #{link.targetAnchor}
-          </span>
-        )}
-      </div>
+      {/* Link text and target with tooltip for long names */}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="min-w-0 flex-1">
+            <span className="block truncate">{displayText}</span>
+            {link.targetAnchor && (
+              <span className="block truncate text-[10px] opacity-60">
+                #{link.targetAnchor}
+              </span>
+            )}
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="left" className="max-w-[300px]">
+          <p className="break-words">{displayText}</p>
+          {link.targetAnchor && (
+            <p className="text-muted-foreground text-[10px]">
+              #{link.targetAnchor}
+            </p>
+          )}
+        </TooltipContent>
+      </Tooltip>
 
       {/* External indicator for valid links */}
       {!isBroken && (
