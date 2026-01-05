@@ -238,8 +238,8 @@ gno backlinks gno://notes/api-design.md -n 50
 # Find semantically similar documents
 gno similar gno://notes/auth.md
 
-# Adjust threshold (higher = more similar)
-gno similar gno://notes/auth.md --threshold 0.7
+# Stricter threshold (default: 0.7)
+gno similar gno://notes/auth.md --threshold 0.85
 
 # Search across all collections
 gno similar gno://notes/auth.md --cross-collection
