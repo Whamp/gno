@@ -29,6 +29,7 @@ GNO command-line interface guide.
 | `gno skill`      | Install GNO skill for AI agents   |
 | `gno tags`       | Manage document tags              |
 | `gno completion` | Shell tab completion              |
+| `gno vec`        | Vector index maintenance          |
 | `gno doctor`     | Check system health               |
 
 ## Global Flags
@@ -582,6 +583,21 @@ Reset to fresh state.
 ```bash
 gno reset --confirm
 ```
+
+### gno vec
+
+Vector index maintenance. Use when vector search returns empty despite embeddings existing.
+
+```bash
+gno vec sync      # Sync vec0 index with content_vectors
+gno vec rebuild   # Full rebuild of vec0 index
+```
+
+- `sync` - Fast incremental sync, fixes drift after failed inserts
+- `rebuild` - Full rebuild, use when sync isn't enough
+- `--json` - JSON output format
+
+**When to use**: If `gno similar` returns empty results but embeddings exist, run `gno vec sync`.
 
 ## Output Formats
 

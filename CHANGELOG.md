@@ -5,6 +5,31 @@ All notable changes to GNO will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.0] - 2026-01-05
+
+### Added
+
+- **Note Linking** - Wiki-style links, backlinks, and semantic similarity
+  - `[[Target]]` wiki link syntax with cross-collection support (`[[collection:Target]]`)
+  - `gno links <docid>` - List outgoing links from a document
+  - `gno backlinks <docid>` - Find documents linking TO a target
+  - `gno similar <docid>` - Semantic similarity search using embeddings
+  - REST API: `/api/doc/:id/links`, `/api/doc/:id/backlinks`, `/api/doc/:id/similar`
+  - MCP tools: `gno_links`, `gno_backlinks`, `gno_similar`
+  - WebUI: OutgoingLinksPanel, BacklinksPanel, RelatedNotesSidebar
+  - WikiLinkAutocomplete: `[[` trigger, fuzzy search, keyboard nav, broken link detection
+
+- **Vector Index Maintenance** - Fix empty results from `gno similar`
+  - `gno vec sync` - Fast incremental sync when vec0 drifts
+  - `gno vec rebuild` - Full rebuild of vec0 index
+  - Auto-sync after embed batches when drift detected
+  - Transaction-wrapped sync for atomicity
+
+### Fixed
+
+- **vec0 index sync** - Vector inserts silently failing no longer leaves index out of sync
+- **inferDimensions** - Filter by model and validate byte alignment
+
 ## [0.11.0] - 2026-01-05
 
 ### Added
@@ -503,14 +528,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
-| Version | Date       | Highlights                                 |
-| ------- | ---------- | ------------------------------------------ |
-| 0.3.5   | 2025-12-31 | README rewrite with comprehensive MCP docs |
-| 0.3.0   | 2025-12-31 | 10 MCP installation targets                |
-| 0.2.0   | 2025-12-30 | MCP server for AI assistant integration    |
-| 0.1.0   | 2025-12-30 | Initial release with full search pipeline  |
+| Version | Date       | Highlights                                |
+| ------- | ---------- | ----------------------------------------- |
+| 0.12.0  | 2026-01-05 | Note linking, backlinks, related notes    |
+| 0.11.0  | 2026-01-05 | MCP embed/index tools, server embed sched |
+| 0.10.0  | 2026-01-04 | Tag system with filtering                 |
+| 0.9.0   | 2026-01-02 | MCP write operations                      |
+| 0.8.0   | 2026-01-02 | Document editor, collections management   |
+| 0.4.0   | 2026-01-01 | Web UI and REST API                       |
+| 0.1.0   | 2025-12-30 | Initial release with full search pipeline |
 
-[Unreleased]: https://github.com/gmickel/gno/compare/v0.3.5...HEAD
+[Unreleased]: https://github.com/gmickel/gno/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/gmickel/gno/compare/v0.11.0...v0.12.0
+[0.11.0]: https://github.com/gmickel/gno/compare/v0.10.4...v0.11.0
+[0.10.4]: https://github.com/gmickel/gno/compare/v0.10.3...v0.10.4
+[0.10.3]: https://github.com/gmickel/gno/compare/v0.10.1...v0.10.3
+[0.10.1]: https://github.com/gmickel/gno/compare/v0.10.0...v0.10.1
+[0.10.0]: https://github.com/gmickel/gno/compare/v0.9.6...v0.10.0
+[0.9.6]: https://github.com/gmickel/gno/compare/v0.9.5...v0.9.6
+[0.9.5]: https://github.com/gmickel/gno/compare/v0.9.4...v0.9.5
+[0.9.4]: https://github.com/gmickel/gno/compare/v0.9.3...v0.9.4
+[0.9.3]: https://github.com/gmickel/gno/compare/v0.9.2...v0.9.3
+[0.9.2]: https://github.com/gmickel/gno/compare/v0.9.1...v0.9.2
+[0.9.1]: https://github.com/gmickel/gno/compare/v0.9.0...v0.9.1
+[0.9.0]: https://github.com/gmickel/gno/compare/v0.8.6...v0.9.0
+[0.8.6]: https://github.com/gmickel/gno/compare/v0.8.5...v0.8.6
+[0.8.5]: https://github.com/gmickel/gno/compare/v0.8.4...v0.8.5
+[0.8.4]: https://github.com/gmickel/gno/compare/v0.8.3...v0.8.4
+[0.8.3]: https://github.com/gmickel/gno/compare/v0.8.2...v0.8.3
+[0.8.2]: https://github.com/gmickel/gno/compare/v0.8.1...v0.8.2
+[0.8.1]: https://github.com/gmickel/gno/compare/v0.8.0...v0.8.1
+[0.8.0]: https://github.com/gmickel/gno/compare/v0.7.0...v0.8.0
+[0.7.0]: https://github.com/gmickel/gno/compare/v0.6.1...v0.7.0
+[0.6.1]: https://github.com/gmickel/gno/compare/v0.6.0...v0.6.1
+[0.6.0]: https://github.com/gmickel/gno/compare/v0.5.1...v0.6.0
+[0.5.1]: https://github.com/gmickel/gno/compare/v0.5.0...v0.5.1
+[0.5.0]: https://github.com/gmickel/gno/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/gmickel/gno/compare/v0.3.5...v0.4.0
 [0.3.5]: https://github.com/gmickel/gno/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/gmickel/gno/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/gmickel/gno/compare/v0.3.2...v0.3.3
