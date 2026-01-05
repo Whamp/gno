@@ -4,7 +4,7 @@ title: Knowledge Graph
 headline: See How Your Ideas Connect
 description: Interactive force-directed graph visualization of document connections. Explore wiki links, markdown links, and semantic similarity as a navigable constellation. CLI, Web UI, and API access.
 keywords: knowledge graph, graph view, document visualization, force graph, wiki links visualization, note connections, zettelkasten graph
-icon: git-branch
+icon: graph
 slug: graph-view
 permalink: /features/graph-view/
 benefits:

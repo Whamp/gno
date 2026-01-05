@@ -486,4 +486,34 @@ include.class | default: "" %} {% case include.icon %} {% when "logo" %}
   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
 </svg>
 
+{% when "graph" or "network" %}
+<svg
+  class="{{ icon_class }}"
+  width="{{ icon_size }}"
+  height="{{ icon_size }}"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+>
+  <circle cx="6" cy="6" r="3" />
+  <circle cx="18" cy="6" r="3" />
+  <circle cx="6" cy="18" r="3" />
+  <circle cx="18" cy="18" r="3" />
+  <circle
+    cx="12"
+    cy="12"
+    r="2"
+    fill="var(--color-accent, #4db8a8)"
+    stroke="var(--color-accent, #4db8a8)"
+  />
+  <line x1="8.5" y1="7.5" x2="10.5" y2="10.5" />
+  <line x1="15.5" y1="7.5" x2="13.5" y2="10.5" />
+  <line x1="8.5" y1="16.5" x2="10.5" y2="13.5" />
+  <line x1="15.5" y1="16.5" x2="13.5" y2="13.5" />
+</svg>
+
 {% endcase %}
