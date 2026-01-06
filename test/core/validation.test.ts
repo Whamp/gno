@@ -3,32 +3,38 @@
  */
 
 import { afterAll, describe, expect, test } from "bun:test";
-// node:fs/promises for mkdtemp/symlink/rm (no Bun equivalent for structure ops)
-import { mkdtemp, rm, symlink } from "node:fs/promises";
+// node:fs/promises for mkdtemp/symlink (no Bun equivalent for structure ops)
+import { mkdtemp, symlink } from "node:fs/promises";
 // node:os for tmpdir (no Bun os utils)
 import { tmpdir } from "node:os";
-// node:path for join (no Bun path utils)
-import { join } from "node:path";
+// node:path for join, sep (no Bun path utils)
+import { join, sep } from "node:path";
 
 import {
   validateCollectionRoot,
   validateRelPath,
 } from "../../src/core/validation";
+import { safeRm } from "../helpers/cleanup";
 
 const tmpRoot = await mkdtemp(join(tmpdir(), "gno-validation-"));
 
 afterAll(async () => {
-  await rm(tmpRoot, { recursive: true, force: true });
+  await safeRm(tmpRoot);
 });
+
+const isWindows = process.platform === "win32";
 
 describe("validateRelPath", () => {
   test("accepts relative path", () => {
     const result = validateRelPath("notes/test.md");
-    expect(result).toBe("notes/test.md");
+    // normalize() returns platform-native separators
+    expect(result).toBe(`notes${sep}test.md`);
   });
 
   test("rejects absolute path", () => {
-    expect(() => validateRelPath("/etc/passwd")).toThrow();
+    // Use platform-appropriate absolute path
+    const absPath = isWindows ? "C:\\Windows\\System32" : "/etc/passwd";
+    expect(() => validateRelPath(absPath)).toThrow();
   });
 
   test("rejects traversal", () => {
@@ -52,7 +58,8 @@ describe("validateCollectionRoot", () => {
     expect(error).toBeTruthy();
   });
 
-  test("rejects symlink to dangerous root", async () => {
+  // Skip on Windows: /etc doesn't exist, symlink creation may need admin
+  test.skipIf(isWindows)("rejects symlink to dangerous root", async () => {
     const linkPath = join(tmpRoot, "etc-link");
     await symlink("/etc", linkPath);
     let error: unknown;
