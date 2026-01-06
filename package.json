@@ -57,6 +57,7 @@
     "website:dev": "cd website && make serve",
     "website:build": "cd website && make build",
     "website:demos": "cd website/demos && ./build-demos.sh",
+    "website:og": "bun scripts/og-screenshots.ts",
     "sync:agents": "scripts/sync-agents.sh",
     "build:css": "bunx @tailwindcss/cli -i src/serve/public/globals.css -o src/serve/public/globals.built.css --minify",
     "serve": "bun src/index.ts serve",
@@ -130,6 +131,7 @@
     "oxlint": "^1.36.0",
     "oxlint-tsgolint": "^0.10.1",
     "pdf-lib": "^1.17.1",
+    "playwright": "^1.52.0",
     "pptxgenjs": "^4.0.1",
     "ultracite": "7.0.4",
     "vitest": "^4.0.16"

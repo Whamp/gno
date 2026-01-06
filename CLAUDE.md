@@ -108,6 +108,7 @@ bun run eval:watch    # Watch mode for development
 | `test-rerank-size.ts`       | Tests reranker performance at different document sizes (1K-128K chars). Used to identify optimal chunk size for reranking. |
 | `docs-verify.ts`            | Verifies documentation is up-to-date with implementation.                                                                  |
 | `generate-test-fixtures.ts` | Generates test fixtures for unit tests.                                                                                    |
+| `og-screenshots.ts`         | Generates PNG screenshots from OG image HTML templates using Playwright.                                                   |
 
 **Usage:**
 
@@ -139,6 +140,8 @@ bun scripts/test-rerank-size.ts # Test rerank scaling with doc size
 **test/** - Test suite (see `test/CLAUDE.md`)
 
 **website/** - Jekyll documentation site (see `website/CLAUDE.md`)
+
+- OG image templates in `website/assets/images/og/` (see `website/assets/images/og/CLAUDE.md`)
 
 ## Versioning & Release
 
@@ -183,6 +186,15 @@ gh workflow run publish.yml -f publish=true   # actual publish
 6. Workflow auto-triggers on `v*` tag push
 
 **Note**: `website/changelog.md` is auto-copied from root CHANGELOG.md during build (gitignored).
+
+**OG Images**: If feature pages change, regenerate OG images:
+
+```bash
+bun run website:og              # All OG images
+bun run website:og -f og-api    # Single image
+```
+
+See `website/assets/images/og/CLAUDE.md` for template details.
 
 **CHANGELOG format** (Keep a Changelog):
 

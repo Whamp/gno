@@ -1,0 +1,269 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Crimson+Pro:ital,wght@1,400&display=swap');
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+      }
+
+      .og-container {
+        width: 1200px;
+        height: 630px;
+        background: #0a0f18;
+        position: relative;
+        display: flex;
+        overflow: hidden;
+      }
+
+      .grid-bg {
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(77, 184, 168, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(77, 184, 168, 0.03) 1px, transparent 1px);
+        background-size: 40px 40px;
+      }
+
+      .glow {
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(77, 184, 168, 0.2) 0%, transparent 60%);
+        top: 50%;
+        left: 180px;
+        transform: translateY(-50%);
+      }
+
+      .corner {
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        border: 2px solid rgba(77, 184, 168, 0.3);
+      }
+
+      .corner-tl { top: 30px; left: 30px; border-right: none; border-bottom: none; }
+      .corner-tr { top: 30px; right: 30px; border-left: none; border-bottom: none; }
+      .corner-bl { bottom: 30px; left: 30px; border-right: none; border-top: none; }
+      .corner-br { bottom: 30px; right: 30px; border-left: none; border-top: none; }
+
+      .icon-section {
+        width: 400px;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 10;
+      }
+
+      .feature-icon {
+        width: 180px;
+        height: 180px;
+        filter: drop-shadow(0 0 40px rgba(77, 184, 168, 0.5));
+      }
+
+      .feature-icon svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      .content-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding-right: 80px;
+        position: relative;
+        z-index: 10;
+      }
+
+      .gno-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(77, 184, 168, 0.1);
+        border: 1px solid rgba(77, 184, 168, 0.3);
+        border-radius: 6px;
+        padding: 8px 16px;
+        margin-bottom: 24px;
+        width: fit-content;
+      }
+
+      .gno-badge svg {
+        width: 24px;
+        height: 24px;
+      }
+
+      .gno-badge span {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 18px;
+        font-weight: 500;
+        color: #4db8a8;
+        letter-spacing: 1px;
+      }
+
+      .feature-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 54px;
+        font-weight: 700;
+        color: #ffffff;
+        letter-spacing: -2px;
+        line-height: 1.1;
+        margin-bottom: 20px;
+      }
+
+      .accent-bar {
+        width: 60px;
+        height: 4px;
+        background: linear-gradient(90deg, #4db8a8, rgba(77, 184, 168, 0.3));
+        border-radius: 2px;
+        margin-bottom: 20px;
+      }
+
+      .tagline {
+        font-family: 'Crimson Pro', Georgia, serif;
+        font-size: 32px;
+        color: rgba(255, 255, 255, 0.7);
+        font-style: italic;
+        letter-spacing: 0.5px;
+      }
+
+      .url {
+        position: absolute;
+        bottom: 40px;
+        right: 50px;
+        font-family: 'Space Grotesk', monospace;
+        font-size: 18px;
+        color: #4db8a8;
+        letter-spacing: 2px;
+      }
+
+      /* Signal waves emanating from robot */
+      .signal-wave {
+        position: absolute;
+        border: 1px solid rgba(77, 184, 168, 0.15);
+        border-radius: 50%;
+      }
+
+      .signal-wave-1 {
+        width: 240px;
+        height: 240px;
+        top: 195px;
+        left: 80px;
+      }
+
+      .signal-wave-2 {
+        width: 320px;
+        height: 320px;
+        top: 155px;
+        left: 40px;
+      }
+
+      .signal-wave-3 {
+        width: 400px;
+        height: 400px;
+        top: 115px;
+        left: 0;
+      }
+
+      /* SKILL.md file decoration */
+      .skill-file {
+        position: absolute;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        color: rgba(77, 184, 168, 0.4);
+        background: rgba(77, 184, 168, 0.05);
+        border: 1px solid rgba(77, 184, 168, 0.15);
+        border-radius: 4px;
+        padding: 4px 8px;
+      }
+
+      .skill-file-1 { top: 160px; left: 50px; transform: rotate(-5deg); }
+      .skill-file-2 { bottom: 180px; left: 70px; transform: rotate(3deg); }
+    </style>
+  </head>
+  <body>
+    <div class="og-container">
+      <div class="grid-bg"></div>
+      <div class="glow"></div>
+
+      <div class="signal-wave signal-wave-1"></div>
+      <div class="signal-wave signal-wave-2"></div>
+      <div class="signal-wave signal-wave-3"></div>
+      <div class="skill-file skill-file-1">SKILL.md</div>
+      <div class="skill-file skill-file-2">SKILL.md</div>
+
+      <div class="corner corner-tl"></div>
+      <div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div>
+      <div class="corner corner-br"></div>
+
+      <div class="icon-section">
+        <div class="feature-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#4db8a8"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="8" width="18" height="12" rx="2" />
+            <path d="M12 8V5" />
+            <circle cx="12" cy="3" r="2" />
+            <circle cx="8" cy="14" r="1.5" fill="#4db8a8" />
+            <circle cx="16" cy="14" r="1.5" fill="#4db8a8" />
+            <path d="M9 18h6" stroke="#4db8a8" />
+            <path d="M1 12h2M21 12h2" opacity="0.5" />
+          </svg>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <div class="gno-badge">
+          <svg viewBox="0 0 32 32" fill="none">
+            <circle
+              cx="14"
+              cy="14"
+              r="10"
+              stroke="#4db8a8"
+              stroke-width="2.5"
+            />
+            <path
+              d="M21.5 21.5L28 28"
+              stroke="#4db8a8"
+              stroke-width="2.5"
+              stroke-linecap="round"
+            />
+            <circle
+              cx="14"
+              cy="14"
+              r="5"
+              stroke="#4db8a8"
+              stroke-width="1.5"
+              opacity="0.6"
+            />
+          </svg>
+          <span>GNO</span>
+        </div>
+
+        <h1 class="feature-title">AI Agent<br />Integration</h1>
+        <div class="accent-bar"></div>
+        <p class="tagline">Full GNO Access, Zero Overhead</p>
+      </div>
+
+      <div class="url">gno.sh</div>
+    </div>
+  </body>
+</html>

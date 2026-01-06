@@ -142,3 +142,12 @@ Sleep 3s
 
 - VHS: `brew install charmbracelet/tap/vhs`
 - GNO linked globally: `bun link`
+
+## OG Images
+
+Feature-specific Open Graph images for social sharing. See `assets/images/og/CLAUDE.md` for:
+
+- Design system (colors, fonts, layout)
+- Template structure
+- How to create new OG images
+- Wiring up in feature frontmatter

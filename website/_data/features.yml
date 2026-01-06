@@ -92,6 +92,22 @@
   commands:
     - "gno mcp"
 
+- slug: agent-integration
+  title: AI Agent Integration
+  headline: Full GNO Access, Zero Overhead
+  description: Give AI agents full GNO access via SKILL.md files—no MCP server, no context window pollution. One-line install for Claude Code, Codex, OpenCode, and Amp.
+  icon: agent
+  benefits:
+    - SKILL.md integration (no MCP overhead)
+    - Zero context window pollution
+    - One-line install for 4+ agents
+    - On-demand knowledge retrieval
+    - Works alongside MCP if needed
+  commands:
+    - "gno skill install --scope user"
+    - "gno skill install --target codex"
+    - "gno skill install --target all"
+
 - slug: api
   title: REST API
   headline: Build Anything with Your Knowledge

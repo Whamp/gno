@@ -1,0 +1,257 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Crimson+Pro:ital,wght@1,400&display=swap');
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+      }
+
+      .og-container {
+        width: 1200px;
+        height: 630px;
+        background: #0a0f18;
+        position: relative;
+        display: flex;
+        overflow: hidden;
+      }
+
+      .grid-bg {
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(77, 184, 168, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(77, 184, 168, 0.03) 1px, transparent 1px);
+        background-size: 40px 40px;
+      }
+
+      .glow {
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(77, 184, 168, 0.2) 0%, transparent 60%);
+        top: 50%;
+        left: 180px;
+        transform: translateY(-50%);
+      }
+
+      .corner {
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        border: 2px solid rgba(77, 184, 168, 0.3);
+      }
+
+      .corner-tl { top: 30px; left: 30px; border-right: none; border-bottom: none; }
+      .corner-tr { top: 30px; right: 30px; border-left: none; border-bottom: none; }
+      .corner-bl { bottom: 30px; left: 30px; border-right: none; border-top: none; }
+      .corner-br { bottom: 30px; right: 30px; border-left: none; border-top: none; }
+
+      .icon-section {
+        width: 400px;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 10;
+      }
+
+      .feature-icon {
+        width: 180px;
+        height: 180px;
+        filter: drop-shadow(0 0 40px rgba(77, 184, 168, 0.5));
+      }
+
+      .feature-icon svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      .content-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding-right: 80px;
+        position: relative;
+        z-index: 10;
+      }
+
+      .gno-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(77, 184, 168, 0.1);
+        border: 1px solid rgba(77, 184, 168, 0.3);
+        border-radius: 6px;
+        padding: 8px 16px;
+        margin-bottom: 24px;
+        width: fit-content;
+      }
+
+      .gno-badge svg {
+        width: 24px;
+        height: 24px;
+      }
+
+      .gno-badge span {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 18px;
+        font-weight: 500;
+        color: #4db8a8;
+        letter-spacing: 1px;
+      }
+
+      .feature-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 54px;
+        font-weight: 700;
+        color: #ffffff;
+        letter-spacing: -2px;
+        line-height: 1.1;
+        margin-bottom: 20px;
+      }
+
+      .accent-bar {
+        width: 60px;
+        height: 4px;
+        background: linear-gradient(90deg, #4db8a8, rgba(77, 184, 168, 0.3));
+        border-radius: 2px;
+        margin-bottom: 20px;
+      }
+
+      .tagline {
+        font-family: 'Crimson Pro', Georgia, serif;
+        font-size: 30px;
+        color: rgba(255, 255, 255, 0.7);
+        font-style: italic;
+        letter-spacing: 0.5px;
+      }
+
+      .url {
+        position: absolute;
+        bottom: 40px;
+        right: 50px;
+        font-family: 'Space Grotesk', monospace;
+        font-size: 18px;
+        color: #4db8a8;
+        letter-spacing: 2px;
+      }
+
+      /* Neural pathways decoration */
+      .neural-path {
+        position: absolute;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(77, 184, 168, 0.3), transparent);
+      }
+
+      .neural-path-1 { width: 150px; top: 180px; left: 40px; transform: rotate(10deg); }
+      .neural-path-2 { width: 120px; top: 220px; left: 60px; transform: rotate(-5deg); }
+      .neural-path-3 { width: 100px; bottom: 200px; left: 80px; transform: rotate(15deg); }
+      .neural-path-4 { width: 80px; bottom: 240px; left: 100px; transform: rotate(-10deg); }
+
+      .neural-node {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: rgba(77, 184, 168, 0.5);
+        border-radius: 50%;
+      }
+
+      .node-1 { top: 175px; left: 50px; }
+      .node-2 { top: 190px; left: 180px; }
+      .node-3 { top: 215px; left: 70px; }
+      .node-4 { top: 225px; left: 170px; }
+      .node-5 { bottom: 195px; left: 90px; }
+      .node-6 { bottom: 210px; left: 170px; }
+    </style>
+  </head>
+  <body>
+    <div class="og-container">
+      <div class="grid-bg"></div>
+      <div class="glow"></div>
+
+      <div class="neural-path neural-path-1"></div>
+      <div class="neural-path neural-path-2"></div>
+      <div class="neural-path neural-path-3"></div>
+      <div class="neural-path neural-path-4"></div>
+      <div class="neural-node node-1"></div>
+      <div class="neural-node node-2"></div>
+      <div class="neural-node node-3"></div>
+      <div class="neural-node node-4"></div>
+      <div class="neural-node node-5"></div>
+      <div class="neural-node node-6"></div>
+
+      <div class="corner corner-tl"></div>
+      <div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div>
+      <div class="corner corner-br"></div>
+
+      <div class="icon-section">
+        <div class="feature-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#4db8a8"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"
+            />
+            <path
+              d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"
+            />
+          </svg>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <div class="gno-badge">
+          <svg viewBox="0 0 32 32" fill="none">
+            <circle
+              cx="14"
+              cy="14"
+              r="10"
+              stroke="#4db8a8"
+              stroke-width="2.5"
+            />
+            <path
+              d="M21.5 21.5L28 28"
+              stroke="#4db8a8"
+              stroke-width="2.5"
+              stroke-linecap="round"
+            />
+            <circle
+              cx="14"
+              cy="14"
+              r="5"
+              stroke="#4db8a8"
+              stroke-width="1.5"
+              opacity="0.6"
+            />
+          </svg>
+          <span>GNO</span>
+        </div>
+
+        <h1 class="feature-title">Advanced<br />Retrieval</h1>
+        <div class="accent-bar"></div>
+        <p class="tagline">State-of-the-Art Search Pipeline</p>
+      </div>
+
+      <div class="url">gno.sh</div>
+    </div>
+  </body>
+</html>

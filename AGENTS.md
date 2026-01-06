@@ -1,3 +1,14 @@
+## KNOWLEDGE CUTOFF WARNING
+
+**DO NOT suggest outdated models due to knowledge cutoff.** Current models (2026):
+
+- OpenAI: `gpt-5-mini`, `gpt-5.2`
+- Anthropic: `claude-opus-4.5`, `claude-sonnet-4.5`, `claude-haiku-4.5`
+
+When in doubt about model names, ASK the user rather than defaulting to outdated versions.
+
+---
+
 **Note**: This project uses [bd (beads)](https://github.com/steveyegge/beads) for issue tracking. Use `bd` commands instead of markdown TODOs.
 
 Default to using Bun instead of Node.js.
@@ -50,6 +61,43 @@ test("hello world", () => {
 });
 ```
 
+## Evals (Quality Gates)
+
+Local-only evaluation suite using Evalite v1. Run before releases as part of DoD.
+
+**Commands:**
+
+```bash
+bun run eval          # Run full eval suite (~5s)
+bun run eval:watch    # Watch mode for development
+```
+
+**Eval Files** (in `evals/`):
+
+| File                   | What it tests                                  | Threshold |
+| ---------------------- | ---------------------------------------------- | --------- |
+| `expansion.eval.ts`    | Query expansion schema validity                | 70%       |
+| `vsearch.eval.ts`      | BM25 ranking (Recall@5/10, nDCG@10)            | 70%       |
+| `query.eval.ts`        | Query pipeline + latency budget                | 70%       |
+| `multilingual.eval.ts` | Cross-language retrieval (placeholder)         | 70%       |
+| `thoroughness.eval.ts` | Fast/balanced/thorough comparison (stats only) | 70%       |
+| `ask.eval.ts`          | Answer quality by preset                       | 70%       |
+
+**Fixtures** (in `evals/fixtures/`):
+
+- `corpus/` - 9 test docs (EN/DE/FR/IT)
+- `queries.json` - 29 queries with relevance judgments
+- `ask-cases.json` - 8 ask test cases
+
+**Key Design Decisions:**
+
+- No CI integration - evals are local-only, part of release DoD
+- Temp DB per run (isolated from global gno install)
+- In-memory Evalite storage by default
+- LLM-as-judge requires OPENAI_API_KEY (skips gracefully if not set)
+- Multilingual is placeholder (vector search future work)
+- Thoroughness comparison reports stats, doesn't assert ordering
+
 ## Development Scripts
 
 **scripts/** - Development and testing utilities (not published)
@@ -60,6 +108,7 @@ test("hello world", () => {
 | `test-rerank-size.ts`       | Tests reranker performance at different document sizes (1K-128K chars). Used to identify optimal chunk size for reranking. |
 | `docs-verify.ts`            | Verifies documentation is up-to-date with implementation.                                                                  |
 | `generate-test-fixtures.ts` | Generates test fixtures for unit tests.                                                                                    |
+| `og-screenshots.ts`         | Generates PNG screenshots from OG image HTML templates using Playwright.                                                   |
 
 **Usage:**
 
@@ -91,6 +140,8 @@ bun scripts/test-rerank-size.ts # Test rerank scaling with doc size
 **test/** - Test suite (see `test/CLAUDE.md`)
 
 **website/** - Jekyll documentation site (see `website/CLAUDE.md`)
+
+- OG image templates in `website/assets/images/og/` (see `website/assets/images/og/CLAUDE.md`)
 
 ## Versioning & Release
 
@@ -135,6 +186,15 @@ gh workflow run publish.yml -f publish=true   # actual publish
 6. Workflow auto-triggers on `v*` tag push
 
 **Note**: `website/changelog.md` is auto-copied from root CHANGELOG.md during build (gitignored).
+
+**OG Images**: If feature pages change, regenerate OG images:
+
+```bash
+bun run website:og              # All OG images
+bun run website:og -f og-api    # Single image
+```
+
+See `website/assets/images/og/CLAUDE.md` for template details.
 
 **CHANGELOG format** (Keep a Changelog):
 
