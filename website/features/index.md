@@ -1,9 +1,11 @@
 ---
 layout: fullwidth
 title: Features
+headline: Everything You Need for Local Search
 description: GNO features overview. Hybrid search, local LLM answers, multi-format indexing, privacy-first design, MCP integration, and collections.
 keywords: gno features, local search features, hybrid search, local llm, privacy search
 permalink: /features/
+og_image: /assets/images/og/og-template.png
 ---
 
 <section class="hero" style="padding-bottom: 2rem;">
