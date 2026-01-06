@@ -143,28 +143,55 @@ Sleep 3s
 - VHS: `brew install charmbracelet/tap/vhs`
 - GNO linked globally: `bun link`
 
-## OG Images
+## SEO Meta Tags
 
-Feature-specific Open Graph images for social sharing.
+Meta tags are defined manually in `_layouts/default.html` (NOT using jekyll-seo-tag plugin).
 
-**CRITICAL**: Every feature page MUST have `og_image` in frontmatter:
+### How Tags Are Generated
+
+| Tag              | Source                                            | Example                                              |
+| ---------------- | ------------------------------------------------- | ---------------------------------------------------- |
+| `<title>`        | `page.title \| site.title`                        | "Hybrid Search \| GNO"                               |
+| `og:title`       | `page.title - page.headline` (if headline exists) | "Hybrid Search - The Best of Keywords and Semantics" |
+| `og:description` | `page.description`                                | From frontmatter                                     |
+| `og:image`       | `page.og_image`                                   | `/assets/images/og/og-hybrid-search.png`             |
+| `twitter:card`   | `site.twitter.card`                               | `summary_large_image`                                |
+| `canonical`      | `page.url \| absolute_url`                        | `https://www.gno.sh/features/hybrid-search/`         |
+
+### Feature Page Frontmatter (Full Example)
 
 ```yaml
 ---
 layout: feature
-title: Feature Name
+title: Feature Name           # Short title (used in <title>)
+headline: The Catchy Tagline  # Combined with title for og:title (50-60 chars total)
+description: Longer description for meta description and og:description
 slug: feature-slug
-og_image: /assets/images/og/og-feature-slug.png  # REQUIRED
+permalink: /features/feature-slug/
+og_image: /assets/images/og/og-feature-slug.png  # REQUIRED for social sharing
+keywords: comma, separated, keywords
+icon: icon-name               # From _includes/icons.html
 ---
 ```
 
-Without this, the page falls back to the generic GNO template image.
+### Optimal Lengths (pSEO)
+
+- **og:title**: 50-60 characters (title + headline)
+- **description**: 150-160 characters
+- **OG image**: 1200x630px with CTA ("Learn more → gno.sh")
+
+## OG Images
+
+Feature-specific Open Graph images for social sharing.
+
+**CRITICAL**: Every feature page MUST have `og_image` in frontmatter pointing to its PNG.
 
 ### Adding a New Feature with OG Image
 
 1. Create HTML template: `assets/images/og/og-feature-slug.html`
 2. Generate PNG: `bun run website:og -f og-feature-slug`
 3. Create feature page with `og_image` frontmatter pointing to the PNG
-4. CI auto-regenerates PNGs when HTML templates change
+4. Push to main - CI auto-creates PR with regenerated PNGs
+5. Merge the OG images PR
 
-See `assets/images/og/CLAUDE.md` for template design system.
+See `assets/images/og/CLAUDE.md` for template design system (colors, fonts, layout).
