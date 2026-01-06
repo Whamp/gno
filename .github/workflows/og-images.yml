@@ -1,0 +1,48 @@
+name: Generate OG Images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "website/assets/images/og/*.html"
+      - "scripts/og-screenshots.ts"
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Install Playwright Chromium
+        run: bunx playwright install chromium
+
+      - name: Generate OG images
+        run: bun scripts/og-screenshots.ts
+
+      - name: Copy README hero image
+        run: cp website/assets/images/og/og-template.png assets/og-image.png
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git diff --quiet website/assets/images/og/*.png assets/og-image.png || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commit and push
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add website/assets/images/og/*.png assets/og-image.png
+          git commit -m "chore: regenerate OG images [skip ci]"
+          git push
