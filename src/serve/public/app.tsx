@@ -128,6 +128,15 @@ function App() {
             >
               gno.sh
             </a>
+            <span className="text-border">·</span>
+            <a
+              className="transition-colors hover:text-foreground"
+              href="https://twitter.com/gmickel"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Twitter
+            </a>
           </div>
         </footer>
       </div>
