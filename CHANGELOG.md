@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.1] - 2026-02-01
+
+### Changed
+
+- Upgrade officeparser 5.2.2 → 6.0.4 (v6 API: `parseOffice().toText()`)
+- Upgrade 23 dependencies including oxlint 1.42.0, oxfmt 0.27.0, node-llama-cpp 3.15.1
+
+### Fixed
+
+- Await pager stdin write (caught by new oxlint rule)
+
 ## [0.15.0] - 2026-02-01
 
 ### Added
