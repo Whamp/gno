@@ -167,7 +167,7 @@ export class Pager {
 
       // Write content to pager stdin
       if (proc.stdin) {
-        await proc.stdin.write(content + "\n");
+        proc.stdin.write(content + "\n");
         await proc.stdin.end();
       }
 
